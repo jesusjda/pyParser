@@ -4,7 +4,6 @@ import sys
 from arpeggio import *
 from arpeggio import RegExMatch as _
 import ppl as LP
-# sys.path.append('../')
 from Cfg import *
 
 
