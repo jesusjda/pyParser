@@ -180,7 +180,7 @@ class FcProgramVisitor(PTNodeVisitor):
         return float(node.value)
 
 
-if __name__ == "__main__":
+def main():
     # In debug mode dot (graphviz) files for parser model
     # and parse tree will be created for visualization.
     # Checkout current folder for .dot files.
@@ -190,3 +190,6 @@ if __name__ == "__main__":
     parser = Parser()
     a = parser.parse(filepath, False)
     print(a)
+
+if __name__ == "__main__":
+    main()

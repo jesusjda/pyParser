@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # and parse tree will be created for visualization.
     # Checkout current folder for .dot files.
     current_dir = os.path.dirname(__file__)
-    filename = "fc-parser/example.fc"
+    filename = "fc_parser/example.fc"
     filepath = os.path.join(current_dir, filename)
     parser = GeneralParser()
     a = parser.parse(filepath)
