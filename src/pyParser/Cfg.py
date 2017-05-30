@@ -27,9 +27,9 @@ class Edge:
         print(self.Cons[0])
         return self.name+" {\n\t"+','.join(self.Cons)+ "\n}"
 
-class Cfg(nx.MultiDiGraph):
+class Cfg(nx.MultiDiGraph): # TODO: Graph as a field
 
-    def add_edge2(self,edge):
+    def add_cfg_edge(self,edge):
         c = "#%06x" % random.randint(0, 0xFFFFFF)
         self.add_edge(edge.get_src(),edge.get_trg(),object=edge,label=edge,color=c,fontcolor=c)
        

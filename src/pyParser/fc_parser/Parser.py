@@ -9,7 +9,7 @@ from Cfg import *
 
 class Parser:
 
-    def parse(self, filepath, debug=False):
+    def parse(self, filepath, debug=True):
         # Load test program from file
         test_program = open(filepath).read()
         # print(test_program)
@@ -171,7 +171,7 @@ class FcProgramVisitor(PTNodeVisitor):
         PVars = children[1]
         for i in range(2, len(children)):
             tr_id, src, trg, cons = children[i]
-            G.add_edge2(Edge(tr_id, src, trg, cons))
+            G.add_cfg_edge(Edge(tr_id, src, trg, cons))
         return G
 
     def visit_fcnumber(self, node, children):
