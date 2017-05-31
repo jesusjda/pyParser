@@ -6,7 +6,11 @@ Parsers
 
 Those are the parsers already defined:
 
-.. automodule:: pyParser.Parser_fc
-    :members:
-    :show-inheritance:
+
+Fc files
+--------
+
+.. include:: _static/example.fc
+   :literal:
+
 

@@ -1,10 +1,2 @@
 sphinx_rtd_theme
-arpeggio
 networkx
-matplotlib
-pydotplus
-pyyaml
-scipy
-numpy
-Cython
-pplpy
