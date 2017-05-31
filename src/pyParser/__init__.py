@@ -1,2 +1,3 @@
 import GenericParser
-import *
+import Cfg
+
