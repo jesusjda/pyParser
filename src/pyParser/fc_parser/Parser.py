@@ -7,18 +7,25 @@ import ppl as LP
 from Cfg import *
 
 
-class Parser:
+def parse(filepath, debug=False):
+    """Parse .fc file
+    Args:
+        :filepath (`str`): Full path to file to be parsed.
+        :debug (`bool`, optional):
+            True to show debug information. Defaults to False
 
-    def parse(self, filepath, debug=True):
-        # Load test program from file
-        test_program = open(filepath).read()
-        # print(test_program)
-        # Parser instantiation. simpleLanguage is the definition of the
-        # root rule and comment is a grammar rule for comments.
-        parser = ParserPython(fcprogram, fccomment, debug=debug)
-        parse_tree = parser.parse(test_program)
-        result = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
-        return result
+    Returns:
+        The return value. Cfg obj with the program control flow graph.
+    """
+    # Load test program from file
+    test_program = open(filepath).read()
+    # print(test_program)
+    # Parser instantiation. simpleLanguage is the definition of the
+    # root rule and comment is a grammar rule for comments.
+    parser = ParserPython(fcprogram, fccomment, debug=debug)
+    parse_tree = parser.parse(test_program)
+    cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
+    return cfg
 
 
 def fccomment():
@@ -171,7 +178,7 @@ class FcProgramVisitor(PTNodeVisitor):
         PVars = children[1]
         for i in range(2, len(children)):
             tr_id, src, trg, cons = children[i]
-            G.add_cfg_edge(Edge(tr_id, src, trg, cons))
+            G.add_edge(Edge(tr_id, src, trg, cons))
         return G
 
     def visit_fcnumber(self, node, children):
@@ -180,16 +187,15 @@ class FcProgramVisitor(PTNodeVisitor):
         return float(node.value)
 
 
-def main():
+def _main():
     # In debug mode dot (graphviz) files for parser model
     # and parse tree will be created for visualization.
     # Checkout current folder for .dot files.
     current_dir = os.path.dirname(__file__)
     filename = "example.fc"
     filepath = os.path.join(current_dir, filename)
-    parser = Parser()
-    a = parser.parse(filepath, False)
+    a = parse(filepath, False)
     print(a)
 
 if __name__ == "__main__":
-    main()
+    _main()

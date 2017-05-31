@@ -8,6 +8,11 @@ Some text::
     print "hello"
     >> hello
 
+.. automodule:: pyParser.Cfg
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: pyParser.GeneralParser
     :members:
     :undoc-members:
@@ -15,7 +20,6 @@ Some text::
 
 .. automodule:: pyParser.fc_parser.Parser
     :members:
-    :undoc-members:
     :show-inheritance:
 
 

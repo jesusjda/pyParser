@@ -1,1 +1,1 @@
-import GeneralParser
+import GenericParser
