@@ -27,7 +27,7 @@ class GenericParser:
 
         :param filepath: Full path to the file to be parsed
 	:type filepath: str
-	:returns: :obj:`pyParser.Cfg.Cfg` The Cfg corresponding to the file
+	:returns: :obj:`Cfg.Cfg` The Cfg corresponding to the file
 	:raises: ParserError
         """
         filename, file_extension = os.path.splitext(filepath)
