@@ -14,12 +14,15 @@ class Edge:
 
     def __init__(self, name, src, trg, constraints=[]):
         """
-        Args:
-            :name (str): transition name
-            :src (str): Source node name
-            :trg (str): Target node name
-            :constraints (:obj:`list` of :obj:`ppl.Constraint`,optional):
-                initial set of constraints
+
+        :param name: transition name
+        :type name: str
+        :param src: Source node name
+        :type src: str
+        :param trg: Target node name
+        :type trg: str
+        :param constraints: initial set of constraints
+        :type constraints: :obj:`list` of :obj:`ppl.Constraint`,optional
         """
         self._name = name
         self._src = src
@@ -29,10 +32,8 @@ class Edge:
     def add_constraint(self, constraint):
         """Adds a contraint to the edge.
 
-        Args:
-            :constraint(`ppl.Constraint`):
-                Constraint to be added.
-
+        :param constrain: Constraint to be added.
+        :type: `ppl.Constraint`
         """
         self._cons.append(constraint)
 
@@ -70,9 +71,8 @@ class Cfg:
     def add_edge(self, edge):
         """Add an edge.
 
-        Args:
-            :edge: (:obj:`Edge`) Edge to be added.
-
+        :param edge::Edge to be added.
+        :type edge: :obj:`Edge`
         """
         c = "#%06x" % random.randint(0, 0xFFFFFF)
         self._graph.add_edge(edge.get_source(), edge.get_target(), object=edge,
@@ -91,9 +91,8 @@ class Cfg:
     def neighbors(self, node):
         """Returns all of the neighbors of a node in the graph.
 
-        Args:
-            :node(`str`): node.
-
+        :param node: Node.
+        :type node: str
         """
         return nx.all_neighbors(self._graph, node)
 

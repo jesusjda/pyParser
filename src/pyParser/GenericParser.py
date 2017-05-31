@@ -12,8 +12,8 @@ class GenericParser:
     def __init__(self, configfile=None):
         """Builds Generic Parser
 
-        Args:
-            :configfile(`str`): Full path to configuration file
+        :param configfile: Full path to configuration file
+        :type configfile: str
 
         """
         self._current_dir = os.path.dirname(__file__)
@@ -25,8 +25,10 @@ class GenericParser:
     def parse(self, filepath):
         """Parse a file with their corresponding parser
 
-        Args:
-            :filepath(`str`): Full path to the file to be parsed
+        :param filepath: Full path to the file to be parsed
+	:type filepath: str
+	:returns: :obj:`pyParser.Cfg.Cfg` The Cfg corresponding to the file
+	:raises: ParserError
         """
         filename, file_extension = os.path.splitext(filepath)
         if(file_extension in self._parserlist):

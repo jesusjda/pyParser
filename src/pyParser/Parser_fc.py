@@ -9,13 +9,12 @@ from Cfg import *
 
 def parse(filepath, debug=False):
     """Parse .fc file
-    Args:
-        :filepath (`str`): Full path to file to be parsed.
-        :debug (`bool`, optional):
-            True to show debug information. Defaults to False
 
-    Returns:
-        The return value. Cfg obj with the program control flow graph.
+   :param filepath: Full path to file to be parsed.
+   :type filepath: str
+   :param debug: True to show debug information. Defaults to False
+   :type debug: bool
+   :returns: :obj:`pyParser.Cfg.Cfg` Cfg obj with the program control flow graph.
     """
     # Load test program from file
     test_program = open(filepath).read()
