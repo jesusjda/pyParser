@@ -33,9 +33,27 @@ class GenericParser:
         filename, file_extension = os.path.splitext(filepath)
         if(file_extension in self._parserlist):
             # import parser
-            P = __import__(self._parserlist[file_extension])
-            return P.parse(filepath)
+            name = self._parserlist[file_extension]
+            P = getattr(__import__(name), name)
+            parser = P()
+            return parser.parse(filepath)
         print("Parser not found (ext: '"+file_extension+"' )")
+
+
+class ParserInterface:
+    """Interface for parsers
+    """
+
+    def parse(filepath, debug):
+        """Parse .fc file
+
+        :param filepath: Full path to file to be parsed.
+        :type filepath: str
+        :param debug: True to show debug information. Defaults to False
+        :type debug: bool
+        :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
+        """
+        pass
 
 
 if __name__ == "__main__":

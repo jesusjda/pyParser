@@ -5,24 +5,29 @@ from arpeggio import *
 from arpeggio import RegExMatch as _
 import ppl as LP
 from Cfg import *
+from GenericParser import ParserInterface
 
 
-def parse(filepath, debug=False):
-    """Parse .fc file
-
-   :param filepath: Full path to file to be parsed.
-   :type filepath: str
-   :param debug: True to show debug information. Defaults to False
-   :type debug: bool
-   :returns: :obj:`pyParser.Cfg.Cfg` Cfg obj with the program ControlFlowGraph.
+class Parser_fc(ParserInterface):
+    """Fc Parser
     """
-    # Load test program from file
-    test_program = open(filepath).read()
-    # Parser instantiation
-    parser = ParserPython(fcprogram, fccomment, debug=debug)
-    parse_tree = parser.parse(test_program)
-    cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
-    return cfg
+
+    def parse(self, filepath, debug=False):
+        """Parse .fc file
+
+        :param filepath: Full path to file to be parsed.
+        :type filepath: str
+        :param debug: True to show debug information. Defaults to False
+        :type debug: bool
+        :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
+        """
+        # Load test program from file
+        test_program = open(filepath).read()
+        # Parser instantiation
+        parser = ParserPython(fcprogram, fccomment, debug=debug)
+        parse_tree = parser.parse(test_program)
+        cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
+        return cfg
 
 
 def fccomment():
@@ -191,7 +196,7 @@ def _main():
     current_dir = os.path.dirname(__file__)
     filename = "examples/example.fc"
     filepath = os.path.join(current_dir, filename)
-    a = parse(filepath, False)
+    a = (Parser_fc()).parse(filepath, False)
     print(a)
 
 if __name__ == "__main__":
