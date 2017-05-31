@@ -1,22 +1,26 @@
-.vars {
+// Fc example
+// I'm a comment
+.vars { // variables
   x, y, z
 }
+
 /*
-asdsad
-asd
+MultiLine comment
+ :D
 */
-.pvars {
+
+.pvars { // prime variables
   xp, yp, zp
 }
 
-.trans t0 : n0 -> n1 {
+.trans t0 : n0 -> n1 { // a transition
   -1 * x + -1 * z <= 0,
   -1 * x + -1 * y + 1 * xp = 0,
   -1 * y + -1 * z + 1 * yp = 0,
   -1 * z + 1 * zp = -1
 }
 
-.trans t1 : n1 -> n2 {
+.itrans t1 : n1 -> n2 { // a commented transition
   -1 * x + -1 * z <= 0,
   (-1 * x + 2*zp)*2 + -1 * y + 1 * xp = 0,
   -1 * y + -1 * z + 1 * yp = 0,
@@ -24,33 +28,11 @@ asd
   1*x+1*y+1*z+xp+yp+-1*zp >= 0
 }
 
-.trans t2 : n2 -> n3 {
+.trans t2 : n2 -> n3 { // another transition
   -1 * x + -1 * z <= 0,
   -1 * x + -1 * y + 1 * xp = 0,
   -1 * y + -1 * z + 1 * yp = 0,
   -1 * z + 1 * zp = -1
 }
 
-.trans t3 : n3 -> n3 {
-  -1 * x + -1 * z <= 0,
-  (-1 * x + 2*zp)*2 + -1 * y + 1 * xp = 0,
-  -1 * y + -1 * z + 1 * yp = 0,
-  -1 * z + 1 * xp = -1,
-  1*x+1*y+1*z+xp+yp+-1*zp >= 0
-}
-
-.trans t4 : n2 -> n1 {
-  -1 * x + -1 * z <= 0,
-  -1 * x + -1 * y + 1 * xp = 0,
-  -1 * y + -1 * z + 1 * yp = 0,
-  -1 * z + 1 * zp = -1
-}
-
-.trans t5 : n3 -> n1 {
-  -1 * x + -1 * z <= 0,
-  (-1 * x + 2*zp)*2 + -1 * y + 1 * xp = 0,
-  -1 * y + -1 * z + 1 * yp = 0,
-  -1 * z + 1 * xp = -1,
-  1*x+1*y+1*z+xp+yp+-1*zp >= 0
-}
-
+// you can add more transitions

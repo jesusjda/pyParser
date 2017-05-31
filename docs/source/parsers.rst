@@ -13,4 +13,4 @@ Fc files
 .. include:: _static/example.fc
    :literal:
 
-
+.. image:: _static/example_fc.png
