@@ -1,30 +1,28 @@
-pyRankFinder's documentation!
-========================================
+.. _intro:
 
-Another header
-==============
-Some text::
+=========================
+pyParser's documentation!
+=========================
 
-    print "hello"
-    >> hello
+Example
+^^^^^^^
 
-.. automodule:: pyParser.Cfg
-    :members:
-    :undoc-members:
-    :show-inheritance:
+This module provides :ref:`several parsers <mod-parsers>` for diferen
+file extension. Each parser returns a :ref:`Control Flow Graph
+<mod-cfg>` whose edges are sets of Constraints.
 
-.. automodule:: pyParser.GenericParser
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Example::
 
-.. automodule:: pyParser.Parser_fc
-    :members:
+    parser = GenericParser()
+    cfg = parser.parser('/path/to/file.ext')
+
+You don't have to care about the file extension. :ref:`GenericParser
+<mod-generic>` will detected which is the correct Parser.
 
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+	      
+   modules
