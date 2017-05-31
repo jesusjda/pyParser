@@ -14,7 +14,7 @@ def parse(filepath, debug=False):
    :type filepath: str
    :param debug: True to show debug information. Defaults to False
    :type debug: bool
-   :returns: :obj:`Cfg.Cfg` Cfg obj with the program control flow graph.
+   :returns: :obj:`pyParser.Cfg.Cfg` Cfg obj with the program ControlFlowGraph.
     """
     # Load test program from file
     test_program = open(filepath).read()

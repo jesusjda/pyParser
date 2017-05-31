@@ -6,7 +6,7 @@ Generic Parser
 
 This is the principal module. You don't need to call anyother.
 
-.. automodule:: GenericParser
+.. automodule:: pyParser.GenericParser
     :members:
     :undoc-members:
     :show-inheritance:

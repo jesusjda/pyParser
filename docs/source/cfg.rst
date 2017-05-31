@@ -6,7 +6,7 @@ Control Flow Graph
 
 Each parser returns one of these.
 
-.. automodule:: Cfg
+.. automodule:: pyParser.Cfg
     :members:
     :undoc-members:
     :show-inheritance:

@@ -19,10 +19,9 @@
 import os
 import sys
 import sphinx_rtd_theme
-sys.path.insert(0, os.path.abspath('../../src/pyParser/'))
+sys.path.insert(0, os.path.abspath('../../src/'))
 # from pyParser import *
 # import pyParser.Cfg as Cfg
-# import pyParser.fc_parser
 
 # -- General configuration ------------------------------------------------
 

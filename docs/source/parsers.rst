@@ -6,5 +6,8 @@ Parsers
 
 Those are the parsers already defined:
 
-.. automodule:: Parser_fc
-    :members:
+..
+  .. currentmodule:: pyParser.Parser_fc
+.. automodule:: pyParser.Parser_fc
+   :members:
+
