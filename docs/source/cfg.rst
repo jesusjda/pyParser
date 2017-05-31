@@ -11,3 +11,4 @@ Each parser returns one of these.
     :undoc-members:
     :show-inheritance:
     :special-members:
+    :exclude-members: __module__, __repr__, __str__
