@@ -19,9 +19,7 @@ def parse(filepath, debug=False):
     """
     # Load test program from file
     test_program = open(filepath).read()
-    # print(test_program)
-    # Parser instantiation. simpleLanguage is the definition of the
-    # root rule and comment is a grammar rule for comments.
+    # Parser instantiation
     parser = ParserPython(fcprogram, fccomment, debug=debug)
     parse_tree = parser.parse(test_program)
     cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
@@ -192,7 +190,7 @@ def _main():
     # and parse tree will be created for visualization.
     # Checkout current folder for .dot files.
     current_dir = os.path.dirname(__file__)
-    filename = "example.fc"
+    filename = "examples/example.fc"
     filepath = os.path.join(current_dir, filename)
     a = parse(filepath, False)
     print(a)

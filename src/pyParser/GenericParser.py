@@ -30,18 +30,16 @@ class GenericParser:
         """
         filename, file_extension = os.path.splitext(filepath)
         if(file_extension in self._parserlist):
-            parserpath = self._parserlist[file_extension]
-            parserpath = os.path.join(self._current_dir, parserpath)
-            sys.path.append(parserpath)
-            import Parser
-            return Parser.parse(filepath)
+            # import parser
+            P = __import__(self._parserlist[file_extension])
+            return P.parse(filepath)
         print("Parser not found (ext: '"+file_extension+"' )")
 
 
 if __name__ == "__main__":
     parser = GenericParser()
     current_dir = os.path.dirname(__file__)
-    filename = "fc_parser/example.fc"
+    filename = "examples/example.fc"
     filepath = os.path.join(current_dir, filename)
     a = parser.parse(filepath)
     print(a)

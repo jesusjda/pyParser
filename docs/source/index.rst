@@ -13,14 +13,13 @@ Some text::
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pyParser.GeneralParser
+.. automodule:: pyParser.GenericParser
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pyParser.fc_parser.Parser
+.. automodule:: pyParser.Parser_fc
     :members:
-    :show-inheritance:
 
 
 Indices and tables
