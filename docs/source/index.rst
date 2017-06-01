@@ -7,7 +7,7 @@ pyParser's documentation!
 Example
 ^^^^^^^
 
-This module provides :ref:`several parsers <mod-parsers>` for diferen
+This module provides :ref:`several parser <mod-parsers>` for different
 file extension. Each parser returns a :ref:`Control Flow Graph
 <mod-cfg>` whose edges are sets of Constraints.
 

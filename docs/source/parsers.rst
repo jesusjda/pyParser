@@ -1,10 +1,10 @@
 .. _mod-parsers:
 
 
-Parsers
+Parser
 ^^^^^^^
 
-Those are the parsers already defined:
+Those are the languages already defined and whose parser are working:
 
 
 Fc files
