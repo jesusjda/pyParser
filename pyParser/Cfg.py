@@ -23,8 +23,8 @@ class Cfg:
         :type trg: str
         :param \**kwargs: Properties or attributes of the edge.
             `src`, `trg`, `key` and `name` tags will be ignored.
+
         """
-        print(kwargs)
         color = ["#3366CC", "#3366CC", "#DC3912", "#FF9900", "#109618",
                  "#990099", "#3B3EAC", "#0099C6", "#DD4477", "#66AA00",
                  "#B82E2E", "#316395", "#994499", "#22AA99", "#AAAA11",
@@ -36,20 +36,21 @@ class Cfg:
         else:
             c = color[self._num_edges]
 
-        kwargs["src"] = src
-        kwargs["trg"] = trg
+        kwargs["source"] = src
+        kwargs["target"] = trg
         kwargs["color"] = c
         kwargs["fontcolor"] = c
+        kwargs["label"] = name
         kwargs["name"] = name
 
-        print(kwargs)
         self._graph.add_edge(src, trg, key=name, **kwargs)
         self._keys[name] = (src, trg)
         self._num_edges += 1
 
     def get_edges(self, src=None, trg=None, name=None):
-        """Returns a list of edges from `src` to `trg`
+        """Returns a list of edges from `src` to `trg` with format
         { src: src, trg: trg, name: name , other_options }
+
         :param src: Source Node, optional, Defaults None
         :type src: `str`
         :param trg: Target Node, optional, Defaults None
@@ -134,7 +135,9 @@ class Cfg:
         nx.drawing.nx_pydot.write_dot(self._graph, outfile)
 
     def __repr__(self):
+        nx.drawing.nx_pydot.write_dot(self._graph, "graph.dot")
         return "I'm a MultiDiGraph"
 
     def __str__(self):
+        nx.drawing.nx_pydot.write_dot(self._graph, "graph.dot")
         return "I'm a MultiDiGraph"

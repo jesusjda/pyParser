@@ -3,9 +3,11 @@ import os
 import sys
 from arpeggio import *
 from arpeggio import RegExMatch as _
-import LPi
 from Cfg import *
 from GenericParser import ParserInterface
+from ppl import Variable
+from ppl import Constraint_System
+from LPi import C_Polyhedron
 
 
 class Parser_fc(ParserInterface):
@@ -27,6 +29,7 @@ class Parser_fc(ParserInterface):
         parser = ParserPython(fcprogram, fccomment, debug=debug)
         parse_tree = parser.parse(test_program)
         cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
+
         return cfg
 
 
@@ -36,7 +39,7 @@ def fccomment():
 
 
 def fcsymbol():
-    return _(r"\w+")
+    return _(r"\w[\w\']*")
 
 
 def fcnumber():
@@ -79,18 +82,25 @@ def fcprogram():
 
 class FcProgramVisitor(PTNodeVisitor):
 
+    Vars = []
     All_Vars = []
+    PVars = False
+    PVarslist = False
 
     def convert(self, v):
+        if not self.PVars:
+            self.PVars = True
+            for v in self.Vars:
+                self.All_Vars.append(str(v + '\''))
         if(isinstance(v, float)):
             return v
         elif(isinstance(v, str) and (v in self.All_Vars)):
-            return LPi.Variable(self.All_Vars.index(v))
+            return Variable(self.All_Vars.index(v))
         else:
             return v
 
     def visit_fcsymbol(self, node, children):
-        return node.value
+        return str(node.value)
 
     def visit_fcfactor(self, node, children):
         if self.debug:
@@ -162,14 +172,17 @@ class FcProgramVisitor(PTNodeVisitor):
         for i in range(0, len(children), 2):
             if children[i] in self.All_Vars:
                 raise Exception("Name repeated : "+children[i])
-            self.All_Vars.append(children[i])
+            self.All_Vars.append(str(children[i]))
+            self.Vars.append(children[i])
         return False
 
     def visit_fcpvarlist(self, node, children):
         if self.debug:
             print("pvarlist {}".format(children))
+        self.PVars = True
+        self.PVarslist = True
         for i in range(0, len(children), 2):
-            self.All_Vars.append(children[i])
+            self.All_Vars.append(str(children[i]))
         return False
 
     def visit_fcprogram(self, node, children):
@@ -178,16 +191,13 @@ class FcProgramVisitor(PTNodeVisitor):
         G = Cfg()
         Trans = []
         Vars = children[0]
-        PVars = children[1]
-        Vars = self.All_Vars
+        children[1]
         init = 2
-        if not PVars:
+        if not self.PVarslist:
             init = 1
-            for v in Vars:
-                self.All_Vars.append(v + "'")
         for i in range(init, len(children)):
             tr_id, src, trg, cons = children[i]
-            tr_poly = LPi.C_Polyhedron(LP.Constraint_System(cons))
+            tr_poly = C_Polyhedron(Constraint_System(cons))
             G.add_edge(tr_id, src, trg, tr_polyhedron=tr_poly)
 
         return G
@@ -207,6 +217,7 @@ def _main():
     filepath = os.path.join(current_dir, filename)
     a = (Parser_fc()).parse(filepath, False)
     print(a)
+    a._echo()
 
 if __name__ == "__main__":
     _main()

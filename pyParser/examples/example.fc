@@ -5,7 +5,9 @@
 asdsad
 asd
 */
-
+.pvars {
+  x', y', z'
+}
 
 .trans t0 : n0 -> n1 {
   -1 * x + -1 * z <= 0,

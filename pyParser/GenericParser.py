@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-sys.path.append("../../pyLPi/src/")
+sys.path.append("../../pyLPi/pyLPi/")
 
 
 class GenericParser:
