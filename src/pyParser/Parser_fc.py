@@ -3,7 +3,7 @@ import os
 import sys
 from arpeggio import *
 from arpeggio import RegExMatch as _
-import ppl as LP
+import LPi
 from Cfg import *
 from GenericParser import ParserInterface
 
@@ -74,16 +74,18 @@ def fcpvarlist():
 
 
 def fcprogram():
-    return fcvarlist, fcpvarlist, OneOrMore(fctransition), EOF
+    return fcvarlist, Optional(fcpvarlist), OneOrMore(fctransition), EOF
 
 
 class FcProgramVisitor(PTNodeVisitor):
+
+    All_Vars = []
 
     def convert(self, v):
         if(isinstance(v, float)):
             return v
         elif(isinstance(v, str) and (v in self.All_Vars)):
-            return LP.Variable(self.All_Vars.index(v))
+            return LPi.Variable(self.All_Vars.index(v))
         else:
             return v
 
@@ -149,7 +151,6 @@ class FcProgramVisitor(PTNodeVisitor):
         src = children[1]
         trg = children[2]
         cons = []
-        E = Edge(tr_id, src, trg)
         for i in range(3, len(children), 2):
             cons.append(children[i])
         return tr_id, src, trg, cons
@@ -162,14 +163,14 @@ class FcProgramVisitor(PTNodeVisitor):
             if children[i] in self.All_Vars:
                 raise Exception("Name repeated : "+children[i])
             self.All_Vars.append(children[i])
-        return True
+        return False
 
     def visit_fcpvarlist(self, node, children):
         if self.debug:
             print("pvarlist {}".format(children))
         for i in range(0, len(children), 2):
             self.All_Vars.append(children[i])
-        return True
+        return False
 
     def visit_fcprogram(self, node, children):
         if self.debug:
@@ -178,9 +179,17 @@ class FcProgramVisitor(PTNodeVisitor):
         Trans = []
         Vars = children[0]
         PVars = children[1]
-        for i in range(2, len(children)):
+        Vars = self.All_Vars
+        init = 2
+        if not PVars:
+            init = 1
+            for v in Vars:
+                self.All_Vars.append(v + "'")
+        for i in range(init, len(children)):
             tr_id, src, trg, cons = children[i]
-            G.add_edge(Edge(tr_id, src, trg, cons))
+            tr_poly = LPi.C_Polyhedron(LP.Constraint_System(cons))
+            G.add_edge(tr_id, src, trg, tr_polyhedron=tr_poly)
+
         return G
 
     def visit_fcnumber(self, node, children):

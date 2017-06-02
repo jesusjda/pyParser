@@ -1,19 +1,19 @@
-import random
 import networkx as nx
 from networkx.drawing.nx_pydot import write_dot
 
 
-class Edge:
-    """Edge Class contains source and target node, and all the
-    constraints between them.
-    """
-    _name = None
-    _src = None
-    _trg = None
-    _cons = []
+class Cfg:
+    _graph = None
+    _num_edges = 0
+    _keys = {}
 
-    def __init__(self, name, src, trg, constraints=[]):
-        """
+    def __init__(self):
+        self._graph = nx.MultiDiGraph()
+        self._num_edges = 0
+        self._keys = {}
+
+    def add_edge(self, name, src, trg, **kwargs):
+        """Add an edge.
 
         :param name: transition name
         :type name: str
@@ -21,62 +21,86 @@ class Edge:
         :type src: str
         :param trg: Target node name
         :type trg: str
-        :param constraints: initial set of constraints
-        :type constraints: :obj:`list` of :obj:`ppl.Constraint`,optional
+        :param \**kwargs: Properties or attributes of the edge.
+            `src`, `trg`, `key` and `name` tags will be ignored.
         """
-        self._name = name
-        self._src = src
-        self._trg = trg
-        self._cons = constraints
+        print(kwargs)
+        color = ["#3366CC", "#3366CC", "#DC3912", "#FF9900", "#109618",
+                 "#990099", "#3B3EAC", "#0099C6", "#DD4477", "#66AA00",
+                 "#B82E2E", "#316395", "#994499", "#22AA99", "#AAAA11",
+                 "#6633CC", "#E67300", "#8B0707", "#329262", "#5574A6",
+                 "#3B3EAC"]
 
-    def add_constraint(self, constraint):
-        """Adds a contraint to the edge.
+        if "color" in kwargs:
+            c = kwargs["color"]
+        else:
+            c = color[self._num_edges]
 
-        :param constrain: Constraint to be added.
-        :type: `ppl.Constraint`
+        kwargs["src"] = src
+        kwargs["trg"] = trg
+        kwargs["color"] = c
+        kwargs["fontcolor"] = c
+        kwargs["name"] = name
+
+        print(kwargs)
+        self._graph.add_edge(src, trg, key=name, **kwargs)
+        self._keys[name] = (src, trg)
+        self._num_edges += 1
+
+    def get_edges(self, src=None, trg=None, name=None):
+        """Returns a list of edges from `src` to `trg`
+        { src: src, trg: trg, name: name , other_options }
+        :param src: Source Node, optional, Defaults None
+        :type src: `str`
+        :param trg: Target Node, optional, Defaults None
+        :type trg: `str`
+        :param name: hashable identifier, optional, Defaults None
+            Used to distinguish multiple edges between a pair of nodes.
+        :type name: `str`
+
+        if src, trg or name are None all values of them are suitables.
         """
-        self._cons.append(constraint)
+        if src is None and trg is None and not(name is None):
+            return [self.get_edge(name)]
+        return [self._graph.edge[s][t][k]
+                for s in self._graph.edge if src is None or src == s
+                for t in self._graph.edge[s] if trg is None or trg == t
+                for k in self._graph.edge[s][t] if name is None or name == k]
+        if src in self._graph.edge:
+            if trg is None:
+                return [self._graph.edge[src][t][k]
+                        for t in self._graph.edge[src]
+                        for k in self._graph.edge[src][t]]
+            if trg in self._graph.edge[src]:
+                return [self._graph.edge[src][trg][k]
+                        for k in self._graph.edge[src][trg]]
+        return []
 
-    def get_source(self):
-        """Returns source node name
+    def get_edge(self, name):
+        """Returns the edge identified by the name
+
+        :param name: hashable identifier
+        :type name: `str`
         """
-        return self._src
+        if name in self._keys:
+            src, trg = self._keys[name]
+            if src in self._graph and trg in self._graph[src]:
+                return self._graph[src][trg][name]
+        return None
 
-    def get_target(self):
-        """Returns target node name
+    def remove_edge(self, src, trg, name=None):
+        """Remove an edge between src and trg.
+
+        :param src: Source Node
+        :type src: `str`
+        :param trg: Target Node
+        :type trg: `str`
+        :param name: hashable identifier, optional (default=None)
+            Used to distinguish multiple edges between a pair of nodes.
+            If None remove a single (abritrary) edge between src and trg.
+        :type name: `str`
         """
-        return self._trg
-
-    def get_name(self):
-        """Returns edge name
-        """
-        return self._name
-
-    def __repr__(self):
-        strr = self._name+" {\n"
-        for c in self._cons:
-            strr = strr + "\t"+c.__repr__()+"\n"
-        strr = strr + "}"
-        return strr
-        print(self._cons[0])
-        return self._name + " {\n\t" + ','.join(self._cons) + "\n}"
-
-
-class Cfg:
-    _graph = None
-
-    def __init__(self):
-        self._graph = nx.MultiDiGraph()
-
-    def add_edge(self, edge):
-        """Add an edge.
-
-        :param edge::Edge to be added.
-        :type edge: :obj:`Edge`
-        """
-        c = "#%06x" % random.randint(0, 0xFFFFFF)
-        self._graph.add_edge(edge.get_source(), edge.get_target(), object=edge,
-                             label=edge, color=c, fontcolor=c)
+        self._graph.remove_edge(src, trg, name)
 
     def nodes(self):
         """Return a copy of the graph nodes in a list.
