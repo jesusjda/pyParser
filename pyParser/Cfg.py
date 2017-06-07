@@ -131,13 +131,11 @@ class Cfg:
         """
         return nx.number_of_edges(self._graph)
 
-    def _echo(self, outfile="graph.dot"):
+    def toDot(self, outfile="graph.dot"):
         nx.drawing.nx_pydot.write_dot(self._graph, outfile)
 
     def __repr__(self):
-        nx.drawing.nx_pydot.write_dot(self._graph, "graph.dot")
         return "I'm a MultiDiGraph"
 
     def __str__(self):
-        nx.drawing.nx_pydot.write_dot(self._graph, "graph.dot")
         return "I'm a MultiDiGraph"
