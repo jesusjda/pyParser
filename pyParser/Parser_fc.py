@@ -56,7 +56,7 @@ def fcterm():
 
 
 def fcexpression():
-    return OneOrMore(fcterm, sep="+")
+    return fcterm, ZeroOrMore(["+", "-"], fcterm)
 
 
 def fcequation():
@@ -195,9 +195,10 @@ class FcProgramVisitor(PTNodeVisitor):
         init = 2
         if not self.PVarslist:
             init = 1
+        Dim = len(self.All_Vars)
         for i in range(init, len(children)):
             tr_id, src, trg, cons = children[i]
-            tr_poly = C_Polyhedron(Constraint_System(cons))
+            tr_poly = C_Polyhedron(Constraint_System(cons), Dim)
             G.add_edge(tr_id, src, trg, tr_polyhedron=tr_poly)
 
         return G
