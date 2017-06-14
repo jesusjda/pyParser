@@ -200,7 +200,7 @@ class FcProgramVisitor(PTNodeVisitor):
             tr_id, src, trg, cons = children[i]
             tr_poly = C_Polyhedron(Constraint_System(cons), Dim)
             G.add_edge(tr_id, src, trg, tr_polyhedron=tr_poly)
-
+        G.add_var_name(self.All_Vars)
         return G
 
     def visit_fcnumber(self, node, children):

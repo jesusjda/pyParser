@@ -6,11 +6,21 @@ class Cfg:
     _graph = None
     _num_edges = 0
     _keys = {}
+    _vars = []
 
     def __init__(self):
         self._graph = nx.MultiDiGraph()
         self._num_edges = 0
         self._keys = {}
+        self._vars = []
+
+    def add_var_name(self, vars_name):
+        self._vars = vars_name
+
+    def get_var_name(self, idx=None):
+        if idx is None:
+            return self._vars
+        return self._vars[idx]
 
     def add_edge(self, name, src, trg, **kwargs):
         """Add an edge.
