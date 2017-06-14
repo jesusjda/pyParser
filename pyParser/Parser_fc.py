@@ -82,16 +82,16 @@ def fcprogram():
 
 class FcProgramVisitor(PTNodeVisitor):
 
-    Vars = []
+    VarsList = []
     All_Vars = []
     PVars = False
-    PVarslist = False
+    PVarsList = []
+    startTr = False
 
     def convert(self, v):
         if not self.PVars:
             self.PVars = True
-            for v in self.Vars:
-                self.All_Vars.append(str(v + '\''))
+            self.All_Vars = self.VarsList + self.PVarsList
         if(isinstance(v, float)):
             return v
         elif(isinstance(v, str) and (v in self.All_Vars)):
@@ -157,6 +157,7 @@ class FcProgramVisitor(PTNodeVisitor):
     def visit_fctransition(self, node, children):
         if self.debug:
             print("Trans {}.".format(node.value))
+        self.startTr = True
         tr_id = children[0]
         src = children[1]
         trg = children[2]
@@ -168,21 +169,26 @@ class FcProgramVisitor(PTNodeVisitor):
     def visit_fcvarlist(self, node, children):
         if self.debug:
             print("varlist {}".format(children))
+        self.VarsList = []
+        self.PVarsList = []
         self.All_Vars = []
         for i in range(0, len(children), 2):
             if children[i] in self.All_Vars:
                 raise Exception("Name repeated : "+children[i])
+            self.VarsList.append(str(children[i]))
             self.All_Vars.append(str(children[i]))
-            self.Vars.append(children[i])
+            self.PVarsList.append(str(children[i]+"\'"))
+        self.PVars = False
         return False
 
     def visit_fcpvarlist(self, node, children):
         if self.debug:
             print("pvarlist {}".format(children))
         self.PVars = True
-        self.PVarslist = True
+        self.PVarsList = []
         for i in range(0, len(children), 2):
-            self.All_Vars.append(str(children[i]))
+            self.PVarsList.append(str(children[i]))
+        self.startTr = False
         return False
 
     def visit_fcprogram(self, node, children):
@@ -193,7 +199,7 @@ class FcProgramVisitor(PTNodeVisitor):
         Vars = children[0]
         children[1]
         init = 2
-        if not self.PVarslist:
+        if self.startTr:
             init = 1
         Dim = len(self.All_Vars)
         for i in range(init, len(children)):
