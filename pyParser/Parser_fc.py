@@ -39,7 +39,7 @@ def fccomment():
 
 
 def fcsymbol():
-    return _(r"\w[\w\']*")
+    return _(r"\w[\w0-9']*")
 
 
 def fcnumber():
@@ -92,9 +92,7 @@ class FcProgramVisitor(PTNodeVisitor):
         if not self.PVars:
             self.PVars = True
             self.All_Vars = self.VarsList + self.PVarsList
-        if(isinstance(v, float)):
-            return v
-        elif(isinstance(v, str) and (v in self.All_Vars)):
+        if(isinstance(v, str) and (v in self.All_Vars)):
             return Variable(self.All_Vars.index(v))
         else:
             return v
@@ -178,13 +176,14 @@ class FcProgramVisitor(PTNodeVisitor):
             self.VarsList.append(str(children[i]))
             self.All_Vars.append(str(children[i]))
             self.PVarsList.append(str(children[i]+"\'"))
+
         self.PVars = False
         return False
 
     def visit_fcpvarlist(self, node, children):
         if self.debug:
             print("pvarlist {}".format(children))
-        self.PVars = True
+        self.PVars = False
         self.PVarsList = []
         for i in range(0, len(children), 2):
             self.PVarsList.append(str(children[i]))
@@ -196,13 +195,12 @@ class FcProgramVisitor(PTNodeVisitor):
             print("Program {}.".format(node.value))
         G = Cfg()
         Trans = []
-        Vars = children[0]
+        children[0]
         children[1]
-        init = 2
-        if self.startTr:
-            init = 1
         Dim = len(self.All_Vars)
-        for i in range(init, len(children)):
+        for i in range(1, len(children)):
+            if not children[i]:
+                continue
             tr_id, src, trg, cons = children[i]
             tr_poly = C_Polyhedron(Constraint_System(cons), Dim)
             G.add_edge(tr_id, src, trg, tr_polyhedron=tr_poly)
