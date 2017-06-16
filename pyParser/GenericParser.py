@@ -1,7 +1,10 @@
 import json
 import os
 import sys
-sys.path.append("../../pyLPi/pyLPi/")
+
+
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             "../../lib/pyLPi/pyLPi/"))
 
 
 class GenericParser:
@@ -48,8 +51,8 @@ class ParserInterface:
     """Interface for parsers
     """
 
-    def parse(filepath, debug):
-        """Parse .fc file
+    def parse(filepath, debug=False):
+        """Parse .EXTENSION file
 
         :param filepath: Full path to file to be parsed.
         :type filepath: str
@@ -57,7 +60,7 @@ class ParserInterface:
         :type debug: bool
         :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
         """
-        pass
+        raise Exception("Not implemented yet!")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,4 @@
 from __future__ import unicode_literals, print_function
-import os
-import sys
 from arpeggio import *
 from arpeggio import RegExMatch as _
 from Cfg import *
@@ -211,18 +209,3 @@ class FcProgramVisitor(PTNodeVisitor):
         if self.debug:
             print("Converting {}.".format(node.value))
         return float(node.value)
-
-
-def _main():
-    # In debug mode dot (graphviz) files for parser model
-    # and parse tree will be created for visualization.
-    # Checkout current folder for .dot files.
-    current_dir = os.path.dirname(__file__)
-    filename = "examples/example.fc"
-    filepath = os.path.join(current_dir, filename)
-    a = (Parser_fc()).parse(filepath, False)
-    print(a)
-    a._echo()
-
-if __name__ == "__main__":
-    _main()
