@@ -3,18 +3,18 @@ import sys
 import glob
 import getopt
 import argparse
-
+from GenericParser import GenericParser
 
 _name = "Generic Parser"
 _version = "0.0.0.1"
 
 
 def setArgumentParser():
-    parsers = ["Parser_fc"]
+    # parsers = ["Parser_fc", "Parser_mlc"]
     desc = _name+": a Parser and dot graph generator on python."
     argParser = argparse.ArgumentParser(description=desc)
 
-    argParser.add_argument("-d", "--dot", required=False,
+    argParser.add_argument("-d", "--dot", required=False, action='store_true',
                            help="Generate dot file with the program graph.")
     argParser.add_argument("-ver", "--version", required=False,
                            action='store_true', help="Shows the version.")
@@ -35,17 +35,25 @@ def _main():
     for path in full_paths:
         if os.path.isfile(path):
             fileName, fileExt = os.path.splitext(path)
-            if args.extension == '' or args.extension == fileExt:
+            if(args.extension == '' or
+               args.extension == fileExt or
+               ('.' + args.extension) == fileExt):
+
                 files.add(path)
         else:
             full_paths += glob.glob(path + '/*')
 
+    P = GenericParser()
     for f in files:
-        print f
+        fileName, fileExt = os.path.splitext(os.path.basename(f))
+        dotgraph = None
+        if args.dot:
+            dotgraph = (os.path.join(os.getcwd(), "graphs") + "/" +
+                        fileName + "_" + fileExt[1::] + ".dot")
+
+        a = P.parse(f, dotgraph)
+
     exit(0)
-    a = (Parser_fc()).parse(filepath, False)
-    print(a)
-    a._echo()
 
 if __name__ == "__main__":
     _main()

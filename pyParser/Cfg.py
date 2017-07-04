@@ -35,11 +35,10 @@ class Cfg:
             `src`, `trg`, `key` and `name` tags will be ignored.
 
         """
-        color = ["#3366CC", "#3366CC", "#DC3912", "#FF9900", "#109618",
+        color = ["#3366CC", "#3B3EAC", "#DC3912", "#FF9900", "#109618",
                  "#990099", "#3B3EAC", "#0099C6", "#DD4477", "#66AA00",
                  "#B82E2E", "#316395", "#994499", "#22AA99", "#AAAA11",
-                 "#6633CC", "#E67300", "#8B0707", "#329262", "#5574A6",
-                 "#3B3EAC"]
+                 "#6633CC", "#E67300", "#8B0707", "#329262", "#5574A6"]
 
         if "color" in kwargs:
             c = kwargs["color"]
@@ -50,7 +49,13 @@ class Cfg:
         kwargs["target"] = trg
         kwargs["color"] = c
         kwargs["fontcolor"] = c
-        kwargs["label"] = name
+        label = name
+        if "tr_polyhedron" in kwargs:
+            label += " {\n"
+            for c in kwargs["tr_polyhedron"].get_constraints():
+                label += str(c) + "\n"
+            label += "}"
+        kwargs["label"] = label
         kwargs["name"] = name
 
         self._graph.add_edge(src, trg, key=name, **kwargs)
