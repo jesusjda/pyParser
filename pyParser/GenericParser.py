@@ -4,7 +4,7 @@ import sys
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__),
-                             "../../lib/pyLPi/pyLPi/"))
+                             "../../pyLPi/pyLPi/"))
 
 
 class GenericParser:
@@ -26,11 +26,13 @@ class GenericParser:
         with open(configfile) as data:
             self._parserlist = json.load(data)
 
-    def parse(self, filepath, dot=None):
+    def parse(self, filepath, dotgraph=None):
         """Parse a file with their corresponding parser
 
         :param filepath: Full path to the file to be parsed
         :type filepath: str
+        :param dotgraph: Destination File to store dot graph or None
+        :type dotgraph: file
         :returns: :obj:`pyParser.Cfg.Cfg` The Cfg corresponding to the file
         :raises: ParserError
         """
@@ -41,8 +43,8 @@ class GenericParser:
             P = getattr(__import__(name), name)
             parser = P()
             cfg = parser.parse(filepath)
-            if not(dot is None):
-                cfg.toDot(dot)
+            if not(dotgraph is None):
+                cfg.toDot(dotgraph)
             return cfg
         raise Exception("Parser not found (ext: '"+file_extension+"' )")
 

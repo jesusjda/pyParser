@@ -1,0 +1,19 @@
+!vars
+x y
+
+!pvars
+xp yp
+
+
+!path
+x=1
+y>=0
+xp=1-x
+yp=y-x
+
+!path
+x=0
+y>=0
+xp=1-x
+yp=y-x
+
