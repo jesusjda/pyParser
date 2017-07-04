@@ -158,7 +158,7 @@ class MlcProgramVisitor(PTNodeVisitor):
         src = "n"
         trg = "n"
         cons = []
-        for i in range(1, len(children)):
+        for i in range(0, len(children)):
             cons.append(children[i])
         return tr_id, src, trg, cons
 
