@@ -38,7 +38,6 @@ def _main():
             if(args.extension == '' or
                args.extension == fileExt or
                ('.' + args.extension) == fileExt):
-
                 files.add(path)
         else:
             full_paths += glob.glob(path + '/*')
@@ -50,8 +49,11 @@ def _main():
         if args.dot:
             dotgraph = (os.path.join(os.getcwd(), "graphs") + "/" +
                         fileName + "_" + fileExt[1::] + ".dot")
-
-        a = P.parse(f, dotgraph)
+        print("-> {}".format(f))
+        try:
+            a = P.parse(f, dotgraph)
+        except Exception as e:
+            print("Unable to parse {}".format(f))
 
     exit(0)
 

@@ -5,6 +5,7 @@ from Cfg import *
 from GenericParser import ParserInterface
 from ppl import Variable
 from ppl import Constraint_System
+from ppl import Linear_Expression
 from LPi import C_Polyhedron
 
 
@@ -22,109 +23,200 @@ class Parser_mlc(ParserInterface):
         :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
         """
         # Load test program from file
-        test_program = open(filepath).read()
-        # Parser instantiation
-        parser = ParserPython(mlcprogram, mlccomment, debug=debug)
-        parse_tree = parser.parse(test_program)
-        cfg = visit_parse_tree(parse_tree, MlcProgramVisitor(debug=debug))
+        lines = open(filepath).readlines()
+        # INTERNAL ATTR
+        VarList = []
+        PVarList = []
+        self.VARS = []
+        lines = self.remove_comments(lines)
+        it = 0
+        # !vars
+        if lines[it] != "!vars":
+            raise Exception("Expecting \"!vars\"")
+        it += 1
+        # x y z
+        for var in lines[it].split():
+            if len(var) <= 0:
+                continue
+            if var in VarList:
+                raise Exception("Name repeated : " + var)
+            VarList.append(var)
+            PVarList.append(var + "\'")
+        it += 1
+        # !pvars
+        if lines[it] == "!pvars":
+            it += 1
+            PVarList = []
+            # x' y' z'
+            for var in lines[it].split():
+                if len(var) <= 0:
+                    continue
+                if var in VarList or var in PVarList:
+                    raise Exception("Name repeated : " + var)
+                PVarList.append(var)
+            it += 1
+        self.VARS = VarList + PVarList
 
-        return cfg
+        tr_id = 0
+        G = Cfg()
+        # !path
+        while it < len(lines):
+            tr, it = self.visit_transition(lines, it)
+            tr_poly = C_Polyhedron(Constraint_System(tr), len(self.VARS))
+            G.add_edge("t" + str(tr_id), "n", "n", tr_polyhedron=tr_poly)
+            tr_id += 1
+
+        G.add_var_name(self.VARS)
+        return G
+
+    def visit_expr(self, line):
+        return self.visit_expression(line)
+
+    def visit_expression(self, line):
+        options = ["([a-zA-Z]+[a-zA-Z0-9]*)", "[0-9]+",
+                   "\+", "\-", "\(", "\)", "\/", "\*"]
+        e = [line]
+        for rep in options:
+            nep = e
+            e = []
+            for s in nep:
+                if not(s is None):
+                    e += re.split("("+rep+")+", s)
+        e = [a for a in e if a != '']
+        pass
+
+    def visit_equation(self, line):
+        line = line.strip()
+        return self.parseEq(line)
+
+    def visit_transition(self, lines, it):
+        if lines[it] != "!path":
+            raise Exception("Expecting \"!path\"")
+        it += 1
+        EXPS = []
+        while it < len(lines) and lines[it] != "!path":
+            exp = self.visit_equation(lines[it])
+            EXPS.append(exp)
+            it += 1
+        return EXPS, it
+
+    def remove_comments(self, lines):
+        L = []
+        multicomment = False
+        for l in lines:
+            laux, multicomment = self.remove_comment(l, multicomment)
+            laux = laux.strip()
+            if len(laux) > 0:
+                L.append(laux)
+        return L
+
+    def remove_comment(self, line, multicomment):
+        multi = multicomment
+        if multicomment:
+            pos = line.find("*/")
+            if pos >= 0:
+                line = line[(pos + 2)::]
+                multi = False
+            else:
+                line = ""
+        pos = line.find("#")
+        if pos >= 0:
+            line = line[0:pos]
+        pos = line.find("/*")
+        if pos >= 0:
+            line = line[0:pos]
+            multi = True
+        return line.replace("\n", ""), multi
+
+    def parseEq(self, line):
+        parser = ParserPython(eqequation)
+        parse_tree = parser.parse(line)
+        FCP = EquationVisitor()
+        FCP.All_Vars = self.VARS
+        eq = visit_parse_tree(parse_tree, FCP)
+        return eq
 
 
-def mlccomment():
-    return [_("#.*"), _("/\*[^(\*/)]*\*/")]
-
-
-def mlcsymbol():
+def eqsymbol():
     return _(r"\w[\w0-9']*")
 
 
-def mlcnumber():
+def eqnumber():
     return _(r'\d*\.\d*|\d+')
 
 
-def mlcfactor():
-    return (Optional(["+", "-"]),
-            [mlcnumber, ("(", mlcexpression, ")"), mlcsymbol])
+def eqsign():
+    return (Optional(["+", "-"]), eqfactor)
 
 
-def mlcterm():
-    return mlcfactor, ZeroOrMore(["*", "/"], mlcfactor)
+def eqfactor():
+    return [(eqnumber, Optional(("/", eqnumber))),
+            ("(", eqexpression, ")"), eqsymbol]
 
 
-def mlcexpression():
-    return mlcterm, ZeroOrMore(["+", "-"], mlcterm)
+def eqterm():
+    return eqsign, ZeroOrMore([("*", eqsign), (eqfactor)])
 
 
-def mlcequation():
-    return mlcexpression, ["<=", "=", ">=", ">", "<"], mlcexpression
+def eqexpression():
+    return eqterm, ZeroOrMore(["+", "-"], eqterm)
 
 
-def mlctransition():
-    return (Kwd("!path"), OneOrMore(mlcequation))
+def eqequation():
+    return (eqexpression,
+            ["<=", "=>", "=<", ">=", "=", "==", ">", "<"], eqexpression)
 
 
-def mlcvarlist():
-    return Kwd("!vars"), OneOrMore(mlcsymbol)
+class EquationVisitor(PTNodeVisitor):
 
-
-def mlcpvarlist():
-    return Kwd("!pvars"), OneOrMore(mlcsymbol)
-
-
-def mlcprogram():
-    return mlcvarlist, Optional(mlcpvarlist), OneOrMore(mlctransition), EOF
-
-
-class MlcProgramVisitor(PTNodeVisitor):
-
-    VarsList = []
     All_Vars = []
-    PVars = False
-    PVarsList = []
-    startTr = False
-    count = 0
 
     def convert(self, v):
-        if not self.PVars:
-            self.PVars = True
-            self.All_Vars = self.VarsList + self.PVarsList
         if(isinstance(v, str) and (v in self.All_Vars)):
             return Variable(self.All_Vars.index(v))
         else:
             return v
 
-    def visit_mlcsymbol(self, node, children):
+    def visit_eqsymbol(self, node, children):
         return str(node.value)
 
-    def visit_mlcfactor(self, node, children):
-        if self.debug:
-            print("Factor {}.".format(node.value))
+    def visit_eqfactor(self, node, children):
         exp = 0
-        if(len(node) == 1):
-            exp = self.convert(children[0])
-        elif(len(node) == 2):
-            if(node[0] == '-'):
-                exp = - self.convert(children[1])
-            else:
-                exp = self.convert(children[1])
-        elif(node[0] == '('):
-            exp = (self.convert(children[0]))
+        if isinstance(children[0], float):
+            exp = children[0]
+            if len(children) > 1:
+                exp = exp / children[1]
+        elif node[0] == '(':
+            exp = exp + (children[0])
+        else:
+            exp = exp + self.convert(children[0])
         return exp
 
-    def visit_mlcterm(self, node, children):
+    def visit_eqsign(self, node, children):
+        exp = 0
+        if len(node) == 1:
+            exp = exp + children[0]
+        else:
+            if node[0] == '-':
+                exp = exp - children[1]
+            else:
+                exp = exp + children[2]
+        return exp
+
+    def visit_eqterm(self, node, children):
         exp = self.convert(children[0])
         if(len(children) == 1):
             return exp
-        if(children[1] == "*"):
-            exp = exp * self.convert(children[2])
+        if isinstance(children[1], (str, unicode)):
+            if(children[1] == "/"):
+                exp = exp / self.convert(children[2])
+            else:
+                exp = exp * self.convert(children[2])
         else:
-            exp = exp / self.convert(children[2])
+            exp = exp * children[1]
         return exp
 
-    def visit_mlcexpression(self, node, children):
-        if self.debug:
-            print("Exp {}.".format(node.value))
+    def visit_eqexpression(self, node, children):
         exp = self.convert(children[0])
         for i in range(2, len(children), 2):
             if(children[i-1] == "-"):
@@ -133,80 +225,20 @@ class MlcProgramVisitor(PTNodeVisitor):
                 exp = exp + self.convert(children[i])
         return exp
 
-    def visit_mlcequation(self, node, children):
-        if self.debug:
-            print("Eq {}.".format(node.value))
+    def visit_eqequation(self, node, children):
         exp = children[0]
         if(children[1] == "<"):
             exp = (exp < children[2])
         elif(children[1] == ">"):
             exp = (exp > children[2])
-        elif(children[1] == "<="):
+        elif(children[1] == "<=" or children[1] == "=<"):
             exp = (exp <= children[2])
-        elif(children[1] == ">="):
+        elif(children[1] == ">=" or children[1] == "=>"):
             exp = (exp >= children[2])
-        elif(children[1] == "="):
+        elif(children[1] == "=" or children[1] == "=="):
             exp = (exp == children[2])
         return exp
 
-    def visit_mlctransition(self, node, children):
-        if self.debug:
-            print("Trans {}.".format(node.value))
-        self.startTr = True
-        tr_id = "t" + str(self.count)
-        self.count += 1
-        src = "n"
-        trg = "n"
-        cons = []
-        for i in range(0, len(children)):
-            cons.append(children[i])
-        return tr_id, src, trg, cons
-
-    def visit_mlcvarlist(self, node, children):
-        if self.debug:
-            print("varlist {}".format(children))
-        self.VarsList = []
-        self.PVarsList = []
-        self.All_Vars = []
-        for i in range(0, len(children)):
-            if children[i] in self.All_Vars:
-                raise Exception("Name repeated : "+children[i])
-            self.VarsList.append(str(children[i]))
-            self.All_Vars.append(str(children[i]))
-            self.PVarsList.append(str(children[i]+"\'"))
-
-        self.PVars = False
-        return False
-
-    def visit_mlcpvarlist(self, node, children):
-        if self.debug:
-            print("pvarlist {}".format(children))
-        self.PVars = False
-        self.PVarsList = []
-        for i in range(0, len(children)):
-            self.PVarsList.append(str(children[i]))
-        self.startTr = False
-
-        return False
-
-    def visit_mlcprogram(self, node, children):
-        if self.debug:
-            print("Program {}.".format(node.value))
-        G = Cfg()
-        Trans = []
-        children[0]
-        children[1]
-        Dim = len(self.All_Vars)
-        for i in range(1, len(children)):
-            if not children[i]:
-                continue
-            tr_id, src, trg, cons = children[i]
-            tr_poly = C_Polyhedron(Constraint_System(cons), Dim)
-            G.add_edge(tr_id, src, trg, tr_polyhedron=tr_poly)
-        G.add_var_name(self.All_Vars)
-        return G
-
-    def visit_mlcnumber(self, node, children):
-        if self.debug:
-            print("Converting {}.".format(node.value))
+    def visit_eqnumber(self, node, children):
         return float(node.value)
+

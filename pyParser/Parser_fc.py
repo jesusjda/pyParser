@@ -30,6 +30,15 @@ class Parser_fc(ParserInterface):
 
         return cfg
 
+    def parseEq(self, line, Vars):
+        parser = ParserPython(fcequation)
+        parse_tree = parser.parse(line)
+        FCP = FCProgramVisitor()
+        FCP.All_Vars = Vars
+        FCP.PVars = True
+        eq = visit_parse_tree(parse_tree, FCProgramVisitor())
+        return eq
+
 
 def fccomment():
     return [_("//.*"), _("/\*[^(\*/)]*\*/"),
