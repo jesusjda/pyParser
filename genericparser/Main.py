@@ -3,10 +3,10 @@ import sys
 import glob
 import getopt
 import argparse
-from GenericParser import GenericParser
+import GenericParser
 
 _name = "Generic Parser"
-_version = "0.0.0.1"
+_version = "0.1"
 
 
 def setArgumentParser():

@@ -2,8 +2,7 @@ arpeggio
 networkx
 matplotlib
 pydotplus
-pyyaml
 scipy
 numpy
-Cython
 pplpy
+git+git://github.com/jesusjda/pyLPi.git#egg=pylpi
