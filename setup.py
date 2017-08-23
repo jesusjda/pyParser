@@ -20,7 +20,7 @@ setup(
     packages=['genericparser'],
     package_dir={'genericparser': 'genericparser'},
     package_data={'genericparser': ['*.py']},
-    install_requires=['pplpy', 'arpegio', 'networkx', 'pydotplus', 'scipy', 'numpy', 'git+git://github.com/jesusjda/pyLPi.git#egg=pylpi'],
+    install_requires=['pplpy', 'arpegio', 'networkx', 'pydotplus', 'scipy', 'numpy', 'pylpi'],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: C++",

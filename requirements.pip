@@ -5,4 +5,3 @@ pydotplus
 scipy
 numpy
 pplpy
-git+git://github.com/jesusjda/pyLPi.git#egg=pylpi
