@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 import sys
+import os
 
 base = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,7 +22,7 @@ setup(
     packages=['genericparser'],
     package_dir={'genericparser': 'genericparser'},
     package_data={'genericparser': ['*.py']},
-    install_requires=['arpegio', 'networkx', 'pydotplus', 'scipy', 'numpy'],
+    install_requires=['arpeggio', 'networkx', 'pydotplus', 'scipy', 'numpy'],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: C++",
