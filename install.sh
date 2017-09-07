@@ -45,17 +45,6 @@ exists(){
     command -v "$1" >/dev/null 2>&1
 }
 
-installed()
-{
-
-    if [ "$(uname -s)" = 'Linux' ]; then
-	basedir=$(dirname "$(readlink -f "$0" )")
-    else
-	basedir=$(dirname "$(readlink "$0" )")
-    fi
-
-    
-}
 
 if [ "$pvers" = "false" ]; then
     if exists python2; then
