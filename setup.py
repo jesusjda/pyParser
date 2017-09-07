@@ -2,15 +2,16 @@
 from setuptools import setup
 import sys
 
+base = os.path.dirname(os.path.abspath(__file__))
 
-VERSION = open('version.txt').read()[:-1]
+VERSION = open(os.path.join(base, 'version.txt')).read()[:-1]
 
 
 setup(
     name='pyparser',
     version=VERSION,
     description='Python Generic Parser',
-    long_description=open("README.md").read(),
+    long_description=open(os.path.join(base, "README.md")).read(),
     author='Jesus Domenech',
     author_email='jdomenec@ucm.es',
     url='https://github.com/jesusjda/pyParser',
@@ -20,7 +21,7 @@ setup(
     packages=['genericparser'],
     package_dir={'genericparser': 'genericparser'},
     package_data={'genericparser': ['*.py']},
-    install_requires=['pplpy', 'arpegio', 'networkx', 'pydotplus', 'scipy', 'numpy', 'pylpi'],
+    install_requires=['arpegio', 'networkx', 'pydotplus', 'scipy', 'numpy'],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: C++",
