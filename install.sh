@@ -5,18 +5,17 @@ UP=""
 FORCE=false
 pvers="false"
 
-for i in "$@"
-do
+for i in "$@"; do
     case $i in
 	-up|--update)
 	    UP="up"
 	    UN=""
-	    shift # past argument=value
+	    shift 
 	    ;;
 	-un|--uninstall)
 	    UP=""
 	    UN="un"
-	    shift # past argument=value
+	    shift 
 	    ;;
 	-p=*|--python=*)
 	    pvers="${i#*=}"
@@ -28,13 +27,34 @@ do
 		P3=true
 		P2=false
 	    fi
-	    shift # past argument=value
+	    shift 
 	    ;;
 	-f|--force)
 	    FORCE=true
-	    shift # past argument=value
+	    shift 
 	    ;;
 	*)
+	    >&2 cat  <<EOF 
+ERROR: install.sh [OPTIONS]
+
+[OPTIONS]
+
+    -f | --force ) 
+                   force default values: Install python dependencies, 
+                   but no install own modules like pyLPi.
+
+    -up | --update ) 
+                   Update or Upgrade all the packages.
+
+    -un | --uninstall )
+                   Uninstall all except UNIX packages.
+
+    -p=[VERSION] | --python=[VERSION] )
+                   Install only for python version number [VERSION].
+                   It has to be 2 or 3.
+
+EOF
+	    exit -1
             # unknown option
 	    ;;
     esac
@@ -67,8 +87,6 @@ if [ "$EUID" -ne 0 ]; then
     flags=$flags" --user"
 fi
 
-
-
 # get base folder
 if [ "$(uname -s)" = 'Linux' ]; then
     basedir=$(dirname "$(readlink -f "$0" )")
@@ -95,7 +113,6 @@ done
 if [ "$FORCE" = "true" ]; then
     mdepen=false
     pdepen=true
-    udepen=true
 else
 
     mdepen=false
@@ -116,7 +133,6 @@ else
 
 
     pdepen=true
-
     while true; do
 	read -p "Do you want to "$UN"install the standar Python dependencies? [Y/n]" yn
 	case $yn in
@@ -131,21 +147,6 @@ else
 	esac
     done
     
-    # udepen=$pdepen
-    # while [[ $pdepen == true ]]; do
-    # 	read -p "Do you want to install the UNIX dependencies? [Y/n]" yn
-    # 	case $yn in
-    #         [yY][eE][sS]|[yY])
-    # 		break;;
-    # 	    [nN][oO]|[nN])
-    # 		echo "Be sure to have them already installed, otherwise the installation will crash."
-    # 		udepen=false
-    # 		break;;
-    #         "")
-    # 		break;;
-    #         * ) echo "Invalid option."; echo $yn;;
-    # 	esac
-    # done
 fi
 
 
@@ -158,6 +159,19 @@ install()
 	lflags=$lflags" --upgrade"
     fi
     vers=$1
+    if [ "$mdepen" = "true" ]; then
+	fl=""
+	if [ "$UN" = "un" ]; then
+	    fl="--uninstall"
+	elif [ "$UP" = "up" ]; then
+	    fl="--update"
+	fi
+	mkdir $basedir/tmplpi
+	git clone https://github.com/jesusjda/pyLPi.git $basedir/tmplpi/
+	$basedir/tmplpi/install.sh -f $fl -p=$vers
+	rm -rf $basedir/tmplpi
+    fi
+
     echo "------------------------------------"
     echo "Installing pyParser on Python $vers"
     echo "------------------------------------"
@@ -174,35 +188,11 @@ install()
 
 if [ "$P2" = "true" ]; then
     easy_install $flags pip
-    if [ "$mdepen" = "true" ]; then
-	fl=""
-	if [ "$UN" = "un" ]; then
-	    fl="--uninstall"
-	elif [ "$UP" = "up" ]; then
-	    fl="--update"
-	fi
-	mkdir $basedir/tmplpi
-	git clone https://github.com/jesusjda/pyLPi.git $basedir/tmplpi/
-	$basedir/tmplpi/install.sh -f $fl -p=2
-	rm -rf $basedir/tmplpi
-    fi
     install 2
 fi
 
 if [ "$P3" = "true" ]; then
     easy_install3 $flags pip
-    if [ "$mdepen" = "true" ]; then
-	fl=""
-	if [ "$UN" = "un" ]; then
-	    fl="--uninstall"
-	elif [ "$UP" = "up" ]; then
-	    fl="--update"
-	fi
-	mkdir $basedir/tmplpi
-	git clone https://github.com/jesusjda/pyLPi.git $basedir/tmplpi
-	$basedir/tmplpi/install.sh -f $fl -p=3
-	rm -rf $basedir/tmplpi
-    fi
     install 3
 fi
 
