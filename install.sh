@@ -154,7 +154,6 @@ else
             * ) echo "Invalid option."; echo $yn;;
 	esac
     done
-    
 fi
 
 
@@ -166,7 +165,7 @@ install()
     elif [ "$UP" = "up" ]; then	
 	lflags=$lflags" --upgrade"
     fi
-    vers=$1
+    lvers=$1
     if [ "$mdepen" = "true" ]; then
 	fl=""
 	if [ "$UN" = "un" ]; then
@@ -178,28 +177,26 @@ install()
 	git clone https://github.com/jesusjda/pyLPi.git $basedir/tmplpi/
 	cwd=$(pwd)
 	cd $basedir/tmplpi
-	$basedir/tmplpi/install.sh -f $fl -p=$vers
-	rm -rf $basedir/tmplpi
+	$basedir/tmplpi/install.sh -f $fl -p=$lvers
 	cd $cwd
+	rm -rf $basedir/tmplpi
     fi
 
     echo "------------------------------------"
     echo "Installing pyParser on Python $vers"
     echo "------------------------------------"
     if [ "$pdepen" = "true" ]; then
-	python$vers -m pip $UN"install" $lflags pydotplus matplotlib scipy numpy
-	python$vers -m pip $UN"install" $lflags networkx
-	python$vers -m pip $UN"install" $lflags arpeggio
+	python$lvers -m pip $UN"install" $lflags pydotplus matplotlib scipy numpy
+	python$lvers -m pip $UN"install" $lflags networkx
+	python$lvers -m pip $UN"install" $lflags arpeggio
 
     fi
-    
+
     if [ "$LOCAL" = "true" ]; then 
-	python$vers $basedir/setup.py build --build-base=$basedir
-	python$vers $basedir/setup.py install --upgrade
+	python$lvers -m pip $UN"install" $lflags .
     else
-	python$vers -m pip $UN"install" $lflags git+https://github.com/jesusjda/pyParser.git#egg=pyParser
+	python$lvers -m pip $UN"install" $lflags git+https://github.com/jesusjda/pyParser.git#egg=pyParser
     fi
-    
 }
 
 if [ "$P2" = "true" ]; then
