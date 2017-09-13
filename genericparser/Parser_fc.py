@@ -1,11 +1,11 @@
 from __future__ import unicode_literals, print_function
 from arpeggio import *
 from arpeggio import RegExMatch as _
-from Cfg import *
-from GenericParser import ParserInterface
 from ppl import Variable
 from ppl import Constraint_System
-from LPi import C_Polyhedron
+from lpi import C_Polyhedron
+from Cfg import *
+from genericparser import ParserInterface
 
 
 class Parser_fc(ParserInterface):

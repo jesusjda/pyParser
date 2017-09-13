@@ -3,7 +3,7 @@ import sys
 import glob
 import getopt
 import argparse
-import GenericParser
+import genericparser
 
 _name = "Generic Parser"
 _version = "0.1"

@@ -4,7 +4,9 @@ UN=""
 UP=""
 FORCE=false
 pvers="false"
-
+P3=false
+P2=false
+LOCAL=false
 for i in "$@"; do
     case $i in
 	-up|--update)
@@ -21,17 +23,19 @@ for i in "$@"; do
 	    pvers="${i#*=}"
 	    if [ "$pvers" = "2" ]; then
 		P2=true
-		P3=false
 	    fi
 	    if [ "$pvers" = "3" ]; then
 		P3=true
-		P2=false
 	    fi
 	    shift 
 	    ;;
 	-f|--force)
 	    FORCE=true
 	    shift 
+	    ;;
+	-l|--local)
+	    LOCAL=true
+	    shift
 	    ;;
 	*)
 	    >&2 cat  <<EOF 
@@ -42,6 +46,10 @@ ERROR: install.sh [OPTIONS]
     -f | --force ) 
                    force default values: Install python dependencies, 
                    but no install own modules like pyLPi.
+
+    -l | --local ) 
+                   Install local version with local modifications.
+                   Otherwise, git repository version will be installed.
 
     -up | --update ) 
                    Update or Upgrade all the packages.
@@ -72,7 +80,7 @@ if [ "$pvers" = "false" ]; then
     else
 	P2=false
     fi
-    
+
     if exists python3; then
 	P3=true
     else
@@ -95,7 +103,7 @@ else
 fi
 
 # Python 2 or 3 or both?
-while [ "$P2" = "true" -a "$P3" = "true" ]; do
+while [ "$pvers" = "false" -a "$P2" = "true" -a "$P3" = "true" ]; do
     read -p "Which python version do you want to use? [2/3/B] (default: B - Both)" yn
     case $yn in
         [2]*)
@@ -168,22 +176,30 @@ install()
 	fi
 	mkdir $basedir/tmplpi
 	git clone https://github.com/jesusjda/pyLPi.git $basedir/tmplpi/
+	cwd=$(pwd)
+	cd $basedir/tmplpi
 	$basedir/tmplpi/install.sh -f $fl -p=$vers
 	rm -rf $basedir/tmplpi
+	cd $cwd
     fi
 
     echo "------------------------------------"
     echo "Installing pyParser on Python $vers"
     echo "------------------------------------"
     if [ "$pdepen" = "true" ]; then
-	pip$vers $UN"install" $lflags pydotplus matplotlib scipy numpy
-	pip$vers $UN"install" $lflags networkx
-	pip$vers $UN"install" $lflags arpeggio
+	python$vers -m pip $UN"install" $lflags pydotplus matplotlib scipy numpy
+	python$vers -m pip $UN"install" $lflags networkx
+	python$vers -m pip $UN"install" $lflags arpeggio
 
     fi
-
-    pip$vers $UN"install" $lflags git+https://github.com/jesusjda/pyParser.git#egg=pyParser
-
+    
+    if [ "$LOCAL" = "true" ]; then 
+	python$vers $basedir/setup.py build --build-base=$basedir
+	python$vers $basedir/setup.py install --upgrade
+    else
+	python$vers -m pip $UN"install" $lflags git+https://github.com/jesusjda/pyParser.git#egg=pyParser
+    fi
+    
 }
 
 if [ "$P2" = "true" ]; then
