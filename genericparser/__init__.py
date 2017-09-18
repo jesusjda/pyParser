@@ -30,14 +30,16 @@ class GenericParser:
         :type filepath: str
         :param dotgraph: Destination File to store dot graph or None
         :type dotgraph: file
-        :returns: :obj:`pyParser.Cfg.Cfg` The Cfg corresponding to the file
+        :returns: :obj:`genericparser.Cfg.Cfg` The Cfg corresponding
+        to the file
         :raises: ParserError
         """
         filename, file_extension = os.path.splitext(filepath)
         if(file_extension in self._parserlist):
             # import parser
             name = self._parserlist[file_extension]
-            P = getattr(__import__(name), name)
+            m = getattr(__import__("genericparser."+name), name)
+            P = getattr(m, name)
             parser = P()
             cfg = parser.parse(filepath)
             if not(dotgraph is None):
@@ -57,6 +59,6 @@ class ParserInterface:
         :type filepath: str
         :param debug: True to show debug information. Defaults to False
         :type debug: bool
-        :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
+        :returns: :obj:`genericparser.Cfg.Cfg` ControlFlowGraph.
         """
         raise Exception("Not implemented yet!")
