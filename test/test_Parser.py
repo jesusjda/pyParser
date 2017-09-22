@@ -1,6 +1,8 @@
 import unittest
 import os as _os
 import sys as _sys
+import networkx as nx
+import networkx.drawing.nx_pydot as nx_pydot
 import genericparser
 import lpi
 
@@ -25,7 +27,14 @@ class TestKey(unittest.TestCase):
         print("######################################")
         print("ORIGINAL")
         print(o_list)
-        self.assertItemsEqual(r_list, o_list)
+        rg = nx_pydot.read_dot(result)
+        rgc = rg.copy()
+        og = nx_pydot.read_dot(original)
+        ogc = og.copy()
+        a = nx.difference(rg, og)
+        b = nx.difference(ogc, rgc)
+        self.assertTrue(nx.is_empty(a))
+        self.assertTrue(nx.is_empty(b))
 
     def test_parser_mlc(self):
         p = _os.path.dirname(_os.path.abspath(__file__))
@@ -45,4 +54,11 @@ class TestKey(unittest.TestCase):
         print("######################################")
         print("ORIGINAL")
         print(o_list)
-        self.assertItemsEqual(r_list, o_list)
+        rg = nx_pydot.read_dot(result)
+        rgc = rg.copy()
+        og = nx_pydot.read_dot(original)
+        ogc = og.copy()
+        a = nx.difference(rg, og)
+        b = nx.difference(ogc, rgc)
+        self.assertTrue(nx.is_empty(a))
+        self.assertTrue(nx.is_empty(b))
