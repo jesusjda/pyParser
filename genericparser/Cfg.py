@@ -8,11 +8,19 @@ class Cfg:
     _keys = {}
     _vars = []
 
-    def __init__(self):
-        self._graph = nx.MultiDiGraph()
-        self._num_edges = 0
-        self._keys = {}
-        self._vars = []
+    def __init__(self, graph=None, vars_name=[]):
+        if graph is None:
+            self._graph = nx.MultiDiGraph()
+            self._num_edges = 0
+            self._keys = {}
+            self._vars = []
+        else:
+            self._graph = graph
+            self._num_edges = self._graph.number_of_edges()
+            self._vars = vars_name
+            self._keys = {}
+            for ed in self._graph.edges():
+                self._keys[ed.name] = (ed.src, ed.trg)
 
     def add_var_name(self, vars_name):
         self._vars = vars_name
@@ -36,7 +44,7 @@ class Cfg:
 
         """
         color = ["#3366CC", "#3B3EAC", "#DC3912", "#FF9900", "#109618",
-                 "#990099", "#3B3EAC", "#0099C6", "#DD4477", "#66AA00",
+                 "#990099", "#3B8EAC", "#0099C6", "#DD4477", "#66AA00",
                  "#B82E2E", "#316395", "#994499", "#22AA99", "#AAAA11",
                  "#6633CC", "#E67300", "#8B0707", "#329262", "#5574A6"]
 
@@ -145,6 +153,31 @@ class Cfg:
         """Return the number of edges in the graph.
         """
         return nx.number_of_edges(self._graph)
+
+    def get_strongly_connected_component_subgraphs(self, copy=True):
+        """Generate Strongly connected components as subgraphs.
+
+        :param copy: if copy is True, Graph, node and edge attributes
+        are copied to the subgraphs.
+        :type copy: boolean
+
+        Return a list of control flow graphs
+        """
+        subgs = sorted(nx.strongly_connected_component_subgraphs(self._graph),
+                       key=len)
+        subcfgs = [Cfg(Gc, self._vars.copy()) for Gc in subgs]
+        return subcfgs
+
+    def get_sccs(self, copy=True):
+        """Generate Strongly connected components as subgraphs.
+
+        :param copy: if copy is True, Graph, node and edge attributes
+        are copied to the subgraphs.
+        :type copy: boolean
+
+        Return a list of control flow graphs
+        """
+        return self.get_strongly_connected_component_subgraphs(self, copy)
 
     def toDot(self, outfile="graph.dot"):
         nx.drawing.nx_pydot.write_dot(self._graph, outfile)
