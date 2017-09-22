@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-import Cfg
+import genericparser.Cfg
 
 
 class GenericParser:

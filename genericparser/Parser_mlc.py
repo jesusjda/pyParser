@@ -5,7 +5,7 @@ from ppl import Variable
 from ppl import Constraint_System
 from ppl import Linear_Expression
 from lpi import C_Polyhedron
-from Cfg import *
+from genericparser.Cfg import *
 from genericparser import ParserInterface
 
 

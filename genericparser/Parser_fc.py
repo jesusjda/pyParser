@@ -4,7 +4,7 @@ from arpeggio import RegExMatch as _
 from ppl import Variable
 from ppl import Constraint_System
 from lpi import C_Polyhedron
-from Cfg import *
+from genericparser.Cfg import *
 from genericparser import ParserInterface
 
 
