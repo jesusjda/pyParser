@@ -86,19 +86,13 @@ class Cfg:
         """
         if src is None and trg is None and not(name is None):
             return [self.get_edge(name)]
-        return [self._graph.edge[s][t][k]
-                for s in self._graph.edge if src is None or src == s
-                for t in self._graph.edge[s] if trg is None or trg == t
-                for k in self._graph.edge[s][t] if name is None or name == k]
-        if src in self._graph.edge:
-            if trg is None:
-                return [self._graph.edge[src][t][k]
-                        for t in self._graph.edge[src]
-                        for k in self._graph.edge[src][t]]
-            if trg in self._graph.edge[src]:
-                return [self._graph.edge[src][trg][k]
-                        for k in self._graph.edge[src][trg]]
-        return []
+        edges = []
+        for e in self._graph.edges:
+            if src is None or src == e["source"]:
+                if trg is None or trg == e["target"]:
+                    if name is None or name == e["name"]:
+                        edges.append(e)
+        return edges
 
     def get_edge(self, name):
         """Returns the edge identified by the name
