@@ -87,11 +87,13 @@ class Cfg:
         if src is None and trg is None and not(name is None):
             return [self.get_edge(name)]
         edges = []
-        for e in self._graph.edges:
-            if src is None or src == e["source"]:
-                if trg is None or trg == e["target"]:
-                    if name is None or name == e["name"]:
-                        edges.append(e)
+        for s in self._graph:
+            if src is None or src == s:
+                for t in self._graph[s]:
+                    if trg is None or trg == t:
+                        for n in self._graph[s][t]:
+                            if name is None or name == n:
+                                edges.append(self._graph[s][t][n])
         return edges
 
     def get_edge(self, name):
@@ -159,6 +161,7 @@ class Cfg:
         """
         subgs = sorted(nx.strongly_connected_component_subgraphs(self._graph),
                        key=len)
+        print("***",subgs)
         subcfgs = [Cfg(Gc, self._vars.copy()) for Gc in subgs]
         return subcfgs
 
