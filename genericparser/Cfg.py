@@ -13,7 +13,15 @@ class Cfg:
             self._graph = nx.MultiDiGraph()
             self._num_edges = 0
             self._keys = {}
-            self._vars = []
+            self._vars = vars_name
+        elif isinstance(graph, list):
+            self._graph = nx.MultiDiGraph()
+            self._num_edges = 0
+            self._keys = {}
+            self._vars = vars_name
+            for edge in graph:
+                self.add_edge(edge["source"], edge["target"],
+                              edge["name"], edge)
         else:
             self._graph = graph
             self._num_edges = self._graph.number_of_edges()
@@ -53,14 +61,16 @@ class Cfg:
         if "color" in kwargs:
             c = kwargs["color"]
         else:
-            c = color[self._num_edges]
+            c = color[self._num_edges % 20]
 
         kwargs["source"] = src
         kwargs["target"] = trg
         kwargs["color"] = c
         kwargs["fontcolor"] = c
         label = name
+        print(kwargs)
         if "tr_polyhedron" in kwargs:
+            print(kwargs["tr_polyhedron"])
             label += " {\n"
             for c in kwargs["tr_polyhedron"].get_constraints():
                 label += str(c) + "\n"
