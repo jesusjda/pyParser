@@ -1,7 +1,14 @@
-import json
+"""This is the Generic Parser module.
+
+This module can parse several languages and convert them
+to a common Control Flow Graph Class.
+"""
 import os
 import sys
-import genericparser.Cfg
+import json
+from . import Cfg
+
+__all__ = ['GenericParser', 'Cfg']
 
 
 class GenericParser:

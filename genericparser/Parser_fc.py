@@ -4,8 +4,8 @@ from arpeggio import RegExMatch as _
 from ppl import Variable
 from ppl import Constraint_System
 from lpi import C_Polyhedron
-from genericparser.Cfg import *
-from genericparser import ParserInterface
+from .Cfg import Cfg
+from . import ParserInterface
 
 
 class Parser_fc(ParserInterface):

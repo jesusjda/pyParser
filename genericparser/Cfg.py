@@ -19,8 +19,10 @@ class Cfg:
             self._num_edges = self._graph.number_of_edges()
             self._vars = vars_name
             self._keys = {}
-            for ed in self._graph.edges():
-                self._keys[ed.name] = (ed.src, ed.trg)
+            for src in self._graph:
+                for trg in self._graph[src]:
+                    for name in self._graph[src][trg]:
+                        self._keys[name] = (src, trg)
 
     def add_var_name(self, vars_name):
         self._vars = vars_name
@@ -161,8 +163,7 @@ class Cfg:
         """
         subgs = sorted(nx.strongly_connected_component_subgraphs(self._graph),
                        key=len)
-        print("***",subgs)
-        subcfgs = [Cfg(Gc, self._vars.copy()) for Gc in subgs]
+        subcfgs = [Cfg(Gc, self._vars) for Gc in subgs]
         return subcfgs
 
     def get_sccs(self, copy=True):
@@ -174,7 +175,7 @@ class Cfg:
 
         Return a list of control flow graphs
         """
-        return self.get_strongly_connected_component_subgraphs(self, copy)
+        return self.get_strongly_connected_component_subgraphs(copy)
 
     def toDot(self, outfile="graph.dot"):
         nx.drawing.nx_pydot.write_dot(self._graph, outfile)
