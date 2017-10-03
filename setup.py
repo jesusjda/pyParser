@@ -22,7 +22,7 @@ setup(
     packages=['genericparser'],
     package_dir={'genericparser': 'genericparser'},
     package_data={'genericparser': ['*.py', 'file-ext.json']},
-    install_requires=['arpeggio', 'networkx', 'pydotplus', 'scipy', 'numpy'],
+    install_requires=['arpeggio', 'networkx', 'pydotplus', 'pydot'],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: C++",
