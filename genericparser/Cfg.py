@@ -20,8 +20,7 @@ class Cfg:
             self._keys = {}
             self._vars = vars_name
             for edge in graph:
-                self.add_edge(edge["source"], edge["target"],
-                              edge["name"], edge)
+                self.add_edge(**edge)
         else:
             self._graph = graph
             self._num_edges = self._graph.number_of_edges()
@@ -40,7 +39,7 @@ class Cfg:
             return self._vars
         return self._vars[idx]
 
-    def add_edge(self, name, src, trg, **kwargs):
+    def add_edge(self, name, source, target, **kwargs):
         """Add an edge.
 
         :param name: transition name
@@ -63,14 +62,12 @@ class Cfg:
         else:
             c = color[self._num_edges % 20]
 
-        kwargs["source"] = src
-        kwargs["target"] = trg
+        kwargs["source"] = source
+        kwargs["target"] = target
         kwargs["color"] = c
         kwargs["fontcolor"] = c
         label = name
-        print(kwargs)
         if "tr_polyhedron" in kwargs:
-            print(kwargs["tr_polyhedron"])
             label += " {\n"
             for c in kwargs["tr_polyhedron"].get_constraints():
                 label += str(c) + "\n"
@@ -78,8 +75,8 @@ class Cfg:
         kwargs["label"] = label
         kwargs["name"] = name
 
-        self._graph.add_edge(src, trg, key=name, **kwargs)
-        self._keys[name] = (src, trg)
+        self._graph.add_edge(source, target, key=name, **kwargs)
+        self._keys[name] = (source, target)
         self._num_edges += 1
 
     def get_edges(self, src=None, trg=None, name=None):
