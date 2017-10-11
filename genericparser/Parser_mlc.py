@@ -12,7 +12,8 @@ from . import ParserInterface
 class Parser_mlc(ParserInterface):
     """MLC Parser
     """
-
+    c_line = 0
+    
     def parse(self, filepath, debug=False):
         """Parse .mlc file
 
@@ -22,6 +23,7 @@ class Parser_mlc(ParserInterface):
         :type debug: bool
         :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
         """
+        self.c_line = 0
         # Load test program from file
         lines = open(filepath).readlines()
         # INTERNAL ATTR
@@ -63,7 +65,8 @@ class Parser_mlc(ParserInterface):
         while it < len(lines):
             tr, it = self.visit_transition(lines, it)
             tr_poly = C_Polyhedron(Constraint_System(tr), len(self.VARS))
-            G.add_edge("t" + str(tr_id), "n", "n", tr_polyhedron=tr_poly)
+            G.add_edge("t" + str(tr_id), "n", "n",
+                       tr_polyhedron=tr_poly, line=c_line)
             tr_id += 1
 
         G.add_var_name(self.VARS)

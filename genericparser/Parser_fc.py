@@ -160,6 +160,7 @@ class FcProgramVisitor(PTNodeVisitor):
         return exp
 
     def visit_fctransition(self, node, children):
+        print(node)
         if self.debug:
             print("Trans {}.".format(node.value))
         self.startTr = True
@@ -210,7 +211,8 @@ class FcProgramVisitor(PTNodeVisitor):
                 continue
             tr_id, src, trg, cons = children[i]
             tr_poly = C_Polyhedron(Constraint_System(cons), Dim)
-            G.add_edge(tr_id, src, trg, tr_polyhedron=tr_poly)
+            G.add_edge(tr_id, src, trg,
+                       tr_polyhedron=tr_poly, line=1)
         G.add_var_name(self.All_Vars)
         return G
 
