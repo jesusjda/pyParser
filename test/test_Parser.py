@@ -23,9 +23,9 @@ class TestKey(unittest.TestCase):
         with open(original, 'r') as f:
             o_list = f.read()
         print("RESULT")
-        print(r_list)
+        # print(r_list)
         print("######################################")
-        print("ORIGINAL")
+        # print("ORIGINAL")
         print(o_list)
         rg = nx_pydot.read_dot(result)
         rgc = rg.copy()

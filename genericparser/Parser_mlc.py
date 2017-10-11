@@ -66,7 +66,7 @@ class Parser_mlc(ParserInterface):
             tr, it = self.visit_transition(lines, it)
             tr_poly = C_Polyhedron(Constraint_System(tr), len(self.VARS))
             G.add_edge("t" + str(tr_id), "n", "n",
-                       tr_polyhedron=tr_poly, line=c_line)
+                       tr_polyhedron=tr_poly, line=self.c_line)
             tr_id += 1
 
         G.add_var_name(self.VARS)
