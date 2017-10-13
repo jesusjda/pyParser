@@ -6,6 +6,7 @@ from ppl import Constraint_System
 from lpi import C_Polyhedron
 from .Cfg import Cfg
 from . import ParserInterface
+from termination import Output_Manager as OM
 
 
 class Parser_fc(ParserInterface):
@@ -160,7 +161,7 @@ class FcProgramVisitor(PTNodeVisitor):
         return exp
 
     def visit_fctransition(self, node, children):
-        print(node)
+        OM.printif(2, dict(node))
         if self.debug:
             print("Trans {}.".format(node.value))
         self.startTr = True
