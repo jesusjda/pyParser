@@ -161,7 +161,7 @@ class FcProgramVisitor(PTNodeVisitor):
         return exp
 
     def visit_fctransition(self, node, children):
-        OM.printif(2, dict(node))
+        OM.printif(2, node)
         if self.debug:
             print("Trans {}.".format(node.value))
         self.startTr = True
