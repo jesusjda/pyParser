@@ -1,4 +1,5 @@
 {
-  ".fc" : "Parser_fc",
-  ".mlc": "Parser_mlc"
+    ".fc" : "Parser_fc",
+    ".mlc": "Parser_mlc",
+    ".kittle": "Parser_kittle"
 }
