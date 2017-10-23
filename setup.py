@@ -21,7 +21,7 @@ setup(
     platforms=['any'],
     packages=['genericparser'],
     package_dir={'genericparser': 'genericparser'},
-    package_data={'genericparser': ['*.py', 'file-ext.json']},
+    package_data={'genericparser': ['*.py', 'file-ext.json', 'smtpushdown2']},
     install_requires=['arpeggio', 'networkx', 'pydotplus', 'pydot'],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
