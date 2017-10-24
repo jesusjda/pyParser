@@ -32,7 +32,7 @@ class Parser_smt2(ParserInterface):
         fcprogram, err = pipe.communicate()
         if err is not None and err != "":
             raise Exception(err)
-        OM.printif(1, fcprogram)
+        OM.writefile(filepath+".fc", fcprogram)
         # Fc to cfg
         pfc = Parser_fc()
         return pfc.parse_string(fcprogram, debug)

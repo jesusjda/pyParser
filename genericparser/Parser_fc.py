@@ -164,7 +164,7 @@ class FcProgramVisitor(PTNodeVisitor):
             exp = (exp <= c2)
         elif(children[1] == ">="):
             exp = (exp >= c2)
-        elif(children[1] == "="):
+        elif(children[1] == "=" or children[1] == "=="):
             exp = (exp == c2)
         return exp
 

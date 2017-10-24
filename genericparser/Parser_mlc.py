@@ -232,19 +232,19 @@ class EquationVisitor(PTNodeVisitor):
         return exp
 
     def visit_eqequation(self, node, children):
-        exp = children[0]
+        exp = Linear_Expression(children[0])
+        c2 = Linear_Expression(children[2])
         if(children[1] == "<"):
-            exp = (exp < children[2])
+            exp = (exp < c2)
         elif(children[1] == ">"):
-            exp = (exp > children[2])
+            exp = (exp > c2)
         elif(children[1] == "<=" or children[1] == "=<"):
-            exp = (exp <= children[2])
+            exp = (exp <= c2)
         elif(children[1] == ">=" or children[1] == "=>"):
-            exp = (exp >= children[2])
+            exp = (exp >= c2)
         elif(children[1] == "=" or children[1] == "=="):
-            exp = (exp == children[2])
+            exp = (exp == c2)
         return exp
 
     def visit_eqnumber(self, node, children):
         return float(node.value)
-
