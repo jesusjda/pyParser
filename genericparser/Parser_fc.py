@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function
 from arpeggio import *
 from arpeggio import RegExMatch as _
 from ppl import Variable
+from ppl import Linear_Expression
 from ppl import Constraint_System
 from lpi import C_Polyhedron
 from .Cfg import Cfg
@@ -29,6 +30,12 @@ class Parser_fc(ParserInterface):
         parse_tree = parser.parse(test_program)
         cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
 
+        return cfg
+
+    def parse_string(self, string, debug=False):
+        parser = ParserPython(fcprogram, fccomment, debug=debug)
+        parse_tree = parser.parse(string)
+        cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
         return cfg
 
     def parseEq(self, line, Vars):
@@ -103,7 +110,7 @@ class FcProgramVisitor(PTNodeVisitor):
         if(isinstance(v, str) and (v in self.All_Vars)):
             return Variable(self.All_Vars.index(v))
         else:
-            return v
+            return Linear_Expression(v)
 
     def visit_fcsymbol(self, node, children):
         return str(node.value)
@@ -161,7 +168,7 @@ class FcProgramVisitor(PTNodeVisitor):
         return exp
 
     def visit_fctransition(self, node, children):
-        OM.printif(2, node)
+        # OM.printif(2, node)
         if self.debug:
             print("Trans {}.".format(node.value))
         self.startTr = True

@@ -1,12 +1,13 @@
 from __future__ import unicode_literals, print_function
-from subproccess import Popen
-from subproccess import PIPE
+import os
+from subprocess import Popen
+from subprocess import PIPE
 from ppl import Variable
 from ppl import Constraint_System
 from lpi import C_Polyhedron
 from .Cfg import Cfg
 from . import ParserInterface
-from .Parser_t2 import Parser_t2
+from .Parser_fc import Parser_fc
 from termination.output import Output_Manager as OM
 
 
@@ -24,12 +25,12 @@ class Parser_smt2(ParserInterface):
         :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
         """
         # SMT2 to Fc
-        pipe = Popen(['smtpushdown2', '-convertto', 'FC', filepath],
+        smtpushdown2path = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'smtpushdown2')
+        pipe = Popen([smtpushdown2path, '-convertto', 'FC', filepath],
                      stdout=PIPE, stderr=PIPE)
         fcprogram, err = pipe.communicate()
-        print(fcprogram)
-        print(err)
-        if err is not None:
+        if err is not None and err != "":
             raise Exception(err)
         # Fc to cfg
         pfc = Parser_fc()

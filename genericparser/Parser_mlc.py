@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function
 from arpeggio import *
 from arpeggio import RegExMatch as _
 from ppl import Variable
+from ppl import Linear_Expression
 from ppl import Constraint_System
 from ppl import Linear_Expression
 from lpi import C_Polyhedron
@@ -13,7 +14,7 @@ class Parser_mlc(ParserInterface):
     """MLC Parser
     """
     c_line = 0
-    
+
     def parse(self, filepath, debug=False):
         """Parse .mlc file
 
@@ -178,7 +179,7 @@ class EquationVisitor(PTNodeVisitor):
         if(isinstance(v, str) and (v in self.All_Vars)):
             return Variable(self.All_Vars.index(v))
         else:
-            return v
+            return Linear_Expression(v)
 
     def visit_eqsymbol(self, node, children):
         return str(node.value)

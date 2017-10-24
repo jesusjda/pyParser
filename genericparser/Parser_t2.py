@@ -22,13 +22,13 @@ class Parser_t2(ParserInterface):
         :type debug: bool
         :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
         """
+        raise Exception("NOT IMPLEMENTED YET")
         # Load test program from file
         test_program = open(filepath).read()
         # Parser instantiation
         parser = ParserPython(t2program, t2comment, debug=debug)
         parse_tree = parser.parse(test_program)
         cfg = visit_parse_tree(parse_tree, T2ProgramVisitor(debug=debug))
-
         return cfg
 
 
