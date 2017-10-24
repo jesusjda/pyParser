@@ -178,8 +178,10 @@ class EquationVisitor(PTNodeVisitor):
     def convert(self, v):
         if(isinstance(v, str) and (v in self.All_Vars)):
             return Variable(self.All_Vars.index(v))
-        else:
+        elif isinstance(v, (int, float)):
             return Linear_Expression(v)
+        else:
+            return v
 
     def visit_eqsymbol(self, node, children):
         return str(node.value)
