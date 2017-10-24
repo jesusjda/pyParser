@@ -23,14 +23,14 @@ class Parser_smt2(ParserInterface):
         :type debug: bool
         :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
         """
-        # SMT2 to T2
-        pipe = Popen(['smtpushdown2', '-convertto', 'T2', filepath],
+        # SMT2 to Fc
+        pipe = Popen(['smtpushdown2', '-convertto', 'FC', filepath],
                      stdout=PIPE, stderr=PIPE)
-        t2program, err = pipe.communicate()
-        print(t2program)
+        fcprogram, err = pipe.communicate()
+        print(fcprogram)
         print(err)
         if err is not None:
             raise Exception(err)
-        # T2 to cfg
-        pt2 = Parser_t2()
-        return pt2.parse_string(t2program, debug)
+        # Fc to cfg
+        pfc = Parser_fc()
+        return pfc.parse_string(fcprogram, debug)
