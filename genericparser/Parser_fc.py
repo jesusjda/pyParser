@@ -109,8 +109,6 @@ class FcProgramVisitor(PTNodeVisitor):
             self.All_Vars = self.VarsList + self.PVarsList
         if(isinstance(v, str) and (v in self.All_Vars)):
             return Variable(self.All_Vars.index(v))
-        elif isinstance(v, (int, float)):
-            return Linear_Expression(v)
         else:
             return v
 
