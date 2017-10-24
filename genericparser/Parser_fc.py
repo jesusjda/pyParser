@@ -156,17 +156,18 @@ class FcProgramVisitor(PTNodeVisitor):
     def visit_fcequation(self, node, children):
         if self.debug:
             print("Eq {}.".format(node.value))
-        exp = children[0]
+        exp = Linear_Expression(children[0])
+        c2 = Linear_Expression(children[2])
         if(children[1] == "<"):
-            exp = (exp < children[2])
+            exp = (exp < c2)
         elif(children[1] == ">"):
-            exp = (exp > children[2])
+            exp = (exp > c2)
         elif(children[1] == "<="):
-            exp = (exp <= children[2])
+            exp = (exp <= c2)
         elif(children[1] == ">="):
-            exp = (exp >= children[2])
+            exp = (exp >= c2)
         elif(children[1] == "="):
-            exp = (exp == children[2])
+            exp = (exp == c2)
         return exp
 
     def visit_fctransition(self, node, children):
