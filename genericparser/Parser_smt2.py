@@ -37,7 +37,7 @@ class Parser_smt2(ParserInterface):
         pfc = Parser_fc()
         return pfc.parse_string(fcprogram, debug)
 
-    def toT2(self, filepath):
+    def toT2(self, filepath, t2home):
         # SMT2 to Fc
         smtpushdown2path = os.path.join(os.path.dirname(
             os.path.realpath(__file__)), 'smtpushdown2')
