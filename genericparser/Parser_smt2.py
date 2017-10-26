@@ -36,3 +36,12 @@ class Parser_smt2(ParserInterface):
         # Fc to cfg
         pfc = Parser_fc()
         return pfc.parse_string(fcprogram, debug)
+
+    def toT2(self, filepath):
+        # SMT2 to Fc
+        smtpushdown2path = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'smtpushdown2')
+        pipe = Popen([smtpushdown2path, '-convertto', 'T2', filepath],
+                     stdout=PIPE, stderr=PIPE)
+        return pipe.communicate()
+        
