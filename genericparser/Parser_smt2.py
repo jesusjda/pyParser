@@ -38,3 +38,12 @@ class Parser_smt2(ParserInterface):
 
     def getLastFc(self):
         return self.last_fc
+
+    def toT2(self, filepath):
+        # SMT2 to Fc
+        smtpushdown2path = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), 'smtpushdown2')
+        pipe = Popen([smtpushdown2path, '-convertto', 'T2', filepath],
+                     stdout=PIPE, stderr=PIPE)
+        return pipe.communicate()
+
