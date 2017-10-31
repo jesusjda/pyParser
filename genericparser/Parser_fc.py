@@ -187,8 +187,6 @@ class FcProgramVisitor(PTNodeVisitor):
         self.PVarsList = []
         self.All_Vars = []
         self.PVars = False
-        if children[0] == "}":
-            return False
         for i in range(0, len(children), 2):
             if children[i] in self.All_Vars:
                 raise Exception("Name repeated : "+children[i])
@@ -204,8 +202,6 @@ class FcProgramVisitor(PTNodeVisitor):
         self.PVars = False
         self.PVarsList = []
         self.startTr = False
-        if children[0] == "}":
-            return False
         for i in range(0, len(children), 2):
             self.PVarsList.append(str(children[i]))
         return False
