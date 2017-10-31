@@ -157,9 +157,9 @@ class FcProgramVisitor(PTNodeVisitor):
         exp = Linear_Expression(children[0])
         c2 = Linear_Expression(children[2])
         if(children[1] == "<"):
-            exp = (exp < c2)
+            exp = (exp <= (c2-1))
         elif(children[1] == ">"):
-            exp = (exp > c2)
+            exp = (exp >= (c2+1))
         elif(children[1] == "<="):
             exp = (exp <= c2)
         elif(children[1] == ">="):
