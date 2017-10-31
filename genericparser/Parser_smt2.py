@@ -8,7 +8,6 @@ from lpi import C_Polyhedron
 from .Cfg import Cfg
 from . import ParserInterface
 from .Parser_fc import Parser_fc
-from termination.output import Output_Manager as OM
 
 
 class Parser_smt2(ParserInterface):
@@ -32,7 +31,10 @@ class Parser_smt2(ParserInterface):
         fcprogram, err = pipe.communicate()
         if err is not None and err != "":
             raise Exception(err)
-        OM.writefile(filepath+".fc", fcprogram)
+        self.last_fc = (filepath + ".fc", fcprogram)
         # Fc to cfg
         pfc = Parser_fc()
         return pfc.parse_string(fcprogram, debug)
+
+    def getLastFc(self):
+        return self.last_fc
