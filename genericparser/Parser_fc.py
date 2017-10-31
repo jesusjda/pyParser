@@ -84,11 +84,11 @@ def fctransition():
 
 
 def fcvarlist():
-    return Kwd(".vars"), "{", OneOrMore(fcsymbol, sep=","), "}"
+    return Kwd(".vars"), "{", ZeroOrMore(fcsymbol, sep=","), "}"
 
 
 def fcpvarlist():
-    return Kwd(".pvars"), "{", OneOrMore(fcsymbol, sep=","), "}"
+    return Kwd(".pvars"), "{", ZeroOrMore(fcsymbol, sep=","), "}"
 
 
 def fcprogram():
@@ -169,7 +169,6 @@ class FcProgramVisitor(PTNodeVisitor):
         return exp
 
     def visit_fctransition(self, node, children):
-        # OM.printif(2, node)
         if self.debug:
             print("Trans {}.".format(node.value))
         self.startTr = True
@@ -187,6 +186,9 @@ class FcProgramVisitor(PTNodeVisitor):
         self.VarsList = []
         self.PVarsList = []
         self.All_Vars = []
+        self.PVars = False
+        if children[0] == "}":
+            return False
         for i in range(0, len(children), 2):
             if children[i] in self.All_Vars:
                 raise Exception("Name repeated : "+children[i])
@@ -194,7 +196,6 @@ class FcProgramVisitor(PTNodeVisitor):
             self.All_Vars.append(str(children[i]))
             self.PVarsList.append(str(children[i]+"\'"))
 
-        self.PVars = False
         return False
 
     def visit_fcpvarlist(self, node, children):
@@ -202,9 +203,11 @@ class FcProgramVisitor(PTNodeVisitor):
             print("pvarlist {}".format(children))
         self.PVars = False
         self.PVarsList = []
+        self.startTr = False
+        if children[0] == "}":
+            return False
         for i in range(0, len(children), 2):
             self.PVarsList.append(str(children[i]))
-        self.startTr = False
         return False
 
     def visit_fcprogram(self, node, children):
