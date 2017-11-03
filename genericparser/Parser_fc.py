@@ -7,7 +7,6 @@ from ppl import Constraint_System
 from lpi import C_Polyhedron
 from .Cfg import Cfg
 from . import ParserInterface
-from termination.output import Output_Manager as OM
 
 
 class Parser_fc(ParserInterface):
