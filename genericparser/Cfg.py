@@ -134,7 +134,7 @@ class Cfg:
     def nodes(self):
         """Return a copy of the graph nodes in a list.
         """
-        return nx.nodes(self._graph)
+        return [n for n in nx.nodes(self._graph)]
 
     def number_of_nodes(self):
         """Return the number of nodes in the graph.
