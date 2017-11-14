@@ -184,6 +184,15 @@ class Cfg:
         """
         return self.get_strongly_connected_component_subgraphs(copy)
 
+    def has_cycle(self):
+        """Returns if the CFG has cycle or not.
+        """
+        try:
+            nx.find_cycle(self._graph)
+            return True
+        except nx.exception.NetworkXNoCycle:
+            return False
+
     def toDot(self, outfile="graph.dot"):
         nx.drawing.nx_pydot.write_dot(self._graph, outfile)
 

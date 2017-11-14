@@ -7,9 +7,17 @@ base = os.path.dirname(os.path.abspath(__file__))
 
 VERSION = open(os.path.join(base, 'version.txt')).read()[:-1]
 
+pkg_dir = os.path.join(base, 'genericparser')
+pkg_name = 'genericparser'
+
+requires = ['arpeggio', 'networkx', 'pydotplus', 'pydot', 'pylpi']
+
+dependency_links = [
+    'git+https://github.com/jesusjda/pyLPi.git#egg=pylpi'
+]
 
 setup(
-    name='pyparser',
+    name='genericparser',
     version=VERSION,
     description='Python Generic Parser',
     long_description=open(os.path.join(base, "README.md")).read(),
@@ -19,10 +27,11 @@ setup(
     download_url ='https://github.com/jesusjda/pyParser/archive/{}.tar.gz'.format(VERSION),
     license='GPL v3',
     platforms=['any'],
-    packages=['genericparser'],
-    package_dir={'genericparser': 'genericparser'},
-    package_data={'genericparser': ['*.py', 'file-ext.json', 'smtpushdown2']},
-    install_requires=['arpeggio', 'networkx', 'pydotplus', 'pydot'],
+    packages=[pkg_name],
+    package_dir={pkg_name: pkg_dir},
+    package_data={pkg_name: ['*.py', 'file-ext.json', 'smtpushdown2']},
+    install_requires=requires,
+    dependency_links=dependency_links,
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: C++",
