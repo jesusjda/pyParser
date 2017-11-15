@@ -1,5 +1,12 @@
 from __future__ import unicode_literals, print_function
-from arpeggio import *
+from arpeggio import ParserPython
+from arpeggio import visit_parse_tree
+from arpeggio import Optional
+from arpeggio import ZeroOrMore
+from arpeggio import OneOrMore
+from arpeggio import Kwd
+from arpeggio import PTNodeVisitor
+from arpeggio import EOF
 from arpeggio import RegExMatch as _
 from ppl import Variable
 from ppl import Linear_Expression
@@ -73,7 +80,7 @@ def kittleequation():
 
 
 def kittlenode():
-    return fcsymbol, "(", ZeroOrMore(kittleexpression, sep=","), ")"
+    return kittlesymbol, "(", ZeroOrMore(kittleexpression, sep=","), ")"
 
 
 def kittletransition():
@@ -85,7 +92,7 @@ def kittleprogram():
     return OneOrMore(kittletransition), EOF
 
 
-class kittleProgramVisitor(PTNodeVisitor):
+class KittleProgramVisitor(PTNodeVisitor):
 
     VarsList = []
     All_Vars = []

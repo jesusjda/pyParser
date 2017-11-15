@@ -7,18 +7,23 @@ class Cfg:
     _num_edges = 0
     _keys = {}
     _vars = []
+    _nodes = {}
 
-    def __init__(self, graph=None, vars_name=[]):
+    def __init__(self, graph=None, vars_name=[], nodes_info={}, init_node=None):
         if graph is None:
             self._graph = nx.MultiDiGraph()
             self._num_edges = 0
             self._keys = {}
             self._vars = vars_name
+            self._nodes = nodes_info
+            self._init_node = init_node
         elif isinstance(graph, list):
             self._graph = nx.MultiDiGraph()
             self._num_edges = 0
             self._keys = {}
+            self._nodes = nodes_info
             self._vars = vars_name
+            self._init_node = init_node
             for edge in graph:
                 self.add_edge(**edge)
         else:
@@ -26,6 +31,8 @@ class Cfg:
             self._num_edges = self._graph.number_of_edges()
             self._vars = vars_name
             self._keys = {}
+            self._nodes = nodes_info
+            self._init_node = init_node
             for src in self._graph:
                 for trg in self._graph[src]:
                     for name in self._graph[src][trg]:
@@ -135,6 +142,57 @@ class Cfg:
         """Return a copy of the graph nodes in a list.
         """
         return [n for n in nx.nodes(self._graph)]
+    
+    def set_init_node(self, node):
+        """Sets the initial node
+        """
+        if node in self.nodes():
+            self._init_node = node
+        else:
+            raise Exception("No such node (" + str(node) + ") in the graph")
+        
+    def get_init_node(self):
+        """Returns the initial node
+        """
+        return self._init_node
+    
+    def add_node_info(self, nodeid, key, value):
+        """Add or Replace a some node information (``key``, ``value``) 
+        """
+        if not(nodeid in self.nodes()):
+            raise Exception("The node '" + nodeid + "' does not exists.")
+        elif not(nodeid in self._nodes):
+            self._nodes[nodeid] = {"id": nodeid}
+        self._nodes[nodeid][key] = value
+
+    def set_node_info(self, nodeid, info):
+        """Replace all the information
+        """
+        if not("id" in info):
+            info["id"] = nodeid
+        self._nodes[nodeid] = info
+
+    def get_node_info(self, nodeid=None, key=None):
+        """Returns the information of the node with id: ``nodeid``, 
+        if a ``key`` is specified only the corresponding value is returned.
+        """
+        if nodeid is None:
+            if key is None:
+                return self._nodes
+            else:
+                return {node: {"id": node, key: self._nodes[node][key]}
+                        for node in self._nodes}
+        if not(nodeid in self.nodes()):
+            raise Exception("The node '" + nodeid + "' does not exists.")
+        elif not(nodeid in self._nodes):
+            self._nodes[nodeid] = {"id": nodeid}
+        if key is None:
+            return self._nodes[nodeid]
+        else:
+            if key in self._nodes[nodeid]:
+                return self._nodes[nodeid][key]
+            else:
+                return None
 
     def number_of_nodes(self):
         """Return the number of nodes in the graph.
@@ -194,7 +252,9 @@ class Cfg:
             return False
 
     def toDot(self, outfile="graph.dot"):
-        nx.drawing.nx_pydot.write_dot(self._graph, outfile)
+        """
+        """
+        write_dot(self._graph, outfile)
 
     def __repr__(self):
         return "I'm a MultiDiGraph"

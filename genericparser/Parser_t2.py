@@ -1,7 +1,14 @@
 from __future__ import unicode_literals, print_function
-from arpeggio import *
+from arpeggio import ParserPython
+from arpeggio import visit_parse_tree
+from arpeggio import Optional
+from arpeggio import ZeroOrMore
+from arpeggio import OneOrMore
+from arpeggio import Kwd
+from arpeggio import PTNodeVisitor
+from arpeggio import EOF
 from arpeggio import RegExMatch as _
-from ppl import Variable
+# from ppl import Variable
 from ppl import Constraint_System
 from lpi import C_Polyhedron
 from .Cfg import Cfg
@@ -84,7 +91,7 @@ def t2start():
 
 
 def t2program():
-    return (t2start, oneOrMore(t2transition)), EOF
+    return (t2start, OneOrMore(t2transition)), EOF
 
 
 class T2ProgramVisitor(PTNodeVisitor):
@@ -196,7 +203,6 @@ class T2ProgramVisitor(PTNodeVisitor):
         if self.debug:
             print("Program {}.".format(node.value))
         G = Cfg()
-        Trans = []
         children[0]
         children[1]
         Dim = len(self.All_Vars)

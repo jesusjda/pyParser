@@ -1,5 +1,12 @@
 from __future__ import unicode_literals, print_function
-from arpeggio import *
+from arpeggio import ParserPython
+from arpeggio import visit_parse_tree
+from arpeggio import Optional
+from arpeggio import ZeroOrMore
+from arpeggio import OneOrMore
+from arpeggio import Kwd
+from arpeggio import PTNodeVisitor
+from arpeggio import EOF
 from arpeggio import RegExMatch as _
 from ppl import Variable
 from ppl import Linear_Expression
@@ -40,10 +47,10 @@ class Parser_fc(ParserInterface):
     def parseEq(self, line, Vars):
         parser = ParserPython(fcequation)
         parse_tree = parser.parse(line)
-        FCP = FCProgramVisitor()
+        FCP = FcProgramVisitor()
         FCP.All_Vars = Vars
         FCP.PVars = True
-        eq = visit_parse_tree(parse_tree, FCProgramVisitor())
+        eq = visit_parse_tree(parse_tree, FcProgramVisitor())
         return eq
 
 
@@ -89,9 +96,12 @@ def fcvarlist():
 def fcpvarlist():
     return Kwd(".pvars"), "{", ZeroOrMore(fcsymbol, sep=","), "}"
 
+def fcinitnode():
+    return Kwd(".initnode"), ":", fcsymbol
 
 def fcprogram():
-    return fcvarlist, Optional(fcpvarlist), OneOrMore(fctransition), EOF
+    return (fcvarlist, Optional(fcpvarlist), Optional(fcinitnode), 
+            OneOrMore(fctransition), EOF)
 
 
 class FcProgramVisitor(PTNodeVisitor):
@@ -101,6 +111,7 @@ class FcProgramVisitor(PTNodeVisitor):
     PVars = False
     PVarsList = []
     startTr = False
+    init_node=None
 
     def convert(self, v):
         if not self.PVars:
@@ -173,6 +184,8 @@ class FcProgramVisitor(PTNodeVisitor):
         self.startTr = True
         tr_id = children[0]
         src = children[1]
+        if self.init_node is None:
+            self.init_node = src
         trg = children[2]
         cons = []
         for i in range(3, len(children), 2):
@@ -204,12 +217,17 @@ class FcProgramVisitor(PTNodeVisitor):
         for i in range(0, len(children), 2):
             self.PVarsList.append(str(children[i]))
         return False
+    
+    def visit_fcinitnode(self, node, children):
+        if self.debug:
+            print("initnode {}".format(children))
+        self.init_node = children[0]        
+        return False
 
     def visit_fcprogram(self, node, children):
         if self.debug:
             print("Program {}.".format(node.value))
         G = Cfg()
-        Trans = []
         children[0]
         children[1]
         Dim = len(self.All_Vars)
@@ -221,6 +239,7 @@ class FcProgramVisitor(PTNodeVisitor):
             G.add_edge(tr_id, src, trg,
                        tr_polyhedron=tr_poly, line=1)
         G.add_var_name(self.All_Vars)
+        G.set_init_node(self.init_node)
         return G
 
     def visit_fcnumber(self, node, children):

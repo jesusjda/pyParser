@@ -1,5 +1,12 @@
 from __future__ import unicode_literals, print_function
-from arpeggio import *
+from arpeggio import ParserPython
+from arpeggio import visit_parse_tree
+from arpeggio import Optional
+from arpeggio import ZeroOrMore
+from arpeggio import OneOrMore
+from arpeggio import Kwd
+from arpeggio import PTNodeVisitor
+from arpeggio import EOF
 from arpeggio import RegExMatch as _
 from ppl import Variable
 from ppl import Linear_Expression
@@ -85,7 +92,7 @@ class Parser_mlc(ParserInterface):
             e = []
             for s in nep:
                 if not(s is None):
-                    e += re.split("("+rep+")+", s)
+                    e += s.split("("+rep+")+", s)
         e = [a for a in e if a != '']
         pass
 

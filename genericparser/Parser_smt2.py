@@ -2,10 +2,10 @@ from __future__ import unicode_literals, print_function
 import os
 from subprocess import Popen
 from subprocess import PIPE
-from ppl import Variable
-from ppl import Constraint_System
-from lpi import C_Polyhedron
-from .Cfg import Cfg
+# from ppl import Variable
+# from ppl import Constraint_System
+# from lpi import C_Polyhedron
+# from .Cfg import Cfg
 from . import ParserInterface
 from .Parser_fc import Parser_fc
 
