@@ -1,0 +1,12 @@
+.vars { 
+        x; y
+}
+
+
+.phi {
+  .constraints{
+    a0*x+a1*y+3>=0;
+    a0*x2+a1*y1+3>=2
+    };
+  .f -> a0*x+a1*y+3>=0
+}

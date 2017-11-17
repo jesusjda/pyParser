@@ -1,9 +1,11 @@
+import argparse
+from genericparser import GenericParser
+import getopt
+import glob
 import os
 import sys
-import glob
-import getopt
-import argparse
-import genericparser
+import traceback
+
 
 _name = "Generic Parser"
 _version = "0.1"
@@ -52,8 +54,10 @@ def _main():
         print("-> {}".format(f))
         try:
             a = P.parse(f, dotgraph)
+            print("->> ",a)
         except Exception as e:
             print("Unable to parse {}".format(f))
+            raise e
 
     exit(0)
 
