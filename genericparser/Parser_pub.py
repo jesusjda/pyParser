@@ -17,7 +17,7 @@ class Parser_pub(ParserInterface):
     """Pub Parser
     """
 
-    def parse(self, filepath, debug=True):
+    def parse(self, filepath, debug=False):
         """Parse .pub file
 
         :param filepath: Full path to file to be parsed.
