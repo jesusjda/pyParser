@@ -13,7 +13,7 @@ pkg_name = 'genericparser'
 requires = ['arpeggio', 'networkx', 'pydotplus', 'pydot', 'pylpi']
 
 dependency_links = [
-    'git+https://github.com/jesusjda/pyLPi.git#egg=pylpi'
+    'git+https://github.com/jesusjda/pyLPi.git#egg=pylpi-0.1'
 ]
 
 setup(
