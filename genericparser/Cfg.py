@@ -1,5 +1,6 @@
-import networkx as nx
 from networkx.drawing.nx_pydot import write_dot
+
+import networkx as nx
 
 
 class Cfg:
@@ -9,7 +10,8 @@ class Cfg:
     _vars = []
     _nodes = {}
 
-    def __init__(self, graph=None, vars_name=[], nodes_info={}, init_node=None):
+    def __init__(self, graph=None, vars_name=[],
+                 nodes_info={}, init_node=None):
         if graph is None:
             self._graph = nx.MultiDiGraph()
             self._num_edges = 0
@@ -142,7 +144,7 @@ class Cfg:
         """Return a copy of the graph nodes in a list.
         """
         return [n for n in nx.nodes(self._graph)]
-    
+
     def set_init_node(self, node):
         """Sets the initial node
         """
@@ -150,14 +152,14 @@ class Cfg:
             self._init_node = node
         else:
             raise Exception("No such node (" + str(node) + ") in the graph")
-        
+
     def get_init_node(self):
         """Returns the initial node
         """
         return self._init_node
-    
+
     def add_node_info(self, nodeid, key, value):
-        """Add or Replace a some node information (``key``, ``value``) 
+        """Add or Replace a some node information (``key``, ``value``)
         """
         if not(nodeid in self.nodes()):
             raise Exception("The node '" + nodeid + "' does not exists.")
@@ -173,7 +175,7 @@ class Cfg:
         self._nodes[nodeid] = info
 
     def get_node_info(self, nodeid=None, key=None):
-        """Returns the information of the node with id: ``nodeid``, 
+        """Returns the information of the node with id: ``nodeid``,
         if a ``key`` is specified only the corresponding value is returned.
         """
         if nodeid is None:
@@ -228,7 +230,12 @@ class Cfg:
         """
         subgs = sorted(nx.strongly_connected_component_subgraphs(self._graph),
                        key=len)
-        subcfgs = [Cfg(Gc, self._vars) for Gc in subgs]
+        if copy:
+            subcfgs = [Cfg(Gc, self._vars,
+                           nodes_info=self._nodes, init_node=self._init_node)
+                       for Gc in subgs]
+        else:
+            subcfgs = [Cfg(Gc, self._vars) for Gc in subgs]
         return subcfgs
 
     def get_sccs(self, copy=True):

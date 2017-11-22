@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from setuptools import setup
-import sys
 import os
+from setuptools import setup
+
 
 base = os.path.dirname(os.path.abspath(__file__))
 
@@ -24,7 +24,7 @@ setup(
     author='Jesus Domenech',
     author_email='jdomenec@ucm.es',
     url='https://github.com/jesusjda/pyParser',
-    download_url ='https://github.com/jesusjda/pyParser/archive/{}.tar.gz'.format(VERSION),
+    download_url='https://github.com/jesusjda/pyParser/archive/{}.tar.gz'.format(VERSION),
     license='GPL v3',
     platforms=['any'],
     packages=[pkg_name],

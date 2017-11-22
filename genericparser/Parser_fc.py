@@ -1,19 +1,21 @@
 from __future__ import unicode_literals, print_function
-from arpeggio import ParserPython
-from arpeggio import visit_parse_tree
-from arpeggio import Optional
-from arpeggio import ZeroOrMore
-from arpeggio import OneOrMore
-from arpeggio import Kwd
-from arpeggio import PTNodeVisitor
+
 from arpeggio import EOF
+from arpeggio import Kwd
+from arpeggio import OneOrMore
+from arpeggio import Optional
+from arpeggio import PTNodeVisitor
+from arpeggio import ParserPython
 from arpeggio import RegExMatch as _
-from ppl import Variable
-from ppl import Linear_Expression
-from ppl import Constraint_System
+from arpeggio import ZeroOrMore
+from arpeggio import visit_parse_tree
 from lpi import C_Polyhedron
-from .Cfg import Cfg
+from ppl import Constraint_System
+from ppl import Linear_Expression
+from ppl import Variable
+
 from . import ParserInterface
+from .Cfg import Cfg
 
 
 class Parser_fc(ParserInterface):
@@ -96,11 +98,13 @@ def fcvarlist():
 def fcpvarlist():
     return Kwd(".pvars"), "{", ZeroOrMore(fcsymbol, sep=","), "}"
 
+
 def fcinitnode():
     return Kwd(".initnode"), ":", fcsymbol
 
+
 def fcprogram():
-    return (fcvarlist, Optional(fcpvarlist), Optional(fcinitnode), 
+    return (fcvarlist, Optional(fcpvarlist), Optional(fcinitnode),
             OneOrMore(fctransition), EOF)
 
 
@@ -111,7 +115,7 @@ class FcProgramVisitor(PTNodeVisitor):
     PVars = False
     PVarsList = []
     startTr = False
-    init_node=None
+    init_node = None
 
     def convert(self, v):
         if not self.PVars:
@@ -122,7 +126,7 @@ class FcProgramVisitor(PTNodeVisitor):
         else:
             return v
 
-    def visit_fcsymbol(self, node, children):
+    def visit_fcsymbol(self, node, _):
         return str(node.value)
 
     def visit_fcfactor(self, node, children):
@@ -140,7 +144,7 @@ class FcProgramVisitor(PTNodeVisitor):
             exp = (self.convert(children[0]))
         return exp
 
-    def visit_fcterm(self, node, children):
+    def visit_fcterm(self, _, children):
         exp = self.convert(children[0])
         if(len(children) == 1):
             return exp
@@ -192,7 +196,7 @@ class FcProgramVisitor(PTNodeVisitor):
             cons.append(children[i])
         return tr_id, src, trg, cons
 
-    def visit_fcvarlist(self, node, children):
+    def visit_fcvarlist(self, _, children):
         if self.debug:
             print("varlist {}".format(children))
         self.VarsList = []
@@ -208,7 +212,7 @@ class FcProgramVisitor(PTNodeVisitor):
 
         return False
 
-    def visit_fcpvarlist(self, node, children):
+    def visit_fcpvarlist(self, _, children):
         if self.debug:
             print("pvarlist {}".format(children))
         self.PVars = False
@@ -217,11 +221,11 @@ class FcProgramVisitor(PTNodeVisitor):
         for i in range(0, len(children), 2):
             self.PVarsList.append(str(children[i]))
         return False
-    
-    def visit_fcinitnode(self, node, children):
+
+    def visit_fcinitnode(self, _, children):
         if self.debug:
             print("initnode {}".format(children))
-        self.init_node = children[0]        
+        self.init_node = children[0]
         return False
 
     def visit_fcprogram(self, node, children):
@@ -242,7 +246,7 @@ class FcProgramVisitor(PTNodeVisitor):
         G.set_init_node(self.init_node)
         return G
 
-    def visit_fcnumber(self, node, children):
+    def visit_fcnumber(self, node, _):
         if self.debug:
             print("Converting {}.".format(node.value))
         return float(node.value)

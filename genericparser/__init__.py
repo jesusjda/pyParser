@@ -3,10 +3,12 @@
 This module can parse several languages and convert them
 to a common Control Flow Graph Class.
 """
+import json
 import os
 import sys
-import json
+
 from . import Cfg
+
 
 __all__ = ['GenericParser', 'Cfg']
 
@@ -41,7 +43,7 @@ class GenericParser:
         to the file
         :raises: ParserError
         """
-        filename, file_extension = os.path.splitext(filepath)
+        _, file_extension = os.path.splitext(filepath)
         if(file_extension in self._parserlist):
             # import parser
             name = self._parserlist[file_extension]
@@ -59,7 +61,7 @@ class ParserInterface:
     """Interface for parsers
     """
 
-    def parse(filepath, debug=False):
+    def parse(self, filepath, debug=False):
         """Parse .EXTENSION file
 
         :param filepath: Full path to file to be parsed.
