@@ -1,15 +1,17 @@
 from __future__ import unicode_literals, print_function
+
 import os
-from subprocess import Popen
 from subprocess import PIPE
-# from ppl import Variable
-# from ppl import Constraint_System
-# from lpi import C_Polyhedron
-# from .Cfg import Cfg
+from subprocess import Popen
+
 from . import ParserInterface
 from .Parser_fc import Parser_fc
 
 
+# from ppl import Variable
+# from ppl import Constraint_System
+# from lpi import C_Polyhedron
+# from .Cfg import Cfg
 class Parser_smt2(ParserInterface):
     """SMT2 Parser
     """
@@ -46,4 +48,3 @@ class Parser_smt2(ParserInterface):
         pipe = Popen([smtpushdown2path, '-convertto', 'T2', filepath],
                      stdout=PIPE, stderr=PIPE)
         return pipe.communicate()
-

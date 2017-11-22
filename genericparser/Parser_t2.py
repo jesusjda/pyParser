@@ -1,19 +1,20 @@
 from __future__ import unicode_literals, print_function
-from arpeggio import ParserPython
-from arpeggio import visit_parse_tree
-from arpeggio import Optional
-from arpeggio import ZeroOrMore
-from arpeggio import OneOrMore
-from arpeggio import Kwd
-from arpeggio import PTNodeVisitor
+
 from arpeggio import EOF
+from arpeggio import Kwd
+from arpeggio import OneOrMore
+from arpeggio import Optional
+from arpeggio import PTNodeVisitor
+from arpeggio import ParserPython
 from arpeggio import RegExMatch as _
-# from ppl import Variable
-from ppl import Constraint_System
+from arpeggio import ZeroOrMore
+from arpeggio import visit_parse_tree
 from lpi import C_Polyhedron
-from .Cfg import Cfg
-from . import ParserInterface
+from ppl import Constraint_System
 from termination.output import Output_Manager as OM
+
+from . import ParserInterface
+from .Cfg import Cfg
 
 
 class Parser_t2(ParserInterface):
@@ -105,7 +106,7 @@ class T2ProgramVisitor(PTNodeVisitor):
     def convert(self, v, VAR=False):
         return v
 
-    def visit_t2symbol(self, node, children):
+    def visit_t2symbol(self, node, _):
         return str(node.value)
 
     def visit_t2factor(self, node, children):
@@ -123,7 +124,7 @@ class T2ProgramVisitor(PTNodeVisitor):
             exp = (self.convert(children[0]))
         return exp
 
-    def visit_t2term(self, node, children):
+    def visit_t2term(self, _, children):
         exp = self.convert(children[0])
         if(len(children) == 1):
             return exp
@@ -173,7 +174,7 @@ class T2ProgramVisitor(PTNodeVisitor):
             cons.append(children[i])
         return tr_id, src, trg, cons
 
-    def visit_t2varlist(self, node, children):
+    def visit_t2varlist(self, _, children):
         if self.debug:
             print("varlist {}".format(children))
         self.VarsList = []
@@ -189,7 +190,7 @@ class T2ProgramVisitor(PTNodeVisitor):
         self.PVars = False
         return False
 
-    def visit_t2pvarlist(self, node, children):
+    def visit_t2pvarlist(self, _, children):
         if self.debug:
             print("pvarlist {}".format(children))
         self.PVars = False
@@ -216,7 +217,7 @@ class T2ProgramVisitor(PTNodeVisitor):
         G.add_var_name(self.All_Vars)
         return G
 
-    def visit_t2number(self, node, children):
+    def visit_t2number(self, node, _):
         if self.debug:
             print("Converting {}.".format(node.value))
         return float(node.value)

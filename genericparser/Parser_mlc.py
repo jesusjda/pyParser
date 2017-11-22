@@ -1,20 +1,18 @@
 from __future__ import unicode_literals, print_function
-from arpeggio import ParserPython
-from arpeggio import visit_parse_tree
+
 from arpeggio import Optional
-from arpeggio import ZeroOrMore
-from arpeggio import OneOrMore
-from arpeggio import Kwd
 from arpeggio import PTNodeVisitor
-from arpeggio import EOF
+from arpeggio import ParserPython
 from arpeggio import RegExMatch as _
-from ppl import Variable
-from ppl import Linear_Expression
+from arpeggio import ZeroOrMore
+from arpeggio import visit_parse_tree
+from lpi import C_Polyhedron
 from ppl import Constraint_System
 from ppl import Linear_Expression
-from lpi import C_Polyhedron
-from .Cfg import Cfg
+from ppl import Variable
+
 from . import ParserInterface
+from .Cfg import Cfg
 
 
 class Parser_mlc(ParserInterface):
@@ -190,7 +188,7 @@ class EquationVisitor(PTNodeVisitor):
         else:
             return v
 
-    def visit_eqsymbol(self, node, children):
+    def visit_eqsymbol(self, node, _):
         return str(node.value)
 
     def visit_eqfactor(self, node, children):
@@ -216,11 +214,11 @@ class EquationVisitor(PTNodeVisitor):
                 exp = exp + children[2]
         return exp
 
-    def visit_eqterm(self, node, children):
+    def visit_eqterm(self, _, children):
         exp = self.convert(children[0])
         if(len(children) == 1):
             return exp
-        if isinstance(children[1], (str, unicode)):
+        if isinstance(children[1], (str)):
             if(children[1] == "/"):
                 exp = exp / self.convert(children[2])
             else:
@@ -229,7 +227,7 @@ class EquationVisitor(PTNodeVisitor):
             exp = exp * children[1]
         return exp
 
-    def visit_eqexpression(self, node, children):
+    def visit_eqexpression(self, _, children):
         exp = self.convert(children[0])
         for i in range(2, len(children), 2):
             if(children[i-1] == "-"):
@@ -238,7 +236,7 @@ class EquationVisitor(PTNodeVisitor):
                 exp = exp + self.convert(children[i])
         return exp
 
-    def visit_eqequation(self, node, children):
+    def visit_eqequation(self, _, children):
         exp = Linear_Expression(children[0])
         c2 = Linear_Expression(children[2])
         if(children[1] == "<"):
@@ -253,5 +251,5 @@ class EquationVisitor(PTNodeVisitor):
             exp = (exp == c2)
         return exp
 
-    def visit_eqnumber(self, node, children):
+    def visit_eqnumber(self, node, _):
         return float(node.value)

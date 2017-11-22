@@ -1,20 +1,20 @@
 from __future__ import unicode_literals, print_function
-from arpeggio import ParserPython
-from arpeggio import visit_parse_tree
-from arpeggio import Optional
-from arpeggio import ZeroOrMore
-from arpeggio import OneOrMore
-from arpeggio import Kwd
-from arpeggio import PTNodeVisitor
+
 from arpeggio import EOF
+from arpeggio import OneOrMore
+from arpeggio import Optional
+from arpeggio import PTNodeVisitor
+from arpeggio import ParserPython
 from arpeggio import RegExMatch as _
-from ppl import Variable
-from ppl import Linear_Expression
-from ppl import Constraint_System
+from arpeggio import ZeroOrMore
+from arpeggio import visit_parse_tree
 from lpi import C_Polyhedron
-from .Cfg import Cfg
-from . import ParserInterface
+from ppl import Constraint_System
+from ppl import Variable
 from termination.output import Output_Manager as OM
+
+from . import ParserInterface
+from .Cfg import Cfg
 
 
 class Parser_kittle(ParserInterface):
@@ -109,7 +109,7 @@ class KittleProgramVisitor(PTNodeVisitor):
         else:
             return v
 
-    def visit_kittlesymbol(self, node, children):
+    def visit_kittlesymbol(self, node, _):
         return str(node.value)
 
     def visit_kittlefactor(self, node, children):
@@ -127,7 +127,7 @@ class KittleProgramVisitor(PTNodeVisitor):
             exp = (self.convert(children[0]))
         return exp
 
-    def visit_kittleterm(self, node, children):
+    def visit_kittleterm(self, _, children):
         exp = self.convert(children[0])
         if(len(children) == 1):
             return exp
@@ -177,7 +177,7 @@ class KittleProgramVisitor(PTNodeVisitor):
             cons.append(children[i])
         return tr_id, src, trg, cons
 
-    def visit_fcvarlist(self, node, children):
+    def visit_fcvarlist(self, _, children):
         if self.debug:
             print("varlist {}".format(children))
         self.VarsList = []
@@ -193,7 +193,7 @@ class KittleProgramVisitor(PTNodeVisitor):
         self.PVars = False
         return False
 
-    def visit_fcpvarlist(self, node, children):
+    def visit_fcpvarlist(self, _, children):
         if self.debug:
             print("pvarlist {}".format(children))
         self.PVars = False
@@ -207,7 +207,6 @@ class KittleProgramVisitor(PTNodeVisitor):
         if self.debug:
             print("Program {}.".format(node.value))
         G = Cfg()
-        Trans = []
         children[0]
         children[1]
         Dim = len(self.All_Vars)
@@ -221,7 +220,7 @@ class KittleProgramVisitor(PTNodeVisitor):
         G.add_var_name(self.All_Vars)
         return G
 
-    def visit_fcnumber(self, node, children):
+    def visit_fcnumber(self, node, _):
         if self.debug:
             print("Converting {}.".format(node.value))
         return float(node.value)
