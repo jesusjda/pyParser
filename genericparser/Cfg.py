@@ -270,8 +270,9 @@ class Cfg:
         g = nx.relabel_nodes(self._graph, n_labels)
         edg = g.edges(keys=True)
         for (u, v, k) in edg:
-            transition = g[u][v][k]["tr_polyhedron"].get_constraints()
-            g[u][v][k]["label"] = str(k) + OM.tostr(transition)
+            tr_poly = g[u][v][k]["tr_polyhedron"]
+            cs = tr_poly.minimized_constraints()
+            g[u][v][k]["label"] = str(k) + OM.tostr(tr_poly.get_constraints())
 
         write_dot(g, outfile)
 
