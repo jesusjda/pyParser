@@ -258,10 +258,20 @@ class Cfg:
         except nx.exception.NetworkXNoCycle:
             return False
 
-    def toDot(self, outfile="graph.dot"):
+    def toDot(self, OM, outfile="graph.dot"):
         """
         """
-        write_dot(self._graph, outfile)
+        n_labels = {}
+        for n in self.nodes():
+            n_labels[n] = ("" + str(n) + "\n" +
+                           OM.tostr(self._nodes[n]["invariant"].get_constraints())
+                           + "")
+        g = nx.relabel_nodes(self._graph, n_labels)
+        edg = g.edges(keys=True)
+        for (u, v, k) in edg:
+            g[u][v][k]["label"] = str(k) + OM.tostr(g[u][v][k]["tr_polyhedron"].get_constraints())
+
+        write_dot(g, outfile)
 
     def __repr__(self):
         return "I'm a MultiDiGraph"
