@@ -263,13 +263,15 @@ class Cfg:
         """
         n_labels = {}
         for n in self.nodes():
+            invariant = self._nodes[n]["invariant"].get_constraints()
             n_labels[n] = ("" + str(n) + "\n" +
-                           OM.tostr(self._nodes[n]["invariant"].get_constraints())
+                           OM.tostr(invariant)
                            + "")
         g = nx.relabel_nodes(self._graph, n_labels)
         edg = g.edges(keys=True)
         for (u, v, k) in edg:
-            g[u][v][k]["label"] = str(k) + OM.tostr(g[u][v][k]["tr_polyhedron"].get_constraints())
+            transition = g[u][v][k]["tr_polyhedron"].get_constraints()
+            g[u][v][k]["label"] = str(k) + OM.tostr(transition)
 
         write_dot(g, outfile)
 
