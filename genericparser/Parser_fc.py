@@ -40,9 +40,9 @@ class Parser_fc(ParserInterface):
 
         return cfg
 
-    def parse_string(self, string, debug=False):
+    def parse_string(self, string, filename=None, debug=False):
         parser = ParserPython(fcprogram, fccomment, debug=debug)
-        parse_tree = parser.parse(string)
+        parse_tree = parser.parse(str(string))
         cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
         return cfg
 
@@ -116,6 +116,8 @@ class FcProgramVisitor(PTNodeVisitor):
     PVarsList = []
     startTr = False
     init_node = None
+    no_linear = False
+    no_linear_tr = False
 
     def convert(self, v):
         if not self.PVars:
@@ -130,6 +132,8 @@ class FcProgramVisitor(PTNodeVisitor):
         return str(node.value)
 
     def visit_fcfactor(self, node, children):
+        if self.no_linear:
+            return 0
         if self.debug:
             print("Factor {}.".format(node.value))
         exp = 0
@@ -145,16 +149,24 @@ class FcProgramVisitor(PTNodeVisitor):
         return exp
 
     def visit_fcterm(self, _, children):
+        if self.no_linear:
+            return 0
         exp = self.convert(children[0])
         if(len(children) == 1):
             return exp
-        if(children[1] == "*"):
-            exp = exp * self.convert(children[2])
-        else:
-            exp = exp / self.convert(children[2])
+        try:
+            if(children[1] == "*"):
+                exp = exp * self.convert(children[2])
+            else:
+                exp = exp / self.convert(children[2])
+        except TypeError:
+            self.no_linear = True
+            self.no_linear_tr = True
         return exp
 
     def visit_fcexpression(self, node, children):
+        if self.no_linear:
+            return 0
         if self.debug:
             print("Exp {}.".format(node.value))
         exp = self.convert(children[0])
@@ -170,6 +182,11 @@ class FcProgramVisitor(PTNodeVisitor):
             print("Eq {}.".format(node.value))
         exp = Linear_Expression(children[0])
         c2 = Linear_Expression(children[2])
+        if self.no_linear:
+            exp = Linear_Expression(0)
+            c2 = Linear_Expression(0)
+            self.no_linear = False
+            return exp == c2
         if(children[1] == "<"):
             exp = (exp <= (c2-1))
         elif(children[1] == ">"):
@@ -193,11 +210,10 @@ class FcProgramVisitor(PTNodeVisitor):
         trg = children[2]
         cons = []
         for i in range(3, len(children), 2):
-            try:
-                cons.append(children[i])
-            except Exception as e:
-                print("No linear, simplified to linear")
-        return tr_id, src, trg, cons
+            cons.append(children[i])
+        linear = not self.no_linear_tr
+        self.no_linear_tr = False
+        return tr_id, src, trg, cons, linear
 
     def visit_fcvarlist(self, _, children):
         if self.debug:
@@ -241,10 +257,10 @@ class FcProgramVisitor(PTNodeVisitor):
         for i in range(1, len(children)):
             if not children[i]:
                 continue
-            tr_id, src, trg, cons = children[i]
+            tr_id, src, trg, cons, linear = children[i]
             tr_poly = C_Polyhedron(Constraint_System(cons), Dim)
             G.add_edge(tr_id, src, trg,
-                       tr_polyhedron=tr_poly, line=1)
+                       tr_polyhedron=tr_poly, line=1, linear=linear)
         G.add_var_name(self.All_Vars)
         G.set_init_node(self.init_node)
         return G

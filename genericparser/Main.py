@@ -50,7 +50,7 @@ def _main():
                         fileName + "_" + fileExt[1::] + ".dot")
         print("-> {}".format(f))
         try:
-            a = P.parse(f, dotgraph)
+            a = P.parse(f)
             print("->> ", a)
         except Exception as e:
             print("Unable to parse {}".format(f))

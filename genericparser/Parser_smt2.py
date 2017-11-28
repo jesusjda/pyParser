@@ -31,7 +31,8 @@ class Parser_smt2(ParserInterface):
         pipe = Popen([smtpushdown2path, '-convertto', 'FC', filepath],
                      stdout=PIPE, stderr=PIPE)
         fcprogram, err = pipe.communicate()
-        if err is not None and err != "":
+        fcprogram = fcprogram.decode("ascii")
+        if err is not None and err:
             raise Exception(err)
         self.last_fc = (filepath + ".fc", fcprogram)
         # Fc to cfg

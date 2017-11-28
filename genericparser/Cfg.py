@@ -271,11 +271,13 @@ class Cfg:
         edg = g.edges(keys=True)
         for (u, v, k) in edg:
             tr_poly = g[u][v][k]["tr_polyhedron"]
+            tr_linear = g[u][v][k]["linear"]
             if minimize:
-                cs = tr_poly.minimized_constraints()
-            else:
-                cs = tr_poly.get_constraints()
-            g[u][v][k]["label"] = str(k) + OM.tostr(tr_poly.get_constraints())
+                tr_poly.minimized_constraints()
+            name = str(k)
+            if not tr_linear:
+                name += " removed no linear constraint"
+            g[u][v][k]["label"] = name + OM.tostr(tr_poly.get_constraints())
 
         write_dot(g, outfile)
 
