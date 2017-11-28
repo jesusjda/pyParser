@@ -193,7 +193,10 @@ class FcProgramVisitor(PTNodeVisitor):
         trg = children[2]
         cons = []
         for i in range(3, len(children), 2):
-            cons.append(children[i])
+            try:
+                cons.append(children[i])
+            except Exception as e:
+                print("No linear, simplified to linear")
         return tr_id, src, trg, cons
 
     def visit_fcvarlist(self, _, children):

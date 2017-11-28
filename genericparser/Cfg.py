@@ -258,7 +258,7 @@ class Cfg:
         except nx.exception.NetworkXNoCycle:
             return False
 
-    def toDot(self, OM, outfile="graph.dot"):
+    def toDot(self, OM, outfile="graph.dot", minimize=False):
         """
         """
         n_labels = {}
@@ -271,7 +271,10 @@ class Cfg:
         edg = g.edges(keys=True)
         for (u, v, k) in edg:
             tr_poly = g[u][v][k]["tr_polyhedron"]
-            cs = tr_poly.minimized_constraints()
+            if minimize:
+                cs = tr_poly.minimized_constraints()
+            else:
+                cs = tr_poly.get_constraints()
             g[u][v][k]["label"] = str(k) + OM.tostr(tr_poly.get_constraints())
 
         write_dot(g, outfile)
