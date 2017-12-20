@@ -62,7 +62,7 @@ def fccomment():
 
 
 def fcsymbol():
-    return _(r"[\w_][\w0-9'\^_]*")
+    return _(r"[\w_][\w0-9'\^_\!]*")
 
 
 def fcnumber():
