@@ -58,8 +58,9 @@ def _main():
             dotgraph = ("/home/friker/tmp/cache/" +
                         fileName + "." + fileExt[1::])
         print("-> {}".format(f))
-        a = P.parse(f)
-        a.toDot(OM, outfile=(dotgraph+".dot"))
+        cfg = P.parse(f)
+        OM.restart(vars_name=cfg.get_var_name())
+        cfg.toDot(OM, outfile=(dotgraph+".dot"))
         toSVG(dotgraph+".dot")
         smt2p = Parser_smt2()
         fccode, err = smt2p.toFC(f)
