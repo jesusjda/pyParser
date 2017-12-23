@@ -39,14 +39,14 @@ def _main():
 
     full_paths = [os.path.join(os.getcwd(), path) for path in args.path]
 
-    files = set()
+    files = []
     for path in full_paths:
         if os.path.isfile(path):
             fileName, fileExt = os.path.splitext(path)
             if(args.extension == '' or
                args.extension == fileExt or
                ('.' + args.extension) == fileExt):
-                files.add(path)
+                files.append(path)
         else:
             full_paths += glob.glob(path + '/*')
     files.sort()
