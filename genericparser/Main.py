@@ -1,7 +1,9 @@
 import argparse
 from genericparser import GenericParser
+from genericparser.Parser_smt2 import Parser_smt2
 import glob
 import os
+from termination.output import Output_Manager as OM
 
 
 _name = "Generic Parser"
@@ -22,6 +24,13 @@ def setArgumentParser():
     argParser.add_argument('-e', '--extension', default='',
                            help='File extension to filter by.')
     return argParser
+
+
+def toSVG(source, target=None):
+    if target is None :
+        target = source+".svg"
+    command = "dot -Tsvg " + source + " -o "+ target 
+    os.system(command)
 
 
 def _main():
@@ -46,15 +55,17 @@ def _main():
         fileName, fileExt = os.path.splitext(os.path.basename(f))
         dotgraph = None
         if args.dot:
-            dotgraph = (os.path.join(os.getcwd(), "graphs") + "/" +
-                        fileName + "_" + fileExt[1::] + ".dot")
+            dotgraph = ("/home/friker/tmp/cache/" +
+                        fileName + "." + fileExt[1::])
         print("-> {}".format(f))
-        try:
-            a = P.parse(f)
-            print("->> ", a)
-        except Exception as e:
-            print("Unable to parse {}".format(f))
-            raise e
+        a = P.parse(f)
+        a.toDot(OM, outfile=(dotgraph+".dot"))
+        toSVG(dotgraph+".dot")
+        smt2p = Parser_smt2()
+        fccode, err = smt2p.toFC(f)
+        with open(dotgraph+".fc", "w") as fcfile:
+            fcfile.write(fccode.decode("utf-8"))
+
 
     exit(0)
 

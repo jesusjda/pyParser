@@ -83,7 +83,10 @@ class Cfg:
             label += "}"
         kwargs["label"] = label
         kwargs["name"] = name
-
+        #if not(source in self._nodes):
+        #    self._nodes[source] = {}
+        #if not(target in self._nodes):
+        #    self._nodes[target] = {}
         self._graph.add_edge(source, target, key=name, **kwargs)
         self._keys[name] = (source, target)
         self._num_edges += 1
@@ -263,7 +266,10 @@ class Cfg:
         """
         n_labels = {}
         for n in self.nodes():
-            invariant = self._nodes[n]["invariant"].get_constraints()
+            try:
+                invariant = self._nodes[n]["invariant"].get_constraints()
+            except Exception as e:
+                invariant = []
             n_labels[n] = ("" + str(n) + "\n" +
                            OM.tostr(invariant)
                            + "")
