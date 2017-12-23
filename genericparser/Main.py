@@ -49,7 +49,7 @@ def _main():
                 files.add(path)
         else:
             full_paths += glob.glob(path + '/*')
-
+    files.sort()
     P = GenericParser()
     for f in files:
         fileName, fileExt = os.path.splitext(os.path.basename(f))
