@@ -160,6 +160,18 @@ class Cfg:
         """Returns the initial node
         """
         return self._init_node
+    
+    def add_edge_info(self, key, value, src=None, trg=None, name=None):
+        """Add or Replace a some edge information (``key``, ``value``)
+        """
+        for s in self._graph:
+            if src is None or src == s:
+                for t in self._graph[s]:
+                    if trg is None or trg == t:
+                        for n in self._graph[s][t]:
+                            if name is None or name == n:
+                                self._graph[s][t][n][key] = value
+        
 
     def add_node_info(self, nodeid, key, value):
         """Add or Replace a some node information (``key``, ``value``)
