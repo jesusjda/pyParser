@@ -37,6 +37,7 @@ class Parser_smt2(ParserInterface):
         self.last_fc = (filepath + ".fc", fcprogram)
         # Fc to cfg
         pfc = Parser_fc()
+        print(fcprogram)
         return pfc.parse_string(fcprogram, debug)
 
     def getLastFc(self):

@@ -40,7 +40,7 @@ class Parser_fc(ParserInterface):
 
         return cfg
 
-    def parse_string(self, string, filename=None, debug=False):
+    def parse_string(self, string, _=None, debug=False):
         parser = ParserPython(fcprogram, fccomment, debug=debug)
         parse_tree = parser.parse(str(string))
         cfg = visit_parse_tree(parse_tree, FcProgramVisitor(debug=debug))
