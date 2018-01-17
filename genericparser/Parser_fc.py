@@ -8,7 +8,7 @@ from ppl import Constraint
 from ppl import Variable
 from pyleri import (
     Tokens,
-    Prio,
+    Repeat,
     Choice,
     Grammar,
     Keyword,
@@ -58,14 +58,14 @@ class FC_Grammar(Grammar):
         Sequence("-", r_term),
         r_num, r_name
     )
-    r_factor = Choice(
-        r_term,
-        Sequence(r_term, Tokens("/ *"), r_factor)
-    )
-    r_expression = Choice(
-        r_factor,
-        Sequence(r_factor, Tokens("+ -"), r_expression)
-    )
+    r_factor = List(r_term, delimiter=Tokens("* /"), mi=1) 
+    #Choice(
+    #    Sequence(Repeat(Sequence(r_term, Tokens("/ *")),0), r_term)
+    #)
+    r_expression = List(r_factor, delimiter=Tokens("+ -"), mi=1)
+    # Choice(
+    #    Sequence(Repeat(Sequence(r_factor, Tokens("+ -")), 0), r_factor)
+    #)
 
     r_equation = Sequence(r_expression, ks_equa, r_expression)
 
@@ -345,6 +345,7 @@ class FC_Visitor:
 
     def v_constraint(self, node):
         con = node.children[0]
+        
         e1, l1 = self.v_expression(con.children[0])
         e2, l2 = self.v_expression(con.children[2])
 
@@ -376,38 +377,39 @@ class FC_Visitor:
         elif num_c == 1:
             return self.v_expression(node.children[0])
         elif num_c == 2:
+            if node.children[1].string == "":
+                return self.v_term(node.children[0]), True
             exp, linear = self.v_expression(node.children[1])
             if node.children[0].string == "-":
                 return -exp, linear
             return exp, linear
-        elif num_c == 3:
+        else:
             if node.children[0].string == "(":
                 self.assert_token(node.children[2], ")")
                 exp, linear = self.v_expression(node.children[1])
                 return (exp), linear
             else:
-                e1, l1 = self.v_expression(node.children[0])
-                e2, l2 = self.v_expression(node.children[2])
-                if not l1 or not l2:
-                    e1 = Linear_Expression(0)
-                    return e1, False
-                op = node.children[1].string
-                try:
-                    if op == "+":
-                        return e1 + e2, True
-                    elif op == "-":
-                        return e1 - e2, True
-                    elif op == "*":
-                        return e1 * e2, True
-                    elif op == "/":
-                        return e1 / e2, True
-                    else:
-                        raise ValueError("Expecting operator."
-                                         + " Got {}".format(op))
-                except TypeError:
-                    return Linear_Expression(0), False
-        else:
-            raise ValueError("Expression with more than 3 elems.")
+                exp, l1 = self.v_expression(node.children[0])
+                for i in range(2, num_c, 2):
+                    op = node.children[i-1].string
+                    e2, l2 = self.v_expression(node.children[i])
+                    if not l1 or not l2:
+                        return Linear_Expression(0), False
+                    try:
+                        if op == "+":
+                            exp = exp + e2
+                        elif op == "-":
+                            exp = exp - e2
+                        elif op == "*":
+                            exp = exp * e2
+                        elif op == "/":
+                            exp = exp / e2
+                        else:
+                            raise ValueError("Expecting operator."
+                                             + " Got {}".format(op))
+                    except TypeError:
+                        return Linear_Expression(0), False
+                return exp, l1
 
     def v_term(self, node):
         val = node.string
@@ -436,528 +438,11 @@ class FC_Visitor:
 
 def Main():
     f = Parser_fc()
-    # r = f.parser("{vars : [a,b],pvars : [a',b'],\n transitions:[\n"
-    #             + "{ignore:a,source:n0,target:n0,name:t0,constraints:[a < b, b < c],bla:bla},\n"
-    #             + "{source:n1,target:n1,name:t1,constraints:[(c) <= b, a+b < a*b+b*c],bla:bla},\n"
-    #             + "{source:n2,target:n2,name:t2,constraints:[a > b, b < c],bla:bla}\n"
-    #             + "],a:b}")
-    r = f.parse_string("""{vars : [
-  x_18_0, tmp___0_14_0, tmp_20_0, tmp_13_0, t_17_0, lt_21_0, length_19_0, length_10_0, len_47_0, i_11_0, head_12_0, a_16_0, a_140_0, __disjvr_1_0, __disjvr_0_0, __cil_tmp6_15_0, Result_4_0, Result_4_3, Result_4_2, Result_4_1, lt_21_1
-],
-
-pvars : [
-  x_18_post, tmp___0_14_post, tmp_20_post, tmp_13_post, t_17_post, lt_21_post, length_19_post, length_10_post, len_47_post, i_11_post, head_12_post, a_16_post, a_140_post, __disjvr_1_post, __disjvr_0_post, __cil_tmp6_15_post, Result_4_post, Result_4_3', Result_4_2', Result_4_1', lt_21_1'
-],
-
-initnode : l11,
-
-transitions : [
-{name : t0, source : l0, target: l1, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    tmp_20_0 = tmp_20_post,
-    tmp_13_0 = tmp_13_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post,
-    i_11_post = 0,
-    head_12_post = 0,
-    length_19_post = length_19_post 
-]},
-{name : t1, source : l1, target: l2, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_20_0 = tmp_20_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp_20_0 = tmp_20_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_19_0 = length_19_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post,
-    i_11_post = 1+i_11_0,
-    head_12_post = tmp_13_post,
-    tmp_13_post = tmp___0_14_post,
-    tmp___0_14_post = tmp___0_14_post,
-    0 <= -2-i_11_0+length_10_0 
-]},
-{name : t2, source : l1, target: l3, constraints: [
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    -1-i_11_0+length_10_0 <= 0,
-    __cil_tmp6_15_post = head_12_0,
-    Result_4_1 = __cil_tmp6_15_post,
-    tmp_20_post = Result_4_1,
-    Result_4_2 = Result_4_2,
-    x_18_post = a_16_0,
-    x_18_post <= 0,
-    0 <= x_18_post,
-    Result_4_3 = Result_4_3,
-    Result_4_post = Result_4_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp___0_14_0 = tmp___0_14_post 
-]},
-{name : t3, source : l2, target: l4, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_20_0 = tmp_20_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp_20_0 = tmp_20_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_19_0 = length_19_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post,
-    i_11_post = 1+i_11_0,
-    head_12_post = tmp_13_post,
-    tmp_13_post = tmp___0_14_post,
-    tmp___0_14_post = tmp___0_14_post,
-    0 <= -2-i_11_0+length_10_0,
-    0 <= len_47_0 
-]},
-{name : t4, source : l4, target: l2, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    tmp_20_0 = tmp_20_post,
-    tmp_13_0 = tmp_13_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_19_0 = length_19_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    i_11_0 = i_11_post,
-    head_12_0 = head_12_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post 
-]},
-{name : t5, source : l2, target: l6, constraints: [
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    0 <= len_47_0,
-    -1-i_11_0+length_10_0 <= 0,
-    __cil_tmp6_15_post = head_12_0,
-    Result_4_1 = __cil_tmp6_15_post,
-    0 <= len_47_0,
-    tmp_20_post = Result_4_1,
-    Result_4_post = Result_4_post,
-    0 <= len_47_0,
-    0 <= len_47_0,
-    0 <= len_47_0,
-    x_18_post = a_16_0,
-    0 <= len_47_0,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp___0_14_0 = tmp___0_14_post 
-]},
-{name : t6, source : l6, target: l7, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    tmp_20_0 = tmp_20_post,
-    tmp_13_0 = tmp_13_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_19_0 = length_19_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    i_11_0 = i_11_post,
-    head_12_0 = head_12_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post,
-    __disjvr_0_post = __disjvr_0_0 
-]},
-{name : t7, source : l7, target: l5, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    t_17_post = x_18_0,
-    lt_21_1 = lt_21_1,
-    x_18_post = lt_21_1,
-    lt_21_post = lt_21_post,
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post 
-]},
-{name : t8, source : l5, target: l3, constraints: [
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post,
-    0 <= a_140_0,
-    x_18_0 <= 0,
-    0 <= x_18_0,
-    Result_4_1 = Result_4_1,
-    Result_4_post = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post 
-]},
-{name : t9, source : l5, target: l9, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    tmp_20_0 = tmp_20_post,
-    tmp_13_0 = tmp_13_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_19_0 = length_19_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    i_11_0 = i_11_post,
-    head_12_0 = head_12_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post,
-    0 <= a_140_0 
-]},
-{name : t10, source : l9, target: l10, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    tmp_20_0 = tmp_20_post,
-    tmp_13_0 = tmp_13_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_19_0 = length_19_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    i_11_0 = i_11_post,
-    head_12_0 = head_12_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post,
-    __disjvr_1_post = __disjvr_1_0 
-]},
-{name : t11, source : l10, target: l8, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    t_17_post = x_18_0,
-    lt_21_1 = lt_21_1,
-    x_18_post = lt_21_1,
-    lt_21_post = lt_21_post,
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post 
-]},
-{name : t12, source : l8, target: l5, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    tmp_20_0 = tmp_20_post,
-    tmp_13_0 = tmp_13_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_19_0 = length_19_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    i_11_0 = i_11_post,
-    head_12_0 = head_12_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post 
-]},
-{name : t13, source : l11, target: l0, constraints: [
-    Result_4_0 = Result_4_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    a_140_0 = a_140_post,
-    a_16_0 = a_16_post,
-    head_12_0 = head_12_post,
-    i_11_0 = i_11_post,
-    len_47_0 = len_47_post,
-    length_10_0 = length_10_post,
-    length_19_0 = length_19_post,
-    lt_21_0 = lt_21_post,
-    t_17_0 = t_17_post,
-    tmp_13_0 = tmp_13_post,
-    tmp_20_0 = tmp_20_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    x_18_0 = x_18_post,
-    x_18_0 = x_18_post,
-    tmp___0_14_0 = tmp___0_14_post,
-    tmp_20_0 = tmp_20_post,
-    tmp_13_0 = tmp_13_post,
-    t_17_0 = t_17_post,
-    lt_21_0 = lt_21_post,
-    length_19_0 = length_19_post,
-    length_10_0 = length_10_post,
-    len_47_0 = len_47_post,
-    i_11_0 = i_11_post,
-    head_12_0 = head_12_post,
-    a_16_0 = a_16_post,
-    a_140_0 = a_140_post,
-    __disjvr_1_0 = __disjvr_1_post,
-    __disjvr_0_0 = __disjvr_0_post,
-    __cil_tmp6_15_0 = __cil_tmp6_15_post,
-    Result_4_0 = Result_4_post 
-]},
-
-{ignore:true}]}""")
+    r = f.parse_string("{vars : [a,b],pvars : [a',b'],\n transitions:[\n"                 
+                       + "{source:n1,target:n1,name:t1,constraints:[(c) <= b, a+b < a*b+b*c],bla:bla},\n"
+                       + "{source:n2,target:n2,name:t2,constraints:[a-1-(b-2) > b*2*(4-a), -b+(c*2*a) < c*b*a],bla:bla}\n"
+                       + "],a:b}")
+    
     print(r.get_edges())
 
 
