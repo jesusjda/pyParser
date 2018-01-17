@@ -10,7 +10,7 @@ VERSION = open(os.path.join(base, 'version.txt')).read()[:-1]
 pkg_dir = os.path.join(base, 'genericparser')
 pkg_name = 'genericparser'
 
-requires = ['arpeggio', 'networkx', 'pydotplus', 'pydot', 'pylpi']
+requires = ['arpeggio', 'networkx', 'pydotplus', 'pydot', 'pylpi', 'pyleri']
 
 dependency_links = [
     'git+https://github.com/jesusjda/pyLPi.git#egg=pylpi-0.1'
