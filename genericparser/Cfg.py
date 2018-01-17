@@ -277,6 +277,7 @@ class Cfg:
         """
         """
         n_labels = {}
+        g_vars = self.get_var_name()
         for n in self.nodes():
             try:
                 invariant = self._nodes[n]["invariant"].get_constraints()
@@ -295,7 +296,9 @@ class Cfg:
             name = str(k)
             if not tr_linear:
                 name += " removed no linear constraint"
-            g[u][v][k]["label"] = name + OM.tostr(tr_poly.get_constraints())
+            l_vars = g[u][v][k]["local_vars"]
+            all_vars = g_vars+l_vars
+            g[u][v][k]["label"] = name + OM.tostr(tr_poly.get_constraints(), vars_name=all_vars)
 
         write_dot(g, outfile)
 
