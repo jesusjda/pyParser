@@ -164,9 +164,7 @@ class Parser_fc(ParserInterface):
 class FC_Visitor:
 
     def start(self, init):
-        print("#"*10)
         program = self.v_program(init)
-        print("#"*10)
         return program
 
     def assert_token(self, node, token):
@@ -256,7 +254,6 @@ class FC_Visitor:
 
     def v_whatever(self, node):
         if len(node.children) != 3:
-            print(node.string)
             raise ValueError("unknown")
         self.assert_token(node.children[1], ":")
         key = node.children[0].string
