@@ -83,10 +83,10 @@ class Cfg:
             label += "}"
         kwargs["label"] = label
         kwargs["name"] = name
-        #if not(source in self._nodes):
-        #    self._nodes[source] = {}
-        #if not(target in self._nodes):
-        #    self._nodes[target] = {}
+        # if not(source in self._nodes):
+        #     self._nodes[source] = {}
+        # if not(target in self._nodes):
+        #     self._nodes[target] = {}
         self._graph.add_edge(source, target, key=name, **kwargs)
         self._keys[name] = (source, target)
         self._num_edges += 1
@@ -160,7 +160,7 @@ class Cfg:
         """Returns the initial node
         """
         return self._init_node
-    
+
     def add_edge_info(self, key, value, src=None, trg=None, name=None):
         """Add or Replace a some edge information (``key``, ``value``)
         """
@@ -171,7 +171,6 @@ class Cfg:
                         for n in self._graph[s][t]:
                             if name is None or name == n:
                                 self._graph[s][t][n][key] = value
-        
 
     def add_node_info(self, nodeid, key, value):
         """Add or Replace a some node information (``key``, ``value``)
@@ -298,7 +297,8 @@ class Cfg:
                 name += " removed no linear constraint"
             l_vars = g[u][v][k]["local_vars"]
             all_vars = g_vars+l_vars
-            g[u][v][k]["label"] = name + OM.tostr(tr_poly.get_constraints(), vars_name=all_vars)
+            g[u][v][k]["label"] = name + OM.tostr(tr_poly.get_constraints(),
+                                                  vars_name=all_vars)
 
         write_dot(g, outfile)
 
@@ -307,3 +307,6 @@ class Cfg:
 
     def __str__(self):
         return "I'm a MultiDiGraph"
+
+    def __lt__(self, other):
+        return self.number_of_edges() < other.number_of_edges()
