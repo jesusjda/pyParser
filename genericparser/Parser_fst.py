@@ -1,10 +1,11 @@
 
 from genericparser import ParserInterface
+from genericparser import boolexp
 from genericparser.Cfg import Cfg
 from lpi import C_Polyhedron
+from ppl import Constraint
 from ppl import Constraint_System
 from ppl import Linear_Expression
-from ppl import Constraint
 from ppl import Variable
 from pyleri import (
     Tokens,
@@ -99,7 +100,7 @@ class FST_Grammar(Grammar):
     fr = Sequence("from", ":=", r_name)
     to = Sequence("to", ":=", r_name)
     exp = True
-    guard = Sequence("guard", ":=", Choice(r_equation,k_true, k_false))
+    guard = Sequence("guard", ":=", Choice(r_equation, k_true, k_false))
     cons = List(Choice(k_true, k_false, r_equation), delimiter=",", mi=0)
     action = Sequence("action", ":=", Optional(cons))
     op = Choice(fr,to,guard,action)
