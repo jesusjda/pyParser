@@ -52,7 +52,7 @@ class FST_Grammar(Grammar):
     r_term = Ref()
     # r_expression = Prio(
     #    r_factor
-        # Sequence(r_factor, Tokens("+ -"), THIS)
+    # Sequence(r_factor, Tokens("+ -"), THIS)
     # )
     r_term = Choice(
         Sequence('(', r_expression, ')'),
@@ -60,14 +60,14 @@ class FST_Grammar(Grammar):
         Sequence("-", r_term),
         r_num, r_name, "?"
     )
-    r_factor = List(r_term, delimiter=Tokens("* /"), mi=1) 
-    #Choice(
-    #    Sequence(Repeat(Sequence(r_term, Tokens("/ *")),0), r_term)
-    #)
+    r_factor = List(r_term, delimiter=Tokens("* /"), mi=1)
+    # Choice(
+    #     Sequence(Repeat(Sequence(r_term, Tokens("/ *")),0), r_term)
+    # )
     r_expression = List(r_factor, delimiter=Tokens("+ -"), mi=1)
     # Choice(
     #    Sequence(Repeat(Sequence(r_factor, Tokens("+ -")), 0), r_factor)
-    #)
+    # )
 
     r_equation = Sequence(r_expression, ks_equa, r_expression)
 
@@ -99,17 +99,19 @@ class FST_Grammar(Grammar):
     statelist = Sequence("states", List(r_name, delimiter=","), ";")
     fr = Sequence("from", ":=", r_name)
     to = Sequence("to", ":=", r_name)
-    exp = True
-    guard = Sequence("guard", ":=", Choice(r_equation, k_true, k_false))
+    boolexp = Choice(r_equation, k_true, k_false)
+    guard = Sequence("guard", ":=", boolexp)
     cons = List(Choice(k_true, k_false, r_equation), delimiter=",", mi=0)
     action = Sequence("action", ":=", Optional(cons))
-    op = Choice(fr,to,guard,action)
+    op = Choice(fr, to, guard, action)
     ops = List(op, delimiter=";", opt=True)
-    tr = Sequence("transition", r_name, ":=", "{",ops,"}")
+    tr = Sequence("transition", r_name, ":=", "{", ops, "}")
     trlist = List(tr, delimiter=";", opt=True)
-    strategy = Sequence("strategy", r_name, "{", "Region",r_name, ":=","{","state","=",r_name, "&&", List(r_equation,delimiter="&&", mi=0),"}",";","}")
-    model = Sequence("model", r_name, "{",varlist, statelist, trlist,"}")
-    START = Sequence(model,strategy) 
+    strategy = Sequence("strategy", r_name, "{", "Region", r_name, ":=", "{",
+                        "state", "=", r_name, "&&",
+                        List(r_equation, delimiter="&&", mi=0), "}", ";", "}")
+    model = Sequence("model", r_name, "{", varlist, statelist, trlist, "}")
+    START = Sequence(model, strategy)
 
     # START = Repeat(r_program, mi=1, ma=1)
 
@@ -221,36 +223,10 @@ class FST_Visitor:
         return idxs
 
     def v_program(self, node):
-        elems = self.assert_list(node, mode="dict")
+        
         program = {}
-        var_pos = self.find_key("vars", elems)
-        if len(var_pos) != 1:
-            raise ValueError("{} variable set definition(s) found."
-                             .format(len(var_pos)))
-        Vars = self.v_vars(elems[var_pos[0]].children[2])
-
-        pvar_pos = self.find_key("pvars", elems)
-        if len(pvar_pos) > 1:
-            raise ValueError("{} prime variable set definitions found."
-                             .format(len(pvar_pos)))
-        elif len(pvar_pos) == 1:
-            PVars = self.v_vars(elems[pvar_pos[0]].children[2])
-        else:
-            PVars = [str(v+"'") for v in Vars]
-        if len(Vars) != len(PVars):
-            raise ValueError("Different number of variables and"
-                             + " prime variables.")
-        for pv in PVars:
-            if pv in Vars:
-                raise ValueError("Prime variable '{}' already".format(pv)
-                                 + " defined as variable.")
-        self.Global_vars = Vars + PVars
-        trans_pos = self.find_key("transitions", elems)
-        if len(trans_pos) != 1:
-            raise ValueError("{} transition set definition(s) found."
-                             .format(len(trans_pos)))
-
-        transitions = self.v_transitions(elems[trans_pos[0]].children[2])
+        self.assert_token(node.children[0], "model")
+        
         program["global_vars"] = self.Global_vars
         program["transitions"] = transitions
         initnode_pos = self.find_key("initnode", elems)
@@ -361,7 +337,7 @@ class FST_Visitor:
 
     def v_constraint(self, node):
         con = node.children[0]
-        
+
         e1, l1 = self.v_expression(con.children[0])
         e2, l2 = self.v_expression(con.children[2])
 
