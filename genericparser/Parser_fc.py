@@ -2,9 +2,9 @@
 from genericparser import ParserInterface
 from genericparser.Cfg import Cfg
 from lpi import C_Polyhedron
+from ppl import Constraint
 from ppl import Constraint_System
 from ppl import Linear_Expression
-from ppl import Constraint
 from ppl import Variable
 from pyleri import (
     Tokens,
