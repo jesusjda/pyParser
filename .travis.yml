@@ -79,5 +79,6 @@ install: # command to install dependencies
   - pip install --user matplotlib scipy numpy
   - pip install --user networkx
   - pip install --user arpeggio
+  - pìp install --user pyleri
   - pip install . --user --verbose --no-index;
 script: nosetests -v
