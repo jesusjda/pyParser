@@ -1,0 +1,97 @@
+{
+
+vars : [y],
+
+/*
+while ( y != 0 ) {
+  if ( y > 0 ) {
+    y--;
+  } else {
+    y++;
+  }
+}
+*/
+#initnode : normal,
+
+initnode : modified,
+
+
+transitions : [
+{name : init_normal, source : normal, target: n0, constraints: [
+]},
+{name : t1, source : n0, target: n1, constraints: [
+y < 0,
+y' = y
+]},
+{name : t11, source : n0, target: n1, constraints: [
+y > 0,
+y' = y
+]},
+{name : t2, source : n1, target: n2, constraints: [
+y < 0,
+y' = y
+]},
+{name : t3, source : n1, target: n3, constraints: [
+y > 0,
+y' = y
+]},
+{name : t4, source : n2, target: n0, constraints: [
+y' = y + 1
+]},
+{name : t5, source : n3, target: n0, constraints: [
+y' = y - 1
+]},
+
+{name : t6, source : n0, target: end, constraints: [
+y == 0,
+y' = y
+]},
+
+
+/*
+if( y > 0 ){
+  while ( y > 0 ) {
+    y--;
+  }
+}else{
+  while ( y < 0 ) {
+    y++;
+  }
+}//*
+*/
+
+
+{name : init_modified, source : modified, target: m0, constraints: [
+]},
+{name : p0, source : m0, target: m1, constraints: [
+y > 0,
+y' = y
+]},
+{name : p1, source : m0, target: m3, constraints: [
+y < 0,
+y' = y
+]},
+{name : p01, source : m1, target: m2, constraints: [
+y > 0,
+y' = y
+]},
+{name : p02, source : m1, target: end, constraints: [
+y < 0
+]},
+{name : p03, source : m2, target: m1, constraints: [
+y' = y - 1
+]},
+
+
+{name : p11, source : m3, target: m4, constraints: [
+y < 0,
+y' = y
+]},
+{name : p12, source : m3, target: end, constraints: [
+y > 0
+]},
+{name : p13, source : m4, target: m3, constraints: [
+y' = y + 1
+]}
+]
+}
