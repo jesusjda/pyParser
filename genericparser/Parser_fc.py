@@ -118,7 +118,6 @@ class Parser_fc(ParserInterface):
         g = FC_Grammar()
         tree = g.parse(cad)
         if not tree.is_valid:
-            print(cad)
             raise ValueError(str(cad[tree.pos:tree.pos+10]) + " -> Expecting: "
                              + str(tree.expecting))
         visitor = FC_Visitor()
