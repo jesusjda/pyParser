@@ -344,7 +344,7 @@ class FC_Visitor:
 
     def v_constraint(self, node):
         con = node.children[0]
-        
+
         e1, l1 = self.v_expression(con.children[0])
         e2, l2 = self.v_expression(con.children[2])
 

@@ -272,10 +272,10 @@ class Cfg:
         except nx.exception.NetworkXNoCycle:
             return False
 
-    def cycle_basis(self, root=None):
+    def simple_cycles(self):
         """Returns a list of cycles which form a basis for cycles of G.
         """
-        return nx.cycle_basis(self._graph, root)
+        return nx.simple_cycles(self._graph)
 
     def toDot(self, OM, outfile="graph.dot", minimize=False):
         """

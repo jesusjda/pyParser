@@ -63,9 +63,9 @@ if( y > 0 ){
 
 {name : init_modified, source : modified, target: m0, constraints: [
 ]},
-{name : p0, source : m0, target: m1, constraints: [
+{name : p0, source : m0, target: m0, constraints: [
 y > 0,
-y' = y
+y' = y+1
 ]},
 {name : p1, source : m0, target: m3, constraints: [
 y < 0,

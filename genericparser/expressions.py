@@ -183,7 +183,7 @@ class inequation(BoolExpression):
         return False
 
 
-class term(BoolExpression):
+class boolterm(BoolExpression):
 
     def __init__(self, word):
         if word in ["true", "false"]:
@@ -193,8 +193,8 @@ class term(BoolExpression):
 
     def negate(self):
         if self._w == "true":
-            return term("false")
-        return term("true")
+            return boolterm("false")
+        return boolterm("true")
 
     def toDNF(self):
         if self._w == "true":
@@ -209,3 +209,23 @@ class term(BoolExpression):
 
     def isTrue(self):
         return self._w == "true"
+
+
+class Expression:
+    KIND = "expr"
+
+
+class expterm(Expression):
+    KIND = "term"
+
+    def __init__(self, word):
+        try:
+            self.value = float(word)
+            self.elem = "number"
+        except ValueError:
+            import re
+            if re.match("(^([\w_][\w0-9\'\^_\!]*)$)", word):
+                self.value = word
+                self.elem = "variable"
+            else:
+                raise ValueError()
