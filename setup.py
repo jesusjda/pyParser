@@ -10,11 +10,7 @@ VERSION = open(os.path.join(base, 'version.txt')).read()[:-1]
 pkg_dir = os.path.join(base, 'genericparser')
 pkg_name = 'genericparser'
 
-requires = ['arpeggio', 'networkx', 'pydotplus', 'pydot', 'pylpi', 'pyleri']
-
-dependency_links = [
-    'git+https://github.com/jesusjda/pyLPi.git#egg=pylpi-0.1'
-]
+requires = ['arpeggio', 'networkx', 'pydotplus', 'pydot', 'pyleri']
 
 setup(
     name='genericparser',
@@ -31,7 +27,7 @@ setup(
     package_dir={pkg_name: pkg_dir},
     package_data={pkg_name: ['*.py', 'file-ext.json', 'smtpushdown2']},
     install_requires=requires,
-    dependency_links=dependency_links,
+    dependency_links=[],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: C++",
@@ -39,8 +35,6 @@ setup(
         "Development Status :: 3 - Alpha",
         "Operating System :: Unix",
         "Intended Audience :: Science/Research",
-#        "Programming Language :: Python :: 2",
-#        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
