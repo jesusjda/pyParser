@@ -27,7 +27,7 @@ matrix:
 
 install: # command to install dependencies
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -qq update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install python-nose python3-nose; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install python-nose python3-nose; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install python3-pip; fi
   - pip3 install --user pydotplus
   - pip3 install --user pydot
@@ -35,4 +35,4 @@ install: # command to install dependencies
   - pip3 install --user arpeggio
   - pip3 install --user pyleri
   - pip3 install . --user --verbose --no-index;
-script: nosetests-3.3 -v
+# script: nosetests-3.3 -v
