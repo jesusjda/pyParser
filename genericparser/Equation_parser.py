@@ -6,7 +6,9 @@ from arpeggio import ParserPython
 from arpeggio import RegExMatch as _
 from arpeggio import ZeroOrMore
 from arpeggio import visit_parse_tree
-from genericparser.expressions import inequation
+from .expressions import inequation
+from .expressions import expterm
+from .expressions import Expression
 
 def parseEq(self, line):
     parser = ParserPython(eqequation)
@@ -53,9 +55,9 @@ class EquationVisitor(PTNodeVisitor):
 
     def convert(self, v):
         if(isinstance(v, str) and (v in self.All_Vars)):
-            return Variable(self.All_Vars.index(v))
+            return expterm(self.All_Vars.index(v))
         elif isinstance(v, (int, float)):
-            return Linear_Expression(v)
+            return expterm(v)
         else:
             return v
 

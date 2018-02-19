@@ -192,7 +192,7 @@ install()
 
     fi
 
-    if [ "$LOCAL" = "true" ]; then 
+    if [ "$LOCAL" = "true" ]; then
 	python$lvers -m pip $UN"install" $lflags .
     else
 	python$lvers -m pip $UN"install" $lflags git+https://github.com/jesusjda/pyParser.git#egg=pyParser

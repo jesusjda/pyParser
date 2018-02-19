@@ -54,26 +54,29 @@ def _main():
     errors = []
     for f in files:
         try:
-            fileName, fileExt = os.path.splitext(os.path.basename(f))
-            dotgraph = None
-            if args.dot:
-                dotgraph = ("/home/friker/tmp/cache/" +
-                            fileName + "." + fileExt[1::])
-            print("-> {}".format(f))
-            cfg = P.parse(f)
-            OM.restart(vars_name=cfg.get_var_name())
-            cfg.toDot(OM, outfile=(dotgraph+".dot"))
-            toSVG(dotgraph+".dot")
-            smt2p = Parser_smt2()
-            fccode, err = smt2p.toFC(f)
-            with open(dotgraph+".fc", "w") as fcfile:
-                fcfile.write(fccode.decode("utf-8"))
+            do_file(P,f)
         except Exception:
             errors.append(f)
 
     print("ERRORS: ", errors)
     exit(0)
 
+def do_file(P, f):
+    fileName, fileExt = os.path.splitext(os.path.basename(f))
+    dotgraph = None
+    #if args.dot:
+    #    dotgraph = ("/home/friker/tmp/cache/" +
+    #                fileName + "." + fileExt[1::])
+    print("-> {}".format(f))
+    cfg = P.parse(f)
+    OM.restart(vars_name=cfg.get_var_name())
+    #cfg.toDot(OM, outfile=(dotgraph+".dot"))
+    #toSVG(dotgraph+".dot")
+    #smt2p = Parser_smt2()
+    #fccode, err = smt2p.toFC(f)
+    #with open(dotgraph+".fc", "w") as fcfile:
+    #    fcfile.write(fccode.decode("utf-8"))
+    return cfg
 
 if __name__ == "__main__":
     _main()
