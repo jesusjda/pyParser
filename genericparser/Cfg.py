@@ -115,7 +115,7 @@ class Cfg:
                         for n in self._graph[s][t]:
                             if name is None or name == n:
                                 edges.append(self._graph[s][t][n])
-        return edges
+        return sorted(edges, key=lambda tr: tr["name"])
 
     def get_edge(self, name):
         """Returns the edge identified by the name
@@ -226,7 +226,7 @@ class Cfg:
     def edges(self):
         """Return list of edges
         """
-        return nx.edges(self._graph)
+        return sorted(nx.edges(self._graph), key=lambda tr: tr["name"])
 
     def number_of_edges(self):
         """Return the number of edges in the graph.
