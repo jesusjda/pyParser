@@ -1,8 +1,6 @@
 
 from genericparser import ParserInterface
 from genericparser.Cfg import Cfg
-from lpi import C_Polyhedron
-from ppl import Constraint_System
 from .expressions import expterm
 from pyleri import (
     Tokens,
@@ -308,11 +306,6 @@ class FC_Visitor:
 
         cons = self.v_constraints(l_t[cons_pos[0]].children[2])
         tr["constraints"] = cons[0]
-        dim = len(self.Global_vars)+len(self.local_vars)
-        all_vars = self.Global_vars + self.local_vars
-        constrs = [c.transform(all_vars) for c in cons[0] if c.is_linear()]
-        tr_poly = C_Polyhedron(Constraint_System(constrs), dim)
-        tr["tr_polyhedron"] = tr_poly
 
         tr["linear"] = cons[1]
         tr["local_vars"] = self.local_vars
