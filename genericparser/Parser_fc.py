@@ -2,10 +2,8 @@
 from genericparser import ParserInterface
 from genericparser.Cfg import Cfg
 from lpi import C_Polyhedron
-from ppl import Constraint
 from ppl import Constraint_System
-from ppl import Linear_Expression
-from ppl import Variable
+from .expressions import expterm
 from pyleri import (
     Tokens,
     Repeat,
@@ -311,12 +309,13 @@ class FC_Visitor:
 
         cons = self.v_constraints(l_t[cons_pos[0]].children[2])
         tr["constraints"] = cons[0]
-
         dim = len(self.Global_vars)+len(self.local_vars)
-        tr_poly = C_Polyhedron(Constraint_System(cons[1]), dim)
+        all_vars = self.Global_vars + self.local_vars
+        constrs = [c.transform(all_vars) for c in cons[0] if c.is_linear()]
+        tr_poly = C_Polyhedron(Constraint_System(constrs), dim)
         tr["tr_polyhedron"] = tr_poly
 
-        tr["linear"] = cons[2]
+        tr["linear"] = cons[1]
         tr["local_vars"] = self.local_vars
         used_pos = src_pos + trg_pos + name_pos + cons_pos
         other_pos = [i for i in range(len(l_t)) if i not in used_pos]
@@ -330,28 +329,22 @@ class FC_Visitor:
 
     def v_constraints(self, node):
         elems = self.assert_list(node, mode="list")
-        cons_str = []
         cons = []
         linear = True
         for e in elems:
-            con, lin = self.v_constraint(e)
-            if not lin:
+            con = self.v_constraint(e)
+            if not con.is_linear():
                 linear = False
             cons.append(con)
-            cons_str.append(e.string)
 
-        return cons_str, cons, linear
+        return cons, linear
 
     def v_constraint(self, node):
         con = node.children[0]
 
-        e1, l1 = self.v_expression(con.children[0])
-        e2, l2 = self.v_expression(con.children[2])
+        e1 = self.v_expression(con.children[0])
+        e2 = self.v_expression(con.children[2])
 
-        if not l1 or not l2:
-            e1 = Linear_Expression(0)
-            e2 = Linear_Expression(0)
-            return e1 == e2, False
         comp = con.children[1].string
         if(comp == "<"):
             exp = (e1 <= (e2-1))
@@ -365,63 +358,53 @@ class FC_Visitor:
             exp = (e1 == e2)
         else:
             raise ValueError("Expecting compare op getting {}".format(comp))
-        if isinstance(exp, bool):
-            return (Linear_Expression(0) == Linear_Expression(0)), True
-        return exp, True
+        return exp
 
     def v_expression(self, node):
         num_c = len(node.children)
         if num_c == 0:
-            return self.v_term(node), True
+            return self.v_term(node)
         elif num_c == 1:
             return self.v_expression(node.children[0])
         elif num_c == 2:
             if node.children[1].string == "":
-                return self.v_term(node.children[0]), True
-            exp, linear = self.v_expression(node.children[1])
+                return self.v_term(node.children[0])
+            exp = self.v_expression(node.children[1])
             if node.children[0].string == "-":
-                return -exp, linear
-            return exp, linear
+                return -exp
+            return exp
         else:
             if node.children[0].string == "(":
                 self.assert_token(node.children[2], ")")
-                exp, linear = self.v_expression(node.children[1])
-                return (exp), linear
+                exp = self.v_expression(node.children[1])
+                return exp
             else:
-                exp, l1 = self.v_expression(node.children[0])
+                exp = self.v_expression(node.children[0])
                 for i in range(2, num_c, 2):
                     op = node.children[i-1].string
-                    e2, l2 = self.v_expression(node.children[i])
-                    if not l1 or not l2:
-                        return Linear_Expression(0), False
-                    try:
-                        if op == "+":
-                            exp = exp + e2
-                        elif op == "-":
-                            exp = exp - e2
-                        elif op == "*":
-                            exp = exp * e2
-                        elif op == "/":
-                            exp = exp / e2
-                        else:
-                            raise ValueError("Expecting operator."
-                                             + " Got {}".format(op))
-                    except TypeError:
-                        return Linear_Expression(0), False
-                return exp, l1
+                    e2 = self.v_expression(node.children[i])
+                    if op == "+":
+                        exp = exp + e2
+                    elif op == "-":
+                        exp = exp - e2
+                    elif op == "*":
+                        exp = exp * e2
+                    elif op == "/":
+                        exp = exp / e2
+                    else:
+                        raise ValueError("Expecting operator."
+                                         + " Got {}".format(op))
+                return exp
 
     def v_term(self, node):
         val = node.string
         try:
-            return int(val)
+            a = float(val)
         except ValueError:
-            if val in self.Global_vars:
-                return Variable(self.Global_vars.index(val))
-            else:
-                num_global = len(self.Global_vars)
-                if not(val in self.local_vars):
-                    self.local_vars.append(val)
-                return Variable(num_global + self.local_vars.index(val))
+            if(not(val in self.Global_vars) and
+               not(val in self.local_vars)):
+                self.local_vars.append(val)
+        return expterm(val)
 
     def iterate(self, node, tab=0):
         cad = ("\t"*tab) + "\"" + str(node.string) + "\""

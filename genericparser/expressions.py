@@ -1,3 +1,232 @@
+class Expression(object):
+    
+    def __init__(self, arg1, op=None, arg2=None):
+        if not isinstance(arg1, Expression):
+            raise ValueError()
+        self._left = arg1
+        self._op = op
+        self._right = arg2
+        if arg2:
+            if(not op or
+               not(op in ["+","-","/","*"]) or
+               not isinstance(arg2, Expression)):
+                raise ValueError()
+        elif op and op != "-":
+            raise ValueError()
+        else:
+            self._right = arg1
+            self._op = "-"
+            self._left = expterm(0)
+        rd = self._right.degree()
+        ld = self._left.degree()
+        if op in ["*", "/"]:
+            self._degree = ld + rd
+        else:
+            self._degree = max(ld, rd)
+
+    def degree(self):
+        return self._degree
+    
+    def is_linear(self):
+        return self._degree < 2
+
+    def get(self, variables, number):
+        """
+        variables: dictionary which keys are the variables name.
+        number: class of numbers (e.g for ppl use Linear_Expression, for z3 use Real
+        """
+        exp = self._left.get(variables, number)
+        e2 = self._right.get(variables, number)
+        if self._op == "-":
+            exp = exp - e2
+        elif self._op == "+":
+            exp = exp + e2
+        elif self._op == "*":
+            exp = exp * e2
+        elif self._op == "/":
+            exp = exp / e2
+        return exp
+
+    def transform(self, variables, lib="ppl"):
+        """
+        variables: list of variables (including prime and local variables)
+        lib: "z3" or "ppl"
+        """
+        if lib == "ppl":
+            from ppl import Linear_Expression
+            from ppl import Variable
+            match = {}
+            count = 0
+            for v in variables:
+                match[v] = Variable(count)
+                count += 1
+            return self.get(match, Linear_Expression)
+        elif lib == "z3":
+            from z3 import Real
+            match = {v:Real(v) for v in variables}
+            return self.get(match, Real)
+        else:
+            raise ValueError("lib ({}) not supported".format(lib))
+
+    def __add__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return Expression(self, "+", right)
+
+    def __sub__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return Expression(self, "-", right)
+
+    def __mul__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return Expression(self, "*", right)
+
+    def __truediv__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return Expression(self, "/", right)
+
+    def __neg__(self):
+        return self*(-1)
+
+    def __pos__(self):
+        return self
+
+    def __radd__(self, other):
+        left = other
+        if isinstance(other, (float, int)):
+            left = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return Expression(left, "+", self)
+
+    def __rsub__(self, other):
+        left = other
+        if isinstance(other, (float, int)):
+            left = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return Expression(left, "-", self)
+
+    def __rmul__(self, other):
+        left = other
+        if isinstance(other, (float, int)):
+            left = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return Expression(left, "*", self)
+
+    def __rtruediv__(self, other):
+        left = other
+        if isinstance(other, (float, int)):
+            left = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return Expression(left, "/", self)
+
+    def __lt__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return inequation(self, "<", right)
+
+    def __le__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return inequation(self, "<=", right)
+
+    def __eq__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return inequation(self, "==", right)
+
+    def __gt__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return inequation(self, ">", right)
+
+    def __ge__(self, other):
+        right = other
+        if isinstance(other, (float, int)):
+            right = expterm(other)
+        elif not isinstance(other, (expterm, Expression)):
+            raise NotImplementedError()
+        return inequation(self, ">=", right)
+
+    def __repr__(self):
+        aux = str(self._left)
+        if self._op:
+            aux += " {} {}".format(self._op, self._right)
+        return "({})".format(aux)
+
+class expterm(Expression):
+
+    def __init__(self, word):
+        if isinstance(word, (float, int)):
+            self.value = word
+            self.elem = "number"
+        else:
+            try:
+                self.value = float(word)
+                self.elem = "number"
+            except ValueError:
+                import re
+                if re.match("(^([\w_][\w0-9\'\^_\!]*)$)", word):
+                    self.value = word
+                    self.elem = "variable"
+                else:
+                    raise ValueError()
+
+    def degree(self):
+        if self.elem == "number":
+            return 0
+        else:
+            return 1
+
+    def get(self, variables, number):
+        if self.elem == "number":
+            return number(self.value)
+        else:
+            return variables[self.value]
+
+    def __neg__(self):
+        if self.elem == "number":
+            return expterm(-self.value)
+        else:
+            return self*(-1)
+
+    def __repr__(self):
+        if self.elem == "number":
+            return str(self.value)
+        else:
+            return "{}".format(self.value)
+
+
 class BoolExpression(object):
 
     def __init__(self, params):
@@ -149,17 +378,24 @@ class Or(BoolExpression):
         return "(" + " v ".join(s) + ")"
 
 
-class inequation(BoolExpression):
+class inequation(BoolExpression, Expression):
 
-    def __init__(self, left, right, operator):
+    def __init__(self, left, op, right):
+        if(not isinstance(left, Expression) or
+           not isinstance(right, Expression) or
+           not(op in ["<", "<=", "=<", "=", "==", "=>", ">=", ">"])):
+            raise ValueError()
         self._left = left
+        self._op = op
         self._right = right
-        self._op = operator
+        rd = self._right.degree()
+        ld = self._left.degree()
+        self._degree = max(ld, rd)
 
     def negate(self):
         if self._op in ["=", "=="]:
-            return Or(inequation(self._left, self._right, "<"),
-                      inequation(self._left, self._right, ">"))
+            return Or(inequation(self._left, "<", self._right),
+                      inequation(self._left, ">", self._right))
         elif self._op == ">":
             op = "<="
         elif self._op in [">=", "=>"]:
@@ -168,7 +404,7 @@ class inequation(BoolExpression):
             op = ">="
         elif self._op in ["<=", "=<"]:
             op = ">"
-        return inequation(self._left, self._right, op)
+        return inequation(self._left, op, self._right)
 
     def __repr__(self):
         return str(self._left) + str(self._op) + str(self._right)
@@ -181,6 +417,20 @@ class inequation(BoolExpression):
 
     def isTrue(self):
         return False
+
+    def get(self, variables, number):
+        left = self._left.get(variables, number)
+        right = self._right.get(variables, number)
+        if self._op in ["=", "=="]:
+            return (left == right)
+        elif self._op == ">":
+            return (left >= right + number(1))
+        elif self._op in [">=", "=>"]:
+            return (left >= right)
+        elif self._op == "<":
+            return (left <= right -  number(1))
+        elif self._op in ["<=", "=<"]:
+            return (left <= right)
 
 
 class boolterm(BoolExpression):
@@ -198,8 +448,8 @@ class boolterm(BoolExpression):
 
     def toDNF(self):
         if self._w == "true":
-            return inequation("0", "0", ">=").toDNF()
-        return inequation("0", "1", ">=").toDNF()
+            return inequation("0", ">=", "0").toDNF()
+        return inequation("0", ">=", "1").toDNF()
 
     def __repr__(self):
         return self._w
@@ -209,23 +459,3 @@ class boolterm(BoolExpression):
 
     def isTrue(self):
         return self._w == "true"
-
-
-class Expression:
-    KIND = "expr"
-
-
-class expterm(Expression):
-    KIND = "term"
-
-    def __init__(self, word):
-        try:
-            self.value = float(word)
-            self.elem = "number"
-        except ValueError:
-            import re
-            if re.match("(^([\w_][\w0-9\'\^_\!]*)$)", word):
-                self.value = word
-                self.elem = "variable"
-            else:
-                raise ValueError()
