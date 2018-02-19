@@ -285,7 +285,7 @@ class Cfg:
         for n in self.nodes():
             try:
                 invariant = self._nodes[n]["invariant"].get_constraints()
-            except Exception as e:
+            except Exception:
                 invariant = []
             n_labels[n] = ("" + str(n) + "\n" +
                            OM.tostr(invariant)
