@@ -210,7 +210,10 @@ class expterm(Expression):
 
     def get(self, variables, number):
         if self.elem == "number":
-            return number(self.value)
+            try:
+                return number(self.value)
+            except Exception:
+                return number(str(self.value))
         else:
             return variables[self.value]
 
