@@ -178,11 +178,14 @@ class Expression(object):
             raise NotImplementedError()
         return inequation(self, ">=", right)
 
-    def __repr__(self):
-        aux = str(self._left)
+    def toString(self, variables=None):
+        aux = self._left.toString(variables)
         if self._op:
-            aux += " {} {}".format(self._op, self._right)
+            aux += " {} {}".format(self._op, self._right.toString(variables))
         return "({})".format(aux)
+
+    def __repr__(self):
+        return self.toString()
 
 class expterm(Expression):
 
@@ -223,11 +226,14 @@ class expterm(Expression):
         else:
             return self*(-1)
 
-    def __repr__(self):
+    def toString(self, variables=None):
         if self.elem == "number":
             return str(self.value)
         else:
-            return "{}".format(self.value)
+            if variables:
+                return "{}".format(variables[self.value])
+            else:
+                return str(self.value)
 
 
 class BoolExpression(object):
@@ -409,8 +415,10 @@ class inequation(BoolExpression, Expression):
             op = ">"
         return inequation(self._left, op, self._right)
 
-    def __repr__(self):
-        return str(self._left) + str(self._op) + str(self._right)
+    def toString(self, variables=None):
+        return "{} {} {}".format(self._left.toString(variables),
+                                 str(self._op),
+                                 self._right.toString(variables))
 
     def toDNF(self):
         return [[self]]
