@@ -69,11 +69,12 @@ def do_file(P, f):
     #                fileName + "." + fileExt[1::])
     print("-> {}".format(f))
     cfg = P.parse(f)
-    OM.restart(vars_name=cfg.get_var_name())
+    OM.restart(vars_name=cfg.get_info("global_vars"))
     #cfg.toDot(OM, outfile=(dotgraph+".dot"))
     #toSVG(dotgraph+".dot")
-    #smt2p = Parser_smt2()
-    #fccode, err = smt2p.toFC(f)
+    smt2p = Parser_smt2()
+    fccode, err = smt2p.toFC(f)
+    print(fccode.decode("utf-8"))
     #with open(dotgraph+".fc", "w") as fcfile:
     #    fcfile.write(fccode.decode("utf-8"))
     return cfg

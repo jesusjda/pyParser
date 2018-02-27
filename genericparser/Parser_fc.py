@@ -121,10 +121,15 @@ class Parser_fc(ParserInterface):
 
     def program2cfg(self, program):
         G = Cfg()
-        G.add_var_name(program["global_vars"])
         for t in program["transitions"]:
             G.add_edge(**t)
-        G.set_init_node(program["initnode"])
+        if "nodes" in program:
+            for n in program["nodes"]:
+                for k in program["nodes"][n]:
+                    G.nodes[n][k] = program["nodes"][n][k]
+        for key in program:
+            if not(key in ["transitions", "nodes"]):
+                G.set_info(key, program[key])
         return G
 
     def remove_comments(self, lines):
@@ -236,9 +241,9 @@ class FC_Visitor:
             raise ValueError("{} initnode definitions found."
                              .format(len(initnode_pos)))
         elif len(initnode_pos) == 1:
-            program["initnode"] = elems[initnode_pos[0]].children[2].string
+            program["init_node"] = elems[initnode_pos[0]].children[2].string
         else:
-            program["initnode"] = transitions[0]["source"]
+            program["init_node"] = transitions[0]["source"]
         used_pos = var_pos + pvar_pos + trans_pos
         other_pos = [i for i in range(len(elems)) if i not in used_pos]
         for idx in other_pos:
@@ -391,7 +396,7 @@ class FC_Visitor:
     def v_term(self, node):
         val = node.string
         try:
-            a = float(val)
+            float(val)
         except ValueError:
             if(not(val in self.Global_vars) and
                not(val in self.local_vars)):
