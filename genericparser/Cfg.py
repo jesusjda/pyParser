@@ -120,6 +120,37 @@ class Cfg(MultiDiGraph):
 
         write_dot(g, outfile)
 
+    def toProlog(self, outfile=None):
+        import sys
+        if outfile:
+            sys.stdout = open(outfile, "w")
+        global_vars = self.graph["global_vars"]
+        N = int(len(global_vars)/2)
+        vs = "Var" + ", Var".join(global_vars[:N])
+        pvs = "Var" + ", Var".join(global_vars[N:])
+
+        # print startpoint
+        init = "node_{}({})".format(self.graph["init_node"],vs)
+        print("% initial point\n")
+        print("startpoint({}) :- {}.".format(vs, init))
+
+        # print transitions
+        for s in self: # source node
+            print("\n% transitions from node {}\n".format(s))
+            source = "node_{}({})".format(s,vs)
+            for t in self[s]: # target node
+                target = "node_{}({})".format(t,pvs)
+                for name in self[s][t]: # concrete edge
+                    cons = self[s][t][name]["constraints"]
+                    all_vars = global_vars + self[s][t][name]["local_vars"]
+                    renamevars = {v:"Var"+v for v in all_vars}
+                    phi = ",".join([c.toString(renamevars) for c in cons])
+                    phi = phi.replace("<=", "=<")
+                    phi = phi.replace("==", "=")
+                    print("{} :- {}, {}.\n".format(source, phi, target))
+        if outfile:
+            sys.stdout = sys.__stdout__
+
     def edge_data_subgraph(self, edges):
         edges_ref = [(e["source"],e["target"],e["name"])
                      for e in edges]
