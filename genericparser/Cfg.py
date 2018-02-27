@@ -126,8 +126,8 @@ class Cfg(MultiDiGraph):
             sys.stdout = open(outfile, "w")
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
-        vs = "Var" + ", Var".join(global_vars[:N])
-        pvs = "Var" + ", Var".join(global_vars[N:])
+        vs = "V" + ", V".join(global_vars[:N])
+        pvs = "V" + ", V".join(global_vars[N:])
 
         # print startpoint
         init = "n_{}({})".format(self.graph["init_node"],vs)
