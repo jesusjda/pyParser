@@ -130,20 +130,20 @@ class Cfg(MultiDiGraph):
         pvs = "Var" + ", Var".join(global_vars[N:])
 
         # print startpoint
-        init = "node_{}({})".format(self.graph["init_node"],vs)
+        init = "n_{}({})".format(self.graph["init_node"],vs)
         print("% initial point\n")
         print("startpoint({}) :- {}.".format(vs, init))
 
         # print transitions
         for s in self: # source node
             print("\n% transitions from node {}\n".format(s))
-            source = "node_{}({})".format(s,vs)
+            source = "n_{}({})".format(s,vs)
             for t in self[s]: # target node
-                target = "node_{}({})".format(t,pvs)
+                target = "n_{}({})".format(t,pvs)
                 for name in self[s][t]: # concrete edge
                     cons = self[s][t][name]["constraints"]
                     all_vars = global_vars + self[s][t][name]["local_vars"]
-                    renamevars = {v:"Var"+v for v in all_vars}
+                    renamevars = {v:"V"+v for v in all_vars}
                     phi = ",".join([c.toString(renamevars) for c in cons])
                     phi = phi.replace("<=", "=<")
                     phi = phi.replace("==", "=")

@@ -195,7 +195,7 @@ class expterm(Expression):
             self.elem = "number"
         else:
             try:
-                self.value = float(word)
+                self.value = int(word)
                 self.elem = "number"
             except ValueError:
                 import re
