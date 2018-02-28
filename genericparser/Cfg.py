@@ -121,29 +121,33 @@ class Cfg(MultiDiGraph):
         write_dot(g, outfile)
 
     def toProlog(self, outfile=None):
+        def saveName(word):
+            import re
+            return re.sub('[\'\?\!\^]', '_X_', word)
         import sys
         if outfile:
             sys.stdout = open(outfile, "w")
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
-        vs = "V" + ", V".join(global_vars[:N])
-        pvs = "V" + ", V".join(global_vars[N:])
+        vs = "V" + ", V".join([saveName(v) for v in global_vars[:N]])
+        pvs = "V" + ", V".join([saveName(v) for v in global_vars[N:]])
 
         # print startpoint
-        init = "n_{}({})".format(self.graph["init_node"],vs)
+        init = "n_{}({})".format(saveName(self.graph["init_node"]),vs)
         print("% initial point\n")
-        print("startpoint({}) :- {}.".format(vs, init))
+        print("startpoint :- {}.".format(init))
 
         # print transitions
         for s in self: # source node
             print("\n% transitions from node {}\n".format(s))
-            source = "n_{}({})".format(s,vs)
+            source = "n_{}({})".format(saveName(s),vs)
             for t in self[s]: # target node
-                target = "n_{}({})".format(t,pvs)
+                target = "n_{}({})".format(saveName(t),pvs)
                 for name in self[s][t]: # concrete edge
                     cons = self[s][t][name]["constraints"]
-                    all_vars = global_vars + self[s][t][name]["local_vars"]
-                    renamevars = {v:"V"+v for v in all_vars}
+                    local_vars = self[s][t][name]["local_vars"]
+                    all_vars = global_vars + local_vars
+                    renamevars = {v:"V"+saveName(v) for v in all_vars}
                     phi = ",".join([c.toString(renamevars) for c in cons])
                     phi = phi.replace("<=", "=<")
                     phi = phi.replace("==", "=")

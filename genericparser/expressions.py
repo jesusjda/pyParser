@@ -30,21 +30,21 @@ class Expression(object):
     def is_linear(self):
         return self._degree < 2
 
-    def get(self, variables, number):
+    def get(self, variables, number, expressions):
         """
         variables: dictionary which keys are the variables name.
         number: class of numbers (e.g for ppl use Linear_Expression, for z3 use Real
         """
-        exp = self._left.get(variables, number)
-        e2 = self._right.get(variables, number)
+        e1 = self._left.get(variables, number, expressions)
+        e2 = self._right.get(variables, number, expressions)
         if self._op == "-":
-            exp = exp - e2
+            exp = e1 - e2
         elif self._op == "+":
-            exp = exp + e2
+            exp = e1 + e2
         elif self._op == "*":
-            exp = exp * e2
+            exp = (e2 * e1)
         elif self._op == "/":
-            exp = exp / e2
+            exp = e1 / e2
         return exp
 
     def transform(self, variables, lib="ppl"):
@@ -60,11 +60,13 @@ class Expression(object):
             for v in variables:
                 match[v] = Variable(count)
                 count += 1
-            return self.get(match, Linear_Expression)
+            return self.get(match, int, Linear_Expression)
         elif lib == "z3":
+            def nope(v):
+                return v
             from z3 import Real
             match = {v:Real(v) for v in variables}
-            return self.get(match, Real)
+            return self.get(match, Real, nope)
         else:
             raise ValueError("lib ({}) not supported".format(lib))
 
@@ -211,7 +213,7 @@ class expterm(Expression):
         else:
             return 1
 
-    def get(self, variables, number):
+    def get(self, variables, number, _expressions):
         if self.elem == "number":
             try:
                 return number(self.value)
@@ -429,9 +431,13 @@ class inequation(BoolExpression, Expression):
     def isTrue(self):
         return False
 
-    def get(self, variables, number):
-        left = self._left.get(variables, number)
-        right = self._right.get(variables, number)
+    def get(self, variables, number, expressions):
+        left = self._left.get(variables, number, expressions)
+        if isinstance(left, number):
+            left = expressions(left)
+        right = self._right.get(variables, number, expressions)
+        if isinstance(right, number):
+            right = expressions(right)
         if self._op in ["=", "=="]:
             return (left == right)
         elif self._op == ">":
