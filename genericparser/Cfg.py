@@ -90,20 +90,22 @@ class Cfg(MultiDiGraph):
         """
         return nx.simple_cycles(self)
 
-    def toDot(self, OM, outfile="graph.dot", minimize=False):
+    def toDot(self, outfile="graph.dot", minimize=False, invariants=False):
         """
         """
-        n_labels = {}
-        g_vars = self.graph["global_vars"]
-        for n in self.nodes():
-            try:
-                invariant = self.nodes[n]["invariant"].get_constraints()
-            except Exception:
-                invariant = []
-            n_labels[n] = ("" + str(n) + "\n" +
-                           OM.tostr(invariant)
-                           + "")
-        g = nx.relabel_nodes(self, n_labels)
+        if invariants:
+            n_labels = {}
+            for n in self.nodes():
+                try:
+                    invariant = self.nodes[n]["invariant"].get_constraints()
+                except Exception:
+                    invariant = []
+                n_labels[n] = ("" + str(n) + "\n" +
+                               "" #+ OM.tostr(invariant)
+                               + "")
+            g = nx.relabel_nodes(self, n_labels)
+        else:
+            g = self
         edg = g.edges(keys=True)
         for (u, v, k) in edg:
             tr_poly = g[u][v][k]["constraints"]
@@ -113,8 +115,6 @@ class Cfg(MultiDiGraph):
             name = str(k)
             if not tr_linear:
                 name += " removed no linear constraint"
-            l_vars = g[u][v][k]["local_vars"]
-            all_vars = g_vars+l_vars
             g[u][v][k]["label"] = name + tr_poly
 
         write_dot(g, outfile)
