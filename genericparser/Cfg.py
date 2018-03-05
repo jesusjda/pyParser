@@ -115,8 +115,7 @@ class Cfg(MultiDiGraph):
                 name += " removed no linear constraint"
             l_vars = g[u][v][k]["local_vars"]
             all_vars = g_vars+l_vars
-            g[u][v][k]["label"] = name + OM.tostr(tr_poly,
-                                                  vars_name=all_vars)
+            g[u][v][k]["label"] = name + tr_poly
 
         write_dot(g, outfile)
 
