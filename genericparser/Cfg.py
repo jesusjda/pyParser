@@ -115,7 +115,7 @@ class Cfg(MultiDiGraph):
             name = str(k)
             if not tr_linear:
                 name += " removed no linear constraint"
-            g[u][v][k]["label"] = name + tr_poly
+            g[u][v][k]["label"] = name + str(tr_poly)
 
         write_dot(g, outfile)
 
