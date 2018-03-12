@@ -3,7 +3,7 @@ from genericparser import ParserInterface
 from genericparser.Cfg import Cfg
 
 
-class Parser_mlc1(ParserInterface):
+class Parser_mlc(ParserInterface):
     
     def parse(self, filepath, debug=False):
         """Parse .mlc file
