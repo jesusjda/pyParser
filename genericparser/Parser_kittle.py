@@ -1,26 +1,10 @@
-from __future__ import unicode_literals, print_function
-
-from arpeggio import EOF
-from arpeggio import OneOrMore
-from arpeggio import Optional
-from arpeggio import PTNodeVisitor
-from arpeggio import ParserPython
-from arpeggio import RegExMatch as _
-from arpeggio import ZeroOrMore
-from arpeggio import visit_parse_tree
-from lpi import C_Polyhedron
-from ppl import Constraint_System
-from ppl import Variable
-from termination.output import Output_Manager as OM
-
-from . import ParserInterface
-from .Cfg import Cfg
-
+from genericparser.Constraint_parser import ConstraintTreeTransformer
+from genericparser import ParserInterface
+from genericparser.Cfg import Cfg
+from .expressions import expterm
 
 class Parser_kittle(ParserInterface):
-    """Kittle Parser
-    """
-
+    
     def parse(self, filepath, debug=False):
         """Parse .kittle file
 
@@ -30,197 +14,98 @@ class Parser_kittle(ParserInterface):
         :type debug: bool
         :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
         """
-        raise Exception("NOT IMPLEMENTED YET")
-        # Load test program from file
-        test_program = open(filepath).read()
-        # Parser instantiation
-        parser = ParserPython(kittleprogram, kittlecomment, debug=debug)
-        parse_tree = parser.parse(test_program)
-        cfg = visit_parse_tree(parse_tree, KittleProgramVisitor(debug=debug))
+        with open(filepath) as file:
+            text = file.read()
+        return self.parse_string(text,debug=debug)
+    
+    def parse_string(self, cad, _=None, debug=False):
+        import os
+        grammarfile = os.path.join(os.path.dirname(__file__),"kittle.g")
+        with open(grammarfile, "r") as grammar:
+            g = grammar.read()
+        from lark.lark import Lark
+        l = Lark(g)
+        return self.program2cfg(KittleTreeTransformer().transform(l.parse(cad)))
 
-        return cfg
-
-    # def parseEq(self, line, Vars):
-    #     parser = ParserPython(fcequation)
-    #     parse_tree = parser.parse(line)
-    #     FCP = FCProgramVisitor()
-    #     FCP.All_Vars = Vars
-    #     FCP.PVars = True
-    #     eq = visit_parse_tree(parse_tree, FCProgramVisitor())
-    #     return eq
-
-
-def kittlecomment():
-    return [_("//.*"), _("/\*[^(\*/)]*\*/")]
-
-
-def kittlesymbol():
-    return _(r"\w[\w0-9'_]*")
-
-
-def kittlenumber():
-    return _(r'\d*\.\d*|\d+')
-
-
-def kittlefactor():
-    return (Optional(["+", "-"]),
-            [kittlenumber, ("(", kittleexpression, ")"), kittlesymbol])
-
-
-def kittleterm():
-    return kittlefactor, ZeroOrMore(["*", "/"], kittlefactor)
-
-
-def kittleexpression():
-    return kittleterm, ZeroOrMore(["+", "-"], kittleterm)
-
-
-def kittleequation():
-    return kittleexpression, ["<=", "=", ">=", ">", "<"], kittleexpression
-
-
-def kittlenode():
-    return kittlesymbol, "(", ZeroOrMore(kittleexpression, sep=","), ")"
-
-
-def kittletransition():
-    return (kittlenode, "->", kittlenode,
-            "[", OneOrMore(kittleequation, sep="/\\"), "]")
-
-
-def kittleprogram():
-    return OneOrMore(kittletransition), EOF
-
-
-class KittleProgramVisitor(PTNodeVisitor):
-
-    VarsList = []
-    All_Vars = []
-    PVars = False
-    PVarsList = []
-    startTr = False
-
-    def convert(self, v):
-        if not self.PVars:
-            self.PVars = True
-            self.All_Vars = self.VarsList + self.PVarsList
-        if(isinstance(v, str) and (v in self.All_Vars)):
-            return Variable(self.All_Vars.index(v))
-        else:
-            return v
-
-    def visit_kittlesymbol(self, node, _):
-        return str(node.value)
-
-    def visit_kittlefactor(self, node, children):
-        if self.debug:
-            print("Factor {}.".format(node.value))
-        exp = 0
-        if(len(node) == 1):
-            exp = self.convert(children[0])
-        elif(len(node) == 2):
-            if(node[0] == '-'):
-                exp = - self.convert(children[1])
-            else:
-                exp = self.convert(children[1])
-        elif(node[0] == '('):
-            exp = (self.convert(children[0]))
-        return exp
-
-    def visit_kittleterm(self, _, children):
-        exp = self.convert(children[0])
-        if(len(children) == 1):
-            return exp
-        if(children[1] == "*"):
-            exp = exp * self.convert(children[2])
-        else:
-            exp = exp / self.convert(children[2])
-        return exp
-
-    def visit_kittleexpression(self, node, children):
-        if self.debug:
-            print("Exp {}.".format(node.value))
-        exp = self.convert(children[0])
-        for i in range(2, len(children), 2):
-            if(children[i-1] == "-"):
-                exp = exp - self.convert(children[i])
-            elif(children[i-1] == "+"):
-                exp = exp + self.convert(children[i])
-        return exp
-
-    def visit_kittleequation(self, node, children):
-        if self.debug:
-            print("Eq {}.".format(node.value))
-        exp = children[0]
-        if(children[1] == "<"):
-            exp = (exp < children[2])
-        elif(children[1] == ">"):
-            exp = (exp > children[2])
-        elif(children[1] == "<="):
-            exp = (exp <= children[2])
-        elif(children[1] == ">="):
-            exp = (exp >= children[2])
-        elif(children[1] == "="):
-            exp = (exp == children[2])
-        return exp
-
-    def visit_kittletransition(self, node, children):
-        OM.printif(2, node)
-        if self.debug:
-            print("Trans {}.".format(node.value))
-        self.startTr = True
-        tr_id = children[0]
-        src = children[1]
-        trg = children[2]
-        cons = []
-        for i in range(3, len(children), 2):
-            cons.append(children[i])
-        return tr_id, src, trg, cons
-
-    def visit_fcvarlist(self, _, children):
-        if self.debug:
-            print("varlist {}".format(children))
-        self.VarsList = []
-        self.PVarsList = []
-        self.All_Vars = []
-        for i in range(0, len(children), 2):
-            if children[i] in self.All_Vars:
-                raise Exception("Name repeated : "+children[i])
-            self.VarsList.append(str(children[i]))
-            self.All_Vars.append(str(children[i]))
-            self.PVarsList.append(str(children[i]+"\'"))
-
-        self.PVars = False
-        return False
-
-    def visit_fcpvarlist(self, _, children):
-        if self.debug:
-            print("pvarlist {}".format(children))
-        self.PVars = False
-        self.PVarsList = []
-        for i in range(0, len(children), 2):
-            self.PVarsList.append(str(children[i]))
-        self.startTr = False
-        return False
-
-    def visit_fcprogram(self, node, children):
-        if self.debug:
-            print("Program {}.".format(node.value))
+    def program2cfg(self, program):
         G = Cfg()
-        children[0]
-        children[1]
-        Dim = len(self.All_Vars)
-        for i in range(1, len(children)):
-            if not children[i]:
-                continue
-            tr_id, src, trg, cons = children[i]
-            tr_poly = C_Polyhedron(Constraint_System(cons), Dim)
-            G.add_edge(tr_id, src, trg,
-                       tr_polyhedron=tr_poly, line=1)
-        G.add_var_name(self.All_Vars)
+        for t in program["transitions"]:
+            G.add_edge(**t)
+        if "nodes" in program:
+            for n in program["nodes"]:
+                for k in program["nodes"][n]:
+                    G.nodes[n][k] = program["nodes"][n][k]
+        for key in program:
+            if not(key in ["transitions", "nodes"]):
+                G.set_info(key, program[key])
         return G
 
-    def visit_fcnumber(self, node, _):
-        if self.debug:
-            print("Converting {}.".format(node.value))
-        return float(node.value)
+
+class KittleTreeTransformer(ConstraintTreeTransformer):
+    
+    name = lambda self, node: str(node[0])
+    entry = lambda self, node: node[0]
+    constraints = list
+    rules = variables = list
+    rule = node = list
+
+    def start(self, node):
+        program = {}
+        N = 0
+        g_vars = []
+        for idx in range(len(node)):
+            if len(node[idx][0]) > N:
+                N = len(node[idx][0])
+                g_vars = node[idx][0][1:]
+        entry = node[0][0][0]
+        g_vars = [str(v) for v in g_vars]
+        N -= 1
+        transitions = node
+        program["global_vars"] = g_vars + [v+"'" for v in g_vars]
+        g_vars = program["global_vars"]
+        for i in range(len(program["global_vars"])-1):
+            if program["global_vars"][i] in program["global_vars"][i+1:]:
+                raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
+
+        set_gvars = set(program["global_vars"])
+        max_local_vars = 0
+        trs = []
+        count = 0
+        for t in transitions:
+            tr = {}
+            if len(t) == 3:
+                left, right, cons = t
+            else:
+                left, right = t
+                cons = []
+            tr["source"] = left.pop(0)
+            tr["target"] = right.pop(0)
+            tr["name"] = "t"+str(count)
+            count+=1
+            # add init constraints
+            for idx in range(len(left)):
+                if str(left[idx]) == g_vars[idx]:
+                    continue
+                cons.append(left[idx] == expterm(g_vars[idx]))
+            # add post constraints
+            for idx in range(len(right)):
+                cons.append(right[idx] == expterm(g_vars[N+idx]))
+            tr["constraints"] = cons
+            linear = True
+            l_vars = []
+            for c in tr["constraints"]:
+                if not c.is_linear():
+                    linear = False
+                ll_vars = [x for x in c.get_variables()
+                           if x not in set_gvars]
+                l_vars.extend(x for x in ll_vars
+                              if x not in l_vars)
+            if len(l_vars) > max_local_vars:
+                max_local_vars = len(l_vars)
+            tr["linear"] = linear
+            tr["local_vars"] = l_vars
+            trs.append(tr)
+        program["transitions"] =trs
+        program["init_node"] = entry
+        program["max_local_vars"] = max_local_vars
+        return program
