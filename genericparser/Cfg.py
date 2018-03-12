@@ -106,8 +106,11 @@ class Cfg(MultiDiGraph):
             g = nx.relabel_nodes(self, n_labels)
         else:
             g = self
+        g.add_edge(source="", target=self.graph["init_node"], name="")
         edg = g.edges(keys=True)
         for (u, v, k) in edg:
+            if u == "":
+                continue
             tr_poly = g[u][v][k]["constraints"]
             tr_linear = g[u][v][k]["linear"]
             #if minimize:
