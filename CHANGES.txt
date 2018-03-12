@@ -1,3 +1,6 @@
+v0.4 2018/03/12
+- koat support
+- kittle support
 v0.3 2018/03/12
 - Python 2 compatibility
 - removed pyleri as parser
