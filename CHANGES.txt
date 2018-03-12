@@ -1,3 +1,7 @@
+v0.3 2018/03/12
+- Python 2 compatibility
+- removed pyleri as parser
+- smt2, fc and mlc parsers working
 v0.2 2018/02/19
 - Own Expression representation
 - Several parsers bad-working
