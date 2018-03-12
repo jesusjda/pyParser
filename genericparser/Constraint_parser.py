@@ -3,20 +3,20 @@ from lark import Transformer
 
 
 class ConstraintTreeTransformer(Transformer):
-    """To use this parser, you must add EquationTreeTransformer
-    as parent of your transformer. Also, your sintax should
+    """To use this parser, you must add ConstraintTreeTransformer
+    as parent of your transformer. Also, your syntax should
     include:
-    
+
     CMP: "<="|"=>"|"=<"|"=="|">="|">"|"<"|"="
     SUM: "+" | "-"
     MUL: "*" | "/"
-    
+
     CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!")*
-    
+
     term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")"
     factor: term (MUL term)*
     expression:  factor (SUM factor)*
-    
+
     constraint: expression CMP expression
     """
 

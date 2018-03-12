@@ -1,4 +1,4 @@
-from genericparser.Equation_parser import EquationTreeTransformer
+from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
 from genericparser.Cfg import Cfg
 
@@ -20,7 +20,7 @@ class Parser_fc(ParserInterface):
     
     def parse_string(self, cad, _=None, debug=False):
         import os
-        grammarfile = basepath = os.path.join(os.path.dirname(__file__),"fc.g")
+        grammarfile = os.path.join(os.path.dirname(__file__),"fc.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
@@ -41,7 +41,7 @@ class Parser_fc(ParserInterface):
         return G
 
 
-class FcTreeTransformer(EquationTreeTransformer):
+class FcTreeTransformer(ConstraintTreeTransformer):
     
     list = list
     pair = tuple
