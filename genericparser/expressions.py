@@ -6,6 +6,7 @@ class Expression(object):
         self._left = arg1
         self._op = op
         self._right = arg2
+        
         if arg2:
             if(not op or
                not(op in ["+","-","/","*"]) or
@@ -17,6 +18,11 @@ class Expression(object):
             self._right = arg1
             self._op = "-"
             self._left = expterm(0)
+        # calculate variables
+        self._vars = self._left.get_variables()
+        self._vars.extend(x for x in self._right.get_variables()
+                          if x not in self._vars)
+        # compute degree
         rd = self._right.degree()
         ld = self._left.degree()
         if op in ["*", "/"]:
@@ -29,6 +35,9 @@ class Expression(object):
     
     def is_linear(self):
         return self._degree < 2
+
+    def get_variables(self):
+        return self._vars
 
     def get(self, variables, number, expressions):
         """
@@ -212,6 +221,12 @@ class expterm(Expression):
             return 0
         else:
             return 1
+
+    def get_variables(self):
+        if self.elem == "number":
+            return []
+        else:
+            return [self.value]
 
     def get(self, variables, number, _expressions):
         if self.elem == "number":
@@ -399,6 +414,11 @@ class inequation(BoolExpression, Expression):
         self._left = left
         self._op = op
         self._right = right
+        # calculate variables
+        self._vars = self._left.get_variables()
+        self._vars.extend(x for x in self._right.get_variables()
+                          if x not in self._vars)
+        # compute degree
         rd = self._right.degree()
         ld = self._left.degree()
         self._degree = max(ld, rd)
