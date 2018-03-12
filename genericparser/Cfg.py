@@ -105,8 +105,8 @@ class Cfg(MultiDiGraph):
                                + "")
             g = nx.relabel_nodes(self, n_labels)
         else:
-            g = self.copy()
-        g.add_edge("", self.graph["init_node"], "")
+            g = self#.copy()
+        #g.add_edge("", self.graph["init_node"], "")
         edg = g.edges(keys=True)
         for (u, v, k) in edg:
             if u == "":
