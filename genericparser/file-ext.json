@@ -3,5 +3,6 @@
     ".mlc": "Parser_mlc",
     ".kittle": "Parser_kittle",
     ".t2" : "Parser_t2",
-    ".smt2": "Parser_smt2"
+    ".smt2": "Parser_smt2",
+    ".koat": "Parser_koat"
 }
