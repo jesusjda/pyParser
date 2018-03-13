@@ -1,5 +1,0 @@
-digraph "" {
-n;
-n -> n  [color="#3366CC", fontcolor="#3366CC", key=t0, label="t0 {\nx0-1==0\nx1>=0\nx0+x2-1==0\nx0-x1+x3==0\n}", name=t0, source=n, target=n, tr_polyhedron="A 1-dimensional polyhedron in QQ^4 defined as the convex hull of 1 point, 1 ray"];
-n -> n  [color="#3B3EAC", fontcolor="#3B3EAC", key=t1, label="t1 {\nx0==0\nx1>=0\nx0+x2-1==0\nx0-x1+x3==0\n}", name=t1, source=n, target=n, tr_polyhedron="A 1-dimensional polyhedron in QQ^4 defined as the convex hull of 1 point, 1 ray"];
-}
