@@ -407,13 +407,19 @@ class Or(BoolExpression):
 class inequation(BoolExpression, Expression):
 
     def __init__(self, left, op, right):
+        oposite = {"<":">","<=":">=","=<":">="}
         if(not isinstance(left, Expression) or
            not isinstance(right, Expression) or
            not(op in ["<", "<=", "=<", "=", "==", "=>", ">=", ">"])):
             raise ValueError()
-        self._left = left
-        self._op = op
-        self._right = right
+        if op in oposite:
+            self._left = right
+            self._op = oposite[op]
+            self._right = left
+        else:
+            self._left = left
+            self._op = op
+            self._right = right
         # calculate variables
         self._vars = self._left.get_variables()
         self._vars.extend(x for x in self._right.get_variables()
@@ -450,6 +456,10 @@ class inequation(BoolExpression, Expression):
 
     def isTrue(self):
         return False
+
+    def isequality(self):
+        if self._op in ["=", "=="]:
+            return True
 
     def get(self, variables, number, expressions):
         left = self._left.get(variables, number, expressions)

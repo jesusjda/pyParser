@@ -175,6 +175,17 @@ class Cfg(MultiDiGraph):
 
     @open_file(1,"w")
     def toKoat(self, path=None, goal_complexity=False):
+        def eq2ineqs(cons):
+            result = []
+            for c in cons:
+                if not c.isequality():
+                    result.append(c)
+                    continue
+                a = (c._left <= c._right)
+                b = (c._left >= c._right)
+                result.append(a)
+                result.append(b)
+            return result
         if goal_complexity:
             goal = "COMPLEXITY"
         else:
@@ -192,9 +203,10 @@ class Cfg(MultiDiGraph):
             for trg in self[src]:
                 for name in self[src][trg]:
                     cons = self[src][trg][name]["constraints"]
+                    cons = eq2ineqs(cons)
                     local_vars = self[src][trg][name]["local_vars"]
                     renamedvars = {v:v for v in global_vars+local_vars}
-                    phi = "/\\".join([c.toString(renamedvars) for c in cons])
+                    phi = " && ".join([c.toString(renamedvars) for c in cons])
                     rules += "\t{}({}) -> {}({}) :|: {}\n".format(src,lvars,trg,lpvars,phi)
         path.write("(RULES {})\n".format(rules))
 
