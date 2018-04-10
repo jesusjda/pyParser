@@ -63,18 +63,15 @@ class ConstraintTreeTransformer(Transformer):
         return exp
 
     def term(self, node):
-        if isinstance(node[0], Expression):
-            return node[0]
-        elif len(node) == 2:
-            val = node[1]
+        if len(node) == 2:
+            val_pos = 1
         else:
-            val = node[0]
-        try:
-            float(val)
-        except ValueError:
-            pass
-        finally:
-            if node[0]=="-":
-                return expterm(0) - expterm(val)
-            else:
-                return expterm(val)
+            val_pos = 0
+        if isinstance(node[val_pos], Expression):
+            val = node[val_pos]
+        else:
+            val = expterm(str(node[val_pos]))
+        if len(node) == 2 and str(node[0]) == "-":
+            return expterm(0) - val
+        else:
+            return val

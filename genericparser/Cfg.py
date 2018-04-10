@@ -192,7 +192,9 @@ class Cfg(MultiDiGraph):
             for trg in self[src]:
                 for name in self[src][trg]:
                     cons = self[src][trg][name]["constraints"]
-                    phi = "/\\".join([c.toString(global_vars) for c in cons])
+                    local_vars = self[src][trg][name]["local_vars"]
+                    renamedvars = {v:v for v in global_vars+local_vars}
+                    phi = "/\\".join([c.toString(renamedvars) for c in cons])
                     rules += "\t{}({}) -> {}({}) :|: {}\n".format(src,lvars,trg,lpvars,phi)
         path.write("(RULES {})\n".format(rules))
 
