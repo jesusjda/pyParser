@@ -8,7 +8,7 @@ import os
 import sys
 
 from . import Cfg
-
+from termination.profiler import register_as
 
 __all__ = ['GenericParser', 'Cfg']
 
@@ -32,6 +32,7 @@ class GenericParser:
         with open(configfile) as data:
             self._parserlist = json.load(data)
 
+    @register_as("parse")
     def parse(self, filepath):
         """Parse a file with their corresponding parser
 
@@ -68,3 +69,18 @@ class ParserInterface:
         :returns: :obj:`genericparser.Cfg.Cfg` ControlFlowGraph.
         """
         raise Exception("Not implemented yet!")
+
+    def program2cfg(self, program):
+        G = Cfg.Cfg()
+        for t in program["transitions"]:
+            G.add_edge(**t)
+        if "entry_nodes" not in program and "init_node" in program:
+            program["entry_nodes"] = [program["init_node"]]
+        if "nodes" in program:
+            for n in program["nodes"]:
+                for k in program["nodes"][n]:
+                    G.nodes[n][k] = program["nodes"][n][k]
+        for key in program:
+            if not(key in ["transitions", "nodes"]):
+                G.set_info(key, program[key])
+        return G

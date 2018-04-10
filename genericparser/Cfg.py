@@ -1,5 +1,5 @@
 import networkx as nx
-
+from networkx.utils import open_file
 from networkx.classes.multidigraph import MultiDiGraph
 from networkx.drawing.nx_pydot import write_dot
 
@@ -39,6 +39,10 @@ class Cfg(MultiDiGraph):
 
         return MultiDiGraph.add_edge(self, source, target, key=name, **kwargs)
 
+    def get_nodes(self, name=None):
+        if name is None:
+            return self.nodes()
+
     def get_edges(self, source=None, target=None, name=None):
         edges = []
         for s in self:
@@ -71,6 +75,17 @@ class Cfg(MultiDiGraph):
         subgs = [Cfg(self.subgraph(c))
                  for c in nx.strongly_connected_components(self)]
         subgs.sort(key=len)
+        # update entry_points
+        for s in subgs:
+            subg_nodes = list(s.nodes())
+            entries = [n for n in self.get_info("entry_nodes")
+                       if n in subg_nodes]
+            for u, v in self.in_edges(nbunch=s.nodes()):
+                if u not in s.nodes() and v not in entries:
+                    entries.append(v)
+            s.set_info("entry_nodes", entries)
+        #for i, s in enumerate(subgs):
+        #    print("{} - scc: {} nodes({}) \n {} entries({}).".format(i,s.nodes(),len(s.nodes()),s.get_info("entry_nodes"),len(s.get_info("entry_nodes"))))
         return subgs
 
     def get_scc(self):
@@ -90,7 +105,7 @@ class Cfg(MultiDiGraph):
         """
         return nx.simple_cycles(self)
 
-    def toDot(self, outfile="graph.dot", minimize=False, invariants=False):
+    def toDot(self, outfile, minimize=False, invariants=False):
         """
         """
         if invariants:
@@ -122,26 +137,29 @@ class Cfg(MultiDiGraph):
             g[u][v][k]["tooltip"] = "\"" + name + " "+ str(tr_poly) + "\""
         write_dot(g, outfile)
 
-    def toProlog(self, outfile=None):
+    @open_file(1,"w")
+    def toProlog(self, path=None):
         def saveName(word):
             import re
             return re.sub('[\'\?\!\^]', '_X_', word)
-        import sys
-        if outfile:
-            sys.stdout = open(outfile, "w")
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
         vs = ", ".join(["V"+saveName(v) for v in global_vars[:N]])
         pvs = ", ".join(["V"+saveName(v) for v in global_vars[N:]])
 
         # print startpoint
-        init = "n_{}({})".format(saveName(self.graph["init_node"]),vs)
-        print("% initial point\n")
-        print("startpoint :- {}.".format(init))
+        if "entry_nodes" in self.graph:
+            entries = self.graph["entry_nodes"]
+        else:
+            entries = [self.graph["init_node"]]
+        epoints = ["n_{}({})".format(saveName(e),vs) for e in entries]
+        path.write("% initial point\n")
+        for e in epoints:
+            path.write("startpoint :- {}.\n".format(e))
 
         # print transitions
         for s in self: # source node
-            print("\n% transitions from node {}\n".format(s))
+            path.write("\n% transitions from node {}\n".format(s))
             source = "n_{}({})".format(saveName(s),vs)
             for t in self[s]: # target node
                 target = "n_{}({})".format(saveName(t),pvs)
@@ -153,9 +171,7 @@ class Cfg(MultiDiGraph):
                     phi = ",".join([c.toString(renamevars) for c in cons])
                     phi = phi.replace("<=", "=<")
                     phi = phi.replace("==", "=")
-                    print("{} :- {}, {}.\n".format(source, phi, target))
-        if outfile:
-            sys.stdout = sys.__stdout__
+                    path.write("{} :- {}, {}.\n".format(source, phi, target))
 
     def edge_data_subgraph(self, edges):
         edges_ref = [(e["source"],e["target"],e["name"])

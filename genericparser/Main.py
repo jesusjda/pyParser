@@ -42,7 +42,7 @@ def _main():
     files = []
     for path in full_paths:
         if os.path.isfile(path):
-            fileName, fileExt = os.path.splitext(path)
+            _, fileExt = os.path.splitext(path)
             if(args.extension == '' or
                args.extension == fileExt or
                ('.' + args.extension) == fileExt):

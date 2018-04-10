@@ -1,6 +1,5 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
-from genericparser.Cfg import Cfg
 from .expressions import expterm
 
 class Parser_kittle(ParserInterface):
@@ -26,19 +25,6 @@ class Parser_kittle(ParserInterface):
         from lark.lark import Lark
         l = Lark(g)
         return self.program2cfg(KittleTreeTransformer().transform(l.parse(cad)))
-
-    def program2cfg(self, program):
-        G = Cfg()
-        for t in program["transitions"]:
-            G.add_edge(**t)
-        if "nodes" in program:
-            for n in program["nodes"]:
-                for k in program["nodes"][n]:
-                    G.nodes[n][k] = program["nodes"][n][k]
-        for key in program:
-            if not(key in ["transitions", "nodes"]):
-                G.set_info(key, program[key])
-        return G
 
 
 class KittleTreeTransformer(ConstraintTreeTransformer):
