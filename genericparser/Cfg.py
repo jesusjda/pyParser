@@ -167,11 +167,34 @@ class Cfg(MultiDiGraph):
                     cons = self[s][t][name]["constraints"]
                     local_vars = self[s][t][name]["local_vars"]
                     all_vars = global_vars + local_vars
-                    renamevars = {v:"V"+saveName(v) for v in all_vars}
-                    phi = ",".join([c.toString(renamevars) for c in cons])
+                    renamedvars = {v:"V"+saveName(v) for v in all_vars}
+                    phi = ",".join([c.toString(renamedvars) for c in cons])
                     phi = phi.replace("<=", "=<")
                     phi = phi.replace("==", "=")
                     path.write("{} :- {}, {}.\n".format(source, phi, target))
+
+    @open_file(1,"w")
+    def toKoat(self, path=None, goal_complexity=False):
+        if goal_complexity:
+            goal = "COMPLEXITY"
+        else:
+            goal = "TERMINATION"
+        path.write("(GOAL {})\n".format(goal))
+        path.write("(STARTTERM (FUNCTIONSYMBOLS {}))\n".format(self.graph["init_node"]))
+        global_vars = self.graph["global_vars"]
+        N = int(len(global_vars)/2)
+        str_vars = " ".join(global_vars[:N])
+        path.write("(VAR {})\n".format(str_vars))
+        rules = "\n"
+        lvars = ",".join(global_vars[:N])
+        lpvars = ",".join(global_vars[N:])
+        for src in self:
+            for trg in self[src]:
+                for name in self[src][trg]:
+                    cons = self[src][trg][name]["constraints"]
+                    phi = "/\\".join([c.toString(global_vars) for c in cons])
+                    rules += "\t{}({}) -> {}({}) :|: {}\n".format(src,lvars,trg,lpvars,phi)
+        path.write("(RULES {})\n".format(rules))
 
     def edge_data_subgraph(self, edges):
         edges_ref = [(e["source"],e["target"],e["name"])

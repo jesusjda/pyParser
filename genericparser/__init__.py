@@ -8,7 +8,6 @@ import os
 import sys
 
 from . import Cfg
-from termination.profiler import register_as
 
 __all__ = ['GenericParser', 'Cfg']
 
@@ -32,7 +31,6 @@ class GenericParser:
         with open(configfile) as data:
             self._parserlist = json.load(data)
 
-    @register_as("parse")
     def parse(self, filepath):
         """Parse a file with their corresponding parser
 
