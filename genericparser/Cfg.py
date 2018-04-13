@@ -191,6 +191,8 @@ class Cfg(MultiDiGraph):
                 v_exp = None
                 for c in result[:]:
                     if not(v in c.get_variables()):
+                        if str(c) == "0 == 0":
+                            result.remove(c)
                         continue
                     if v_exp:
                         raise ValueError("unable to handle this example")
