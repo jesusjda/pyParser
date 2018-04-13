@@ -103,8 +103,10 @@ class Expression(object):
             txt_s = ""
             if len(s[1]) > 0:
                 
-                if s[0] != 1:
+                if s[0] != 1 and s[0] != -1:
                     txt_s += str(number(s[0])) + " * "
+                if s[0] == -1:
+                    txt_s += "- "
                 txt_s += " * ".join([toVar(v) for v in s[1]])
             elif s[0] != 0:
                 txt_s = str(number(s[0]))
