@@ -41,9 +41,7 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
         entry = node[1]
         transitions = node[3]
         g_vars = node[2]
-        print(g_vars)
         g_vars = [str(v) for v in transitions[0][0][1:]]
-        print(g_vars)
         N = len(g_vars)
         program["global_vars"] = g_vars + [v+"'" for v in g_vars]
         g_vars = program["global_vars"]
