@@ -1,4 +1,4 @@
-from .expressions import expterm
+from .expressions import ExprTerm
 from .expressions import Expression
 from lark import Transformer
 
@@ -70,8 +70,8 @@ class ConstraintTreeTransformer(Transformer):
         if isinstance(node[val_pos], Expression):
             val = node[val_pos]
         else:
-            val = expterm(str(node[val_pos]))
+            val = ExprTerm(str(node[val_pos]))
         if len(node) == 2 and str(node[0]) == "-":
-            return expterm(0) - val
+            return ExprTerm(0) - val
         else:
             return val

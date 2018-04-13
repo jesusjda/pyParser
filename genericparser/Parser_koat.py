@@ -1,6 +1,6 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
-from .expressions import expterm
+from .expressions import ExprTerm
 
 class Parser_koat(ParserInterface):
     
@@ -67,10 +67,10 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
             for idx in range(len(left)):
                 if str(left[idx]) == g_vars[idx]:
                     continue
-                cons.append(left[idx] == expterm(g_vars[idx]))
+                cons.append(left[idx] == ExprTerm(g_vars[idx]))
             # add post constraints
             for idx in range(len(right)):
-                cons.append(right[idx] == expterm(g_vars[N+idx]))
+                cons.append(right[idx] == ExprTerm(g_vars[N+idx]))
             tr["constraints"] = cons
             linear = True
             l_vars = []

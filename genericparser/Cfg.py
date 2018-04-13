@@ -165,12 +165,8 @@ class Cfg(MultiDiGraph):
                 target = "n_{}({})".format(saveName(t),pvs)
                 for name in self[s][t]: # concrete edge
                     cons = self[s][t][name]["constraints"]
-                    local_vars = self[s][t][name]["local_vars"]
-                    all_vars = global_vars + local_vars
-                    renamedvars = {v:"V"+saveName(v) for v in all_vars}
-                    phi = ",".join([c.toString(renamedvars) for c in cons])
-                    phi = phi.replace("<=", "=<")
-                    phi = phi.replace("==", "=")
+                    renamedvars = lambda v: "V"+saveName(v)
+                    phi = ",".join([c.toString(renamedvars, int, eq_symb="=", leq_symb="=<") for c in cons])
                     path.write("{} :- {}, {}.\n".format(source, phi, target))
 
     @open_file(1,"w")
@@ -181,11 +177,31 @@ class Cfg(MultiDiGraph):
                 if not c.isequality():
                     result.append(c)
                     continue
-                a = (c._left <= c._right)
-                b = (c._left >= c._right)
+                a = (c._exp <= 0)
+                b = (c._exp >= 0)
                 result.append(a)
                 result.append(b)
             return result
+        def isolate(cons, pvars):
+            result = cons[:]
+            pvar_exps = []
+            for v in pvars:
+                v_exp = None
+                for c in result[:]:
+                    if not(v in c.get_variables()):
+                        continue
+                    if v_exp:
+                        raise ValueError("unable to handle this example")
+                    v_exp = c.isolate(v)
+                    for v2 in pvars:
+                        if v2 in v_exp.get_variables():
+                            raise ValueError("unable to handle this example...")
+                    result.remove(c)
+                if not v_exp:
+                    raise ValueError("unable to handle this example... puff")
+                pvar_exps.append(v_exp)
+            pvar_str = ", ".join([str(e) for e in pvar_exps])
+            return result, pvar_str
         if goal_complexity:
             goal = "COMPLEXITY"
         else:
@@ -198,16 +214,20 @@ class Cfg(MultiDiGraph):
         path.write("(VAR {})\n".format(str_vars))
         rules = "\n"
         lvars = ",".join(global_vars[:N])
-        lpvars = ",".join(global_vars[N:])
+        #lpvars = ",".join(global_vars[N:])
         for src in self:
             for trg in self[src]:
                 for name in self[src][trg]:
                     cons = self[src][trg][name]["constraints"]
-                    cons = eq2ineqs(cons)
-                    local_vars = self[src][trg][name]["local_vars"]
-                    renamedvars = {v:v for v in global_vars+local_vars}
-                    phi = " && ".join([c.toString(renamedvars) for c in cons])
-                    rules += "\t{}({}) -> {}({}) :|: {}\n".format(src,lvars,trg,lpvars,phi)
+                    #cons = eq2ineqs(cons)
+                    cons, pvalues = isolate(cons, global_vars[N:])
+                    renamedvars = lambda v: str(v)
+                    if len(cons) > 0:
+                        phi = " :|: "+ " && ".join([c.toString(renamedvars, int, eq_symb="=")
+                                                    for c in cons])
+                    else:
+                        phi = ""
+                    rules += "  {}({}) -> Com_1({}({})){}\n".format(src,lvars,trg,pvalues,phi)
         path.write("(RULES {})\n".format(rules))
 
     def edge_data_subgraph(self, edges):

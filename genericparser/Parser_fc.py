@@ -99,7 +99,7 @@ class FcTreeTransformer(ConstraintTreeTransformer):
         if _check_key(program, "initnode", optional=True):
             program["init_node"] = program["initnode"]
             program.pop("initnode", None)
-        else:
+        elif not _check_key(program, "init_node", optional=True):
             program["init_node"] = program["transitions"][0]["source"]
         program["max_local_vars"] = max_local_vars
         return program

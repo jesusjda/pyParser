@@ -25,7 +25,7 @@ _value: dict
      | bool | null
 
 
-key: WORD | NUMBER | ESCAPED_STRING
+key: CNAME | NUMBER | ESCAPED_STRING
 
 
 list : "[" [_value ("," _value)* ","?]  "]"
