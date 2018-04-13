@@ -207,13 +207,13 @@ class Cfg(MultiDiGraph):
         else:
             goal = "TERMINATION"
         path.write("(GOAL {})\n".format(goal))
-        path.write("(STARTTERM (FUNCTIONSYMBOLS {}))\n".format(self.graph["init_node"]))
+        path.write("(STARTTERM (FUNCTIONSYMBOLS pyRinit))\n")
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
         str_vars = " ".join(global_vars[:N])
         path.write("(VAR {})\n".format(str_vars))
-        rules = "\n"
         lvars = ",".join(global_vars[:N])
+        rules = "\n  pyRinit({}) -> Com_1({}({}))\n".format(lvars,self.graph["init_node"], lvars)
         #lpvars = ",".join(global_vars[N:])
         for src in self:
             for trg in self[src]:
