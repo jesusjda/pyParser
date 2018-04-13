@@ -2,6 +2,7 @@ import networkx as nx
 from networkx.utils import open_file
 from networkx.classes.multidigraph import MultiDiGraph
 from networkx.drawing.nx_pydot import write_dot
+from genericparser.expressions import ExprTerm
 
 
 class Cfg(MultiDiGraph):
@@ -182,9 +183,10 @@ class Cfg(MultiDiGraph):
                 result.append(a)
                 result.append(b)
             return result
-        def isolate(cons, pvars):
+        def isolate(cons, pvars, lvars):
             result = cons[:]
             pvar_exps = []
+            lvars_count = 0
             for v in pvars:
                 v_exp = None
                 for c in result[:]:
@@ -198,7 +200,11 @@ class Cfg(MultiDiGraph):
                             raise ValueError("unable to handle this example...")
                     result.remove(c)
                 if not v_exp:
-                    raise ValueError("unable to handle this example... puff")
+                    if lvars_count < len(lvars):
+                        v_exp = ExprTerm(lvars[lvars_count])
+                        lvars_count += 1
+                    else:
+                        raise ValueError("unable to handle this example... puff")
                 pvar_exps.append(v_exp)
             pvar_str = ", ".join([str(e) for e in pvar_exps])
             return result, pvar_str
@@ -219,8 +225,9 @@ class Cfg(MultiDiGraph):
             for trg in self[src]:
                 for name in self[src][trg]:
                     cons = self[src][trg][name]["constraints"]
+                    local_vars = self[src][trg][name]["local_vars"]
                     #cons = eq2ineqs(cons)
-                    cons, pvalues = isolate(cons, global_vars[N:])
+                    cons, pvalues = isolate(cons, global_vars[N:],local_vars)
                     renamedvars = lambda v: str(v)
                     if len(cons) > 0:
                         phi = " :|: "+ " && ".join([c.toString(renamedvars, int, eq_symb="=")
