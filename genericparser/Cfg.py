@@ -216,16 +216,16 @@ class Cfg(MultiDiGraph):
         path.write("(STARTTERM (FUNCTIONSYMBOLS pyRinit))\n")
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
-        str_vars = " ".join(global_vars[:N])
-        path.write("(VAR {})\n".format(str_vars))
         lvars = ",".join(global_vars[:N])
         rules = "\n  pyRinit({}) -> Com_1({}({}))\n".format(lvars,self.graph["init_node"], lvars)
         #lpvars = ",".join(global_vars[N:])
+        localV = set()
         for src in self:
             for trg in self[src]:
                 for name in self[src][trg]:
                     cons = self[src][trg][name]["constraints"]
                     local_vars = self[src][trg][name]["local_vars"]
+                    localV = localV.union(local_vars)
                     #cons = eq2ineqs(cons)
                     cons, pvalues = isolate(cons, global_vars[N:],local_vars)
                     renamedvars = lambda v: str(v)
@@ -235,6 +235,8 @@ class Cfg(MultiDiGraph):
                     else:
                         phi = ""
                     rules += "  {}({}) -> Com_1({}({})){}\n".format(src,lvars,trg,pvalues,phi)
+        str_vars = " ".join(global_vars[:N]+list(localV))
+        path.write("(VAR {})\n".format(str_vars))
         path.write("(RULES {})\n".format(rules))
 
     def edge_data_subgraph(self, edges):
