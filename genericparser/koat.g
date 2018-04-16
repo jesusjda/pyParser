@@ -19,7 +19,7 @@ number: NUMBER
 _goal: "(" "GOAL" name ")"
 _startterm: "(" "STARTTERM" entry ")"
 
-entry: name -> noentry
+entry: "CONSTRUCTOR-BASED" -> noentry
      | "(" "FUNCTIONSYMBOLS" name ")"
 
 variables: "(" "VAR" name* ")"
