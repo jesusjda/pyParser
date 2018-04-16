@@ -289,7 +289,7 @@ class ExprTerm(Expression):
                     vlist = [value]
                 vs = []
                 for v in vlist:
-                    if re.match("(^([\w_][\w0-9\'\^_\!]*)$)", v):
+                    if re.match("(^([\w_][\w0-9\'\^_\!\.]*)$)", v):
                         vs.append(v)
                     else:
                         raise ValueError("{} is not a valid Term.".format(v))
