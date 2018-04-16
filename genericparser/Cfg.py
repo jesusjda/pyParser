@@ -142,18 +142,24 @@ class Cfg(MultiDiGraph):
     def toProlog(self, path=None):
         def saveName(word):
             import re
-            return re.sub('[\'\?\!\^]', '_X_', word)
+            return re.sub('[\'\?\!\^]', 'P', word)
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
-        vs = ", ".join(["V"+saveName(v) for v in global_vars[:N]])
-        pvs = ", ".join(["V"+saveName(v) for v in global_vars[N:]])
+        if N == 0:
+            vs = ""
+            pvs = ""
+        else:
+            vs = ", ".join(["V"+saveName(v) for v in global_vars[:N]])
+            pvs = ", ".join(["V"+saveName(v) for v in global_vars[N:]])
+            vs = "("+vs+")"
+            pvs = "("+pvs+")"
 
         # print startpoint
         if "entry_nodes" in self.graph:
             entries = self.graph["entry_nodes"]
         else:
             entries = [self.graph["init_node"]]
-        epoints = ["n_{}({})".format(saveName(e),vs) for e in entries]
+        epoints = ["n_{}{}".format(saveName(e),vs) for e in entries]
         path.write("% initial point\n")
         for e in epoints:
             path.write("startpoint :- {}.\n".format(e))
@@ -161,9 +167,9 @@ class Cfg(MultiDiGraph):
         # print transitions
         for s in self: # source node
             path.write("\n% transitions from node {}\n".format(s))
-            source = "n_{}({})".format(saveName(s),vs)
+            source = "n_{}{}".format(saveName(s),vs)
             for t in self[s]: # target node
-                target = "n_{}({})".format(saveName(t),pvs)
+                target = "n_{}{}".format(saveName(t),pvs)
                 for name in self[s][t]: # concrete edge
                     cons = self[s][t][name]["constraints"]
                     renamedvars = lambda v: "V"+saveName(v)

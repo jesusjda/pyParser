@@ -27,9 +27,9 @@ class ConstraintTreeTransformer(Transformer):
 
         comp = node[1]
         if(comp == "<"):
-            exp = (e1 <= (e2-1))
+            exp = (e1 < (e2))
         elif(comp == ">"):
-            exp = (e1 >= (e2+1))
+            exp = (e1 > (e2))
         elif(comp == "<=" or comp == "=<"):
             exp = (e1 <= e2)
         elif(comp == ">=" or comp == "=>"):
