@@ -13,13 +13,13 @@ expression:  factor (SUM factor)*
 
 constraint: expression CMP expression
 
-name: CNAME
+name: CNAME | "CONSTRUCTOR-BASED"
 number: NUMBER
 
 _goal: "(" "GOAL" name ")"
 _startterm: "(" "STARTTERM" entry ")"
 
-entry: "CONSTRUCTOR-BASED" -> noentry
+entry: name -> noentry
      | "(" "FUNCTIONSYMBOLS" name ")"
 
 variables: "(" "VAR" name* ")"

@@ -142,13 +142,15 @@ class Cfg(MultiDiGraph):
     def toProlog(self, path=None):
         def saveName(word):
             import re
-            return re.sub('[\'\?\!\^]', 'P', word)
+            print(word)
+            return re.sub('[\'\?\!\^\.]', 'P', word)
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
         if N == 0:
             vs = ""
             pvs = ""
         else:
+            print(global_vars)
             vs = ", ".join(["V"+saveName(v) for v in global_vars[:N]])
             pvs = ", ".join(["V"+saveName(v) for v in global_vars[N:]])
             vs = "("+vs+")"
@@ -189,9 +191,10 @@ class Cfg(MultiDiGraph):
                 result.append(a)
                 result.append(b)
             return result
-        def isolate(cons, pvars, lvars):
+        def isolate(cons, pvars):
             result = cons[:]
             pvar_exps = []
+            lvars = []
             lvars_count = 0
             for v in pvars:
                 v_exp = None
@@ -208,14 +211,12 @@ class Cfg(MultiDiGraph):
                             raise ValueError("unable to handle this example...")
                     result.remove(c)
                 if not v_exp:
-                    if lvars_count < len(lvars):
-                        v_exp = ExprTerm(lvars[lvars_count])
-                        lvars_count += 1
-                    else:
-                        raise ValueError("unable to handle this example... puff")
+                    lvars.append("FakeVar{}".format(lvars_count))
+                    v_exp = ExprTerm(lvars[lvars_count])
+                    lvars_count += 1
                 pvar_exps.append(v_exp)
             pvar_str = ", ".join([str(e) for e in pvar_exps])
-            return result, pvar_str
+            return result, pvar_str, lvars
         if goal_complexity:
             goal = "COMPLEXITY"
         else:
@@ -224,8 +225,8 @@ class Cfg(MultiDiGraph):
         path.write("(STARTTERM (FUNCTIONSYMBOLS pyRinit))\n")
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
-        lvars = ",".join(global_vars[:N])
-        rules = "\n  pyRinit({}) -> Com_1({}({}))\n".format(lvars,self.graph["init_node"], lvars)
+        str_vars = ",".join(global_vars[:N])
+        rules = "\n  pyRinit({}) -> Com_1({}({}))\n".format(str_vars,self.graph["init_node"], str_vars)
         #lpvars = ",".join(global_vars[N:])
         localV = set()
         for src in self:
@@ -235,14 +236,15 @@ class Cfg(MultiDiGraph):
                     local_vars = self[src][trg][name]["local_vars"]
                     localV = localV.union(local_vars)
                     #cons = eq2ineqs(cons)
-                    cons, pvalues = isolate(cons, global_vars[N:],local_vars)
+                    cons, pvalues, local_vars= isolate(cons, global_vars[N:])
+                    localV = localV.union(local_vars)
                     renamedvars = lambda v: str(v)
                     if len(cons) > 0:
                         phi = " :|: "+ " && ".join([c.toString(renamedvars, int, eq_symb="=")
                                                     for c in cons])
                     else:
                         phi = ""
-                    rules += "  {}({}) -> Com_1({}({})){}\n".format(src,lvars,trg,pvalues,phi)
+                    rules += "  {}({}) -> Com_1({}({})){}\n".format(src,str_vars,trg,pvalues,phi)
         str_vars = " ".join(global_vars[:N]+list(localV))
         path.write("(VAR {})\n".format(str_vars))
         path.write("(RULES {})\n".format(rules))
