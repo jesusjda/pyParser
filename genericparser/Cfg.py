@@ -142,15 +142,13 @@ class Cfg(MultiDiGraph):
     def toProlog(self, path=None):
         def saveName(word):
             import re
-            print(word)
-            return re.sub('[\'\?\!\^\.]', 'P', word)
+            return re.sub('[\'\?\!\^.]', 'P', word)
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
         if N == 0:
             vs = ""
             pvs = ""
         else:
-            print(global_vars)
             vs = ", ".join(["V"+saveName(v) for v in global_vars[:N]])
             pvs = ", ".join(["V"+saveName(v) for v in global_vars[N:]])
             vs = "("+vs+")"
@@ -176,7 +174,9 @@ class Cfg(MultiDiGraph):
                     cons = self[s][t][name]["constraints"]
                     renamedvars = lambda v: "V"+saveName(v)
                     phi = ",".join([c.toString(renamedvars, int, eq_symb="=", leq_symb="=<") for c in cons])
-                    path.write("{} :- {}, {}.\n".format(source, phi, target))
+                    if phi != "":
+                        phi +=", "
+                    path.write("{} :- {}{}.\n".format(source, phi, target))
 
     @open_file(1,"w")
     def toKoat(self, path=None, goal_complexity=False):
