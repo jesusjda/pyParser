@@ -102,15 +102,15 @@ class Expression(object):
         for s in self._summands:
             txt_s = ""
             if len(s[1]) > 0:
-                
-                if s[0] != 1 and s[0] != -1:
+                if number(s[0]) != number(1) and number(s[0]) != number(-1):
                     txt_s += str(number(s[0])) + " * "
-                if s[0] == -1:
+                elif number(s[0]) == number(-1):
                     txt_s += "- "
                 txt_s += " * ".join([toVar(v) for v in s[1]])
-            elif s[0] != 0:
+            elif number(s[0]) != number(0.0):
                 txt_s = str(number(s[0]))
-            if s[0] > 0 and txt!="":
+
+            if number(s[0]) > number(0.0) and txt!="":
                 txt += " + "
             elif txt != "":
                 txt += " "
@@ -722,12 +722,12 @@ class Or(BoolExpression):
 class inequality(BoolExpression):
 
     def __init__(self, left, op, right):
-        oposite = {"<":">","<=":">=","=<":">="}
+        oposite = {"<":">","<=":">=","=<":">=","=":"=","==":"==",">=":"<=", "=>":"<="}
         if(not isinstance(left, Expression) or
            not isinstance(right, Expression) or
            not(op in ["<", "<=", "=<", "=", "==", "=>", ">=", ">"])):
             raise ValueError()
-        if op in oposite:
+        if False and op in ["<","<=","=<"]:
             a_left = right
             a_op = oposite[op]
             a_right = left
@@ -735,7 +735,16 @@ class inequality(BoolExpression):
             a_left = left
             a_op = op
             a_right = right
-        self._exp = a_left - a_right
+        exp =a_left - a_right
+        neg = True
+        for c,_ in exp._summands:
+            if c > 0:
+                neg = False
+                break
+        if neg:
+            exp = 0-exp
+            a_op = oposite[a_op]
+        self._exp = exp
         self._op = a_op
         self._vars = self._exp.get_variables()
         self._degree = self._exp.degree()
@@ -795,6 +804,10 @@ class inequality(BoolExpression):
             return (left >= one)
         elif self._op in [">=", "=>"]:
             return (left >= zero)
+        elif self._op == "<":
+            return (left <= one)
+        elif self._op in ["<=", "=<"]:
+            return (left <= zero)
 
     def isolate(self, variable):
         """
@@ -808,6 +821,8 @@ class inequality(BoolExpression):
         var_coeff = self._exp.get_coeff(variable)
         if var_coeff == 0:
             return None
+        if var_coeff != 1 and var_coeff != -1:
+            raise ValueError("isolate can not divide by var coeffs")
         var_exp = Expression(var_coeff,"*", variable)
         exp = (self._exp - var_exp) / (-var_coeff)
         if variable in exp.get_variables():
