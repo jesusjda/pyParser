@@ -45,8 +45,8 @@ class Expression(object):
                         coeff += sr[0]
                         tmp_summands.remove(sr)
                 if coeff != 0:
-                    summands.append((coeff,vs))
-        elif op in ["+","-"]:
+                    summands.append((coeff, vs))
+        elif op in ["+", "-"]:
             symb = 1
             if op == "-":
                 symb = -1
@@ -55,13 +55,13 @@ class Expression(object):
                 coeff, vs = s
                 for sr in pending_summands:
                     if Counter(vs) == Counter(sr[1]):
-                        coeff += symb*sr[0]
+                        coeff += symb * sr[0]
                         pending_summands.remove(sr)
                 if coeff != 0:
                     summands.append((coeff, vs))
             for coeff, vs in pending_summands:
                 if coeff != 0:
-                    summands.append((symb*coeff,vs))
+                    summands.append((symb * coeff, vs))
         self._summands = summands
         self._update()
 
@@ -72,7 +72,7 @@ class Expression(object):
             if s[0] == 0:
                 self._summands.remove(s)
                 continue
-            var_set= var_set.union([*s[1]])
+            var_set = var_set.union(s[1])
             if len(s[1]) > mx_degree:
                 mx_degree = len(s[1])
         self._vars = list(var_set)
@@ -110,7 +110,7 @@ class Expression(object):
             elif number(s[0]) != number(0.0):
                 txt_s = str(number(s[0]))
 
-            if number(s[0]) > number(0.0) and txt!="":
+            if number(s[0]) > number(0.0) and txt != "":
                 txt += " + "
             elif txt != "":
                 txt += " "
@@ -143,21 +143,27 @@ class Expression(object):
         if lib == "ppl":
             from ppl import Linear_Expression
             from ppl import Variable
+
             def toVar(v):
                 if v in variables:
                     return Variable(variables.index(v))
                 else:
                     raise ValueError("{} is not a variable.".format(v))
+
             return self.get(toVar, int, Linear_Expression)
         elif lib == "z3":
+
             def nope(v):
                 return v
+
             from z3 import Real
+
             def toVar(v):
                 if v in variables:
                     return Real(v)
                 else:
                     raise ValueError("{} is not a variable.".format(v))
+
             return self.get(toVar, Real, nope)
         else:
             raise ValueError("lib ({}) not supported".format(lib))
@@ -195,7 +201,7 @@ class Expression(object):
         return Expression(self, "/", right)
 
     def __neg__(self):
-        return self*(-1)
+        return self * (-1)
 
     def __pos__(self):
         return self
@@ -272,6 +278,7 @@ class Expression(object):
             raise NotImplementedError()
         return inequality(self, ">=", right)
 
+
 class ExprTerm(Expression):
     
     def __init__(self, value):
@@ -300,7 +307,8 @@ class ExprTerm(Expression):
         if self.elem == "number":
             return ExprTerm(-self.value)
         else:
-            return self*(-1)
+            return self * (-1)
+
 
 class Expressiona(object):
     
@@ -313,7 +321,7 @@ class Expressiona(object):
         
         if arg2:
             if(not op or
-               not(op in ["+","-","/","*"]) or
+               not(op in ["+", "-", "/", "*"]) or
                not isinstance(arg2, Expression)):
                 raise ValueError()
         elif op and op != "-":
@@ -368,21 +376,27 @@ class Expressiona(object):
         if lib == "ppl":
             from ppl import Linear_Expression
             from ppl import Variable
+
             def toVar(v):
                 if v in variables:
                     return Variable(variables.index(v))
                 else:
                     raise ValueError("{} is not a variable.".format(v))
+
             return self.get(toVar, int, Linear_Expression)
         elif lib == "z3":
+
             def nope(v):
                 return v
+
             from z3 import Real
+
             def toVar(v):
                 if v in variables:
                     return Real(variables.index(v))
                 else:
                     raise ValueError("{} is not a variable.".format(v))
+
             return self.get(toVar, Real, nope)
         else:
             raise ValueError("lib ({}) not supported".format(lib))
@@ -420,7 +434,7 @@ class Expressiona(object):
         return Expression(self, "/", right)
 
     def __neg__(self):
-        return self*(-1)
+        return self * (-1)
 
     def __pos__(self):
         return self
@@ -502,7 +516,7 @@ class Expressiona(object):
         if self._op:
             r = "{} {}".format(self._op, self._right.toString(variables))
             if aux == "0":
-                if self._op in ["+","-"]:
+                if self._op in ["+", "-"]:
                     aux = r
                 else:
                     aux = "0"
@@ -512,6 +526,7 @@ class Expressiona(object):
 
     def __repr__(self):
         return self.toString()
+
 
 class ExprTerma(Expression):
 
@@ -556,7 +571,7 @@ class ExprTerma(Expression):
         if self.elem == "number":
             return ExprTerm(-self.value)
         else:
-            return self*(-1)
+            return self * (-1)
 
     def toString(self, variables=None):
         if self.elem == "number":
@@ -602,7 +617,7 @@ class Not(BoolExpression):
         return neg_exp.toDNF()
 
     def __repr__(self):
-        return "¬(" + str(self._exp) + ")"
+        return "not(" + str(self._exp) + ")"
 
     def isTrue(self):
         return self._exp.isFalse()
@@ -626,10 +641,10 @@ class Implies(BoolExpression):
     def toDNF(self):
         dnf_left = self._left.negate().toDNF()
         dnf_right = self._right.toDNF()
-        return dnf_left+dnf_right
+        return dnf_left + dnf_right
 
     def __repr__(self):
-        return str(self._left)+"->"+str(self._right)
+        return str(self._left) + "->" + str(self._right)
 
     def isTrue(self):
         return (self._left.isFalse() or self._right.isTrue())
@@ -658,7 +673,7 @@ class And(BoolExpression):
         for dnf in dnfs:
             new_head = []
             for exp in dnf:
-                new_head += [c+exp for c in head]
+                new_head += [c + exp for c in head]
             head = new_head
         return head
 
@@ -722,12 +737,12 @@ class Or(BoolExpression):
 class inequality(BoolExpression):
 
     def __init__(self, left, op, right):
-        oposite = {"<":">","<=":">=","=<":">=","=":"=","==":"==",">=":"<=", "=>":"<="}
+        oposite = {"<":">", "<=":">=", "=<":">=", "=":"=", "==":"==", ">=":"<=", "=>":"<="}
         if(not isinstance(left, Expression) or
            not isinstance(right, Expression) or
            not(op in ["<", "<=", "=<", "=", "==", "=>", ">=", ">"])):
             raise ValueError()
-        if False and op in ["<","<=","=<"]:
+        if False and op in ["<", "<=", "=<"]:
             a_left = right
             a_op = oposite[op]
             a_right = left
@@ -735,14 +750,14 @@ class inequality(BoolExpression):
             a_left = left
             a_op = op
             a_right = right
-        exp =a_left - a_right
+        exp = a_left - a_right
         neg = True
-        for c,_ in exp._summands:
+        for c, _ in exp._summands:
             if c > 0:
                 neg = False
                 break
         if neg:
-            exp = 0-exp
+            exp = 0 - exp
             a_op = oposite[a_op]
         self._exp = exp
         self._op = a_op
@@ -777,8 +792,10 @@ class inequality(BoolExpression):
         else:
             op = gt_symb
         return "{} {} 0".format(self._exp.toString(toVar, number), op)
+
     def __repr__(self):
         return self.toString(str, int, eq_symb="==", leq_symb="<=", geq_symb=">=", lt_symb="<", gt_symb=">")
+
     def toDNF(self):
         return [[self]]
 
@@ -823,7 +840,7 @@ class inequality(BoolExpression):
             return None
         if var_coeff != 1 and var_coeff != -1:
             raise ValueError("isolate can not divide by var coeffs")
-        var_exp = Expression(var_coeff,"*", variable)
+        var_exp = Expression(var_coeff, "*", variable)
         exp = (self._exp - var_exp) / (-var_coeff)
         if variable in exp.get_variables():
             raise ValueError("degree > 1")
@@ -846,24 +863,31 @@ class inequality(BoolExpression):
         if lib == "ppl":
             from ppl import Linear_Expression
             from ppl import Variable
+
             def toVar(v):
                 if v in variables:
                     return Variable(variables.index(v))
                 else:
                     raise ValueError("{} is not a variable.".format(v))
+
             return self.get(toVar, int, Linear_Expression)
         elif lib == "z3":
+
             def nope(v):
                 return v
+
             from z3 import Real
+
             def toVar(v):
                 if v in variables:
                     return Real(v)
                 else:
                     raise ValueError("{} is not a variable.".format(v))
+
             return self.get(toVar, Real, nope)
         else:
             raise ValueError("lib ({}) not supported".format(lib))
+
 
 class boolterm(BoolExpression):
 

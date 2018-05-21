@@ -2,6 +2,7 @@ from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
 from .expressions import ExprTerm
 
+
 class Parser_kittle(ParserInterface):
     
     def parse(self, filepath, debug=False):
@@ -15,11 +16,11 @@ class Parser_kittle(ParserInterface):
         """
         with open(filepath) as file:
             text = file.read()
-        return self.parse_string(text,debug=debug)
+        return self.parse_string(text, debug=debug)
     
     def parse_string(self, cad, _=None, debug=False):
         import os
-        grammarfile = os.path.join(os.path.dirname(__file__),"kittle.g")
+        grammarfile = os.path.join(os.path.dirname(__file__), "kittle.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
@@ -47,10 +48,10 @@ class KittleTreeTransformer(ConstraintTreeTransformer):
         g_vars = [str(v) for v in g_vars]
         N -= 1
         transitions = node
-        program["global_vars"] = g_vars + [v+"'" for v in g_vars]
+        program["global_vars"] = g_vars + [v + "'" for v in g_vars]
         g_vars = program["global_vars"]
-        for i in range(len(program["global_vars"])-1):
-            if program["global_vars"][i] in program["global_vars"][i+1:]:
+        for i in range(len(program["global_vars"]) - 1):
+            if program["global_vars"][i] in program["global_vars"][i + 1:]:
                 raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
 
         set_gvars = set(program["global_vars"])
@@ -66,8 +67,8 @@ class KittleTreeTransformer(ConstraintTreeTransformer):
                 cons = []
             tr["source"] = left.pop(0)
             tr["target"] = right.pop(0)
-            tr["name"] = "t"+str(count)
-            count+=1
+            tr["name"] = "t" + str(count)
+            count += 1
             # add init constraints
             for idx in range(len(left)):
                 if str(left[idx]) == g_vars[idx]:
@@ -75,7 +76,7 @@ class KittleTreeTransformer(ConstraintTreeTransformer):
                 cons.append(left[idx] == ExprTerm(g_vars[idx]))
             # add post constraints
             for idx in range(len(right)):
-                cons.append(right[idx] == ExprTerm(g_vars[N+idx]))
+                cons.append(right[idx] == ExprTerm(g_vars[N + idx]))
             tr["constraints"] = cons
             linear = True
             l_vars = []
@@ -91,7 +92,7 @@ class KittleTreeTransformer(ConstraintTreeTransformer):
             tr["linear"] = linear
             tr["local_vars"] = l_vars
             trs.append(tr)
-        program["transitions"] =trs
+        program["transitions"] = trs
         program["init_node"] = entry
         program["max_local_vars"] = max_local_vars
         return program

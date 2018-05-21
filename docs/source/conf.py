@@ -85,7 +85,6 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -106,12 +105,10 @@ html_static_path = ['_static']
 
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'pyRankFinderdoc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -141,7 +138,6 @@ latex_documents = [
      u'Jesús Doménech, Samir Genaim', 'manual'),
 ]
 
-
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
@@ -150,7 +146,6 @@ man_pages = [
     (master_doc, 'pyrankfinder', u'pyRankFinder Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -162,9 +157,6 @@ texinfo_documents = [
      author, 'pyRankFinder', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}

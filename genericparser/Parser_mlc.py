@@ -15,11 +15,11 @@ class Parser_mlc(ParserInterface):
         """
         with open(filepath) as file:
             fctext = file.read()
-        return self.parse_string(fctext,debug=debug)
+        return self.parse_string(fctext, debug=debug)
     
     def parse_string(self, cad, _=None, debug=False):
         import os
-        grammarfile = os.path.join(os.path.dirname(__file__),"mlc.g")
+        grammarfile = os.path.join(os.path.dirname(__file__), "mlc.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
@@ -33,6 +33,7 @@ class MlcTreeTransformer(ConstraintTreeTransformer):
     transition = list
     transitions = list
     vars = pvars = list
+
     def start(self, node):
         program = {}
         
@@ -43,11 +44,11 @@ class MlcTreeTransformer(ConstraintTreeTransformer):
                 raise ValueError("Different number of variables and"
                                  + " prime variables.")
         else:
-            pvars = [v+"'" for v in g_vars]
+            pvars = [v + "'" for v in g_vars]
 
         program["global_vars"] = g_vars + pvars
-        for i in range(len(program["global_vars"])-1):
-            if program["global_vars"][i] in program["global_vars"][i+1:]:
+        for i in range(len(program["global_vars"]) - 1):
+            if program["global_vars"][i] in program["global_vars"][i + 1:]:
                 raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
 
         program["transitions"] = node[-1]

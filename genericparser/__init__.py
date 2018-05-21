@@ -44,13 +44,13 @@ class GenericParser:
         if(file_extension in self._parserlist):
             # import parser
             name = self._parserlist[file_extension]
-            m = getattr(__import__("genericparser."+name), name)
+            m = getattr(__import__("genericparser." + name), name)
             P = getattr(m, name)
             parser = P()
             cfg = parser.parse(filepath)
 
             return cfg
-        raise Exception("Parser not found (ext: '"+file_extension+"' )")
+        raise Exception("Parser not found (ext: '" + file_extension + "' )")
 
 
 class ParserInterface:

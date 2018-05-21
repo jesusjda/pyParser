@@ -2,7 +2,6 @@
 import os
 from setuptools import setup
 
-
 base = os.path.dirname(os.path.abspath(__file__))
 
 VERSION = open(os.path.join(base, 'version.txt')).read()[:-1]

@@ -43,7 +43,7 @@ class ConstraintTreeTransformer(Transformer):
     def expression(self, node):
         exp = node[0]
         for i in range(2, len(node), 2):
-            op = node[i-1]
+            op = node[i - 1]
             e2 = node[i]
             if op == "+":
                 exp = exp + e2
@@ -54,7 +54,7 @@ class ConstraintTreeTransformer(Transformer):
     def factor(self, node):
         exp = node[0]
         for i in range(2, len(node), 2):
-            op = node[i-1]
+            op = node[i - 1]
             e2 = node[i]
             if op == "*":
                 exp = exp * e2

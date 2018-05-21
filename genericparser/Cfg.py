@@ -66,6 +66,49 @@ class Cfg(MultiDiGraph):
                             if name is None or name == n:
                                 self[s][t][n][key] = value
 
+    @open_file(1,"w")
+    def toSummary(self, path):
+        """Writes a summary of the cfg such that:
+        - num of nodes
+        - num of transitions
+        - avg constraints per transitions
+        - max constraints per transitions
+        - avg num transitions per scc
+        - max num transitions per scc
+        - num scc
+        """
+        summary = {}
+        summary["#nodes"] = len(self.nodes())
+        ntrs = len(self.get_edges())
+        summary["#transitions"] = ntrs
+        sccs = 0
+        avgtrsscc = 0
+        maxtrsscc = 0
+        for s in self.get_scc():
+            trs=len(s.get_edges())
+            if trs > 0:
+                sccs+=1
+                avgtrsscc+=trs
+                if trs > maxtrsscc:
+                    maxtrsscc = trs
+        avgtrsscc=float(avgtrsscc)/float(sccs)
+        summary["#sccs"] = sccs
+        summary["avg_transitions_sccs"] = avgtrsscc
+        summary["max_transitions_sccs"] = maxtrsscc
+        avgcstrs = 0
+        maxcstrs = 0
+        for t in self.get_edges():
+            cs = len(t["constraints"])
+            avgcstrs += cs
+            if cs > maxcstrs:
+                maxcstrs = cs
+        avgcstrs = float(avgcstrs)/float(ntrs)
+        summary["avg_constraints_transitions"] = avgcstrs
+        summary["max_constraints_transitions"] = maxcstrs
+        import json
+        json.dump(summary, path)
+        return summary
+
     def neighbors(self, node):
         return nx.all_neighbors(self, node)
 

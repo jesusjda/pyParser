@@ -16,11 +16,11 @@ class Parser_koat(ParserInterface):
         """
         with open(filepath) as file:
             fctext = file.read()
-        return self.parse_string(fctext,debug=debug)
+        return self.parse_string(fctext, debug=debug)
 
     def parse_string(self, cad, _=None, debug=False):
         import os
-        grammarfile = os.path.join(os.path.dirname(__file__),"koat.g")
+        grammarfile = os.path.join(os.path.dirname(__file__), "koat.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
@@ -38,6 +38,7 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
     noentry = lambda self, _: None
 
     def start(self, node):
+
         def check_node(node, data, nodes):
             new_num, vrs = data
             if node in nodes:
@@ -47,7 +48,7 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
                         nodes[node] = (num, vrs)
                     elif vrs != []:
                         for i in range(num):
-                            if vs[i] != vrs[i]:
+                            if str(vs[i]) != str(vrs[i]):
                                 raise ValueError("Node {} with different args name.".format(node))
                     return nodes
                 else:
@@ -64,11 +65,11 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
         defined_vars = [str(v) for v in node[2]]
         N = len(transitions[0][0][1:])
         vs = defined_vars[:N]
-        pvs = [v+"'" for v in vs]
+        pvs = [v + "'" for v in vs]
         program["global_vars"] = vs + pvs
         g_vars = program["global_vars"]
-        for i in range(len(program["global_vars"])-1):
-            if program["global_vars"][i] in program["global_vars"][i+1:]:
+        for i in range(len(program["global_vars"]) - 1):
+            if program["global_vars"][i] in program["global_vars"][i + 1:]:
                 raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
 
         set_gvars = set(program["global_vars"])
@@ -89,10 +90,10 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
             trg = right.pop(0)
             tr["target"] = trg
             nodes = check_node(tr["target"], (len(right), []), nodes)
-            tr["name"] = "t"+str(count)
+            tr["name"] = "t" + str(count)
             tr["tmp_cons"] = cons
             tr["tmp_right"] = right
-            count+=1
+            count += 1
             tmp_trs.append(tr)
         for tr in tmp_trs:
             cons = tr["tmp_cons"]
@@ -105,7 +106,7 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
             if len(trg_args) == trg_num: 
                 for idx in range(trg_num):
                     vindex = g_vars.index(str(trg_args[idx]))
-                    cons.append(right[idx] == ExprTerm(g_vars[N+vindex]))
+                    cons.append(right[idx] == ExprTerm(g_vars[N + vindex]))
             tr["constraints"] = cons
             linear = True
             l_vars = []
@@ -122,7 +123,7 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
             tr["local_vars"] = l_vars
             trs.append(tr)
 
-        program["transitions"] =trs
+        program["transitions"] = trs
         if entry:
             program["init_node"] = entry
         else:

@@ -15,11 +15,11 @@ class Parser_fc(ParserInterface):
         """
         with open(filepath) as file:
             fctext = file.read()
-        return self.parse_string(fctext,debug=debug)
+        return self.parse_string(fctext, debug=debug)
     
     def parse_string(self, cad, _=None, debug=False):
         import os
-        grammarfile = os.path.join(os.path.dirname(__file__),"fc.g")
+        grammarfile = os.path.join(os.path.dirname(__file__), "fc.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
@@ -36,6 +36,7 @@ class FcTreeTransformer(ConstraintTreeTransformer):
     false = lambda self, _: False
     key = lambda self, node: str(node[0])
     name = lambda self, node: str(node[0])
+
     def dict(self, node):
         keys = []
         for n in node:
@@ -46,6 +47,7 @@ class FcTreeTransformer(ConstraintTreeTransformer):
         return dict(node)
 
     def start(self, node):
+
         def _check_key(dic, key, optional=False):
             isin = key in dic
             if not isin and not optional:
@@ -63,11 +65,11 @@ class FcTreeTransformer(ConstraintTreeTransformer):
             program["global_vars"] += program["pvars"]
             program.pop("pvars", None)
         else:
-            program["global_vars"] += [v+"'" for v in program["vars"]]
+            program["global_vars"] += [v + "'" for v in program["vars"]]
         program.pop("vars", None)
 
-        for i in range(len(program["global_vars"])-1):
-            if program["global_vars"][i] in program["global_vars"][i+1:]:
+        for i in range(len(program["global_vars"]) - 1):
+            if program["global_vars"][i] in program["global_vars"][i + 1:]:
                 raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
 
         _check_key(program, "transitions")

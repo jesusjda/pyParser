@@ -5,14 +5,13 @@ import glob
 import os
 from termination.output import Output_Manager as OM
 
-
 _name = "Generic Parser"
 _version = "0.1"
 
 
 def setArgumentParser():
     # parsers = ["Parser_fc", "Parser_mlc"]
-    desc = _name+": a Parser and dot graph generator on python."
+    desc = _name + ": a Parser and dot graph generator on python."
     argParser = argparse.ArgumentParser(description=desc)
 
     argParser.add_argument("-d", "--dot", required=False, action='store_true',
@@ -28,8 +27,8 @@ def setArgumentParser():
 
 def toSVG(source, target=None):
     if target is None :
-        target = source+".svg"
-    command = "dot -Tsvg " + source + " -o "+ target 
+        target = source + ".svg"
+    command = "dot -Tsvg " + source + " -o " + target 
     os.system(command)
 
 
@@ -54,30 +53,32 @@ def _main():
     errors = []
     for f in files:
         try:
-            do_file(P,f)
+            do_file(P, f)
         except Exception:
             errors.append(f)
 
     print("ERRORS: ", errors)
     exit(0)
 
+
 def do_file(P, f):
     fileName, fileExt = os.path.splitext(os.path.basename(f))
     dotgraph = None
-    #if args.dot:
+    # if args.dot:
     #    dotgraph = ("/home/friker/tmp/cache/" +
     #                fileName + "." + fileExt[1::])
     print("-> {}".format(f))
     cfg = P.parse(f)
     OM.restart(vars_name=cfg.get_info("global_vars"))
-    #cfg.toDot(OM, outfile=(dotgraph+".dot"))
-    #toSVG(dotgraph+".dot")
+    # cfg.toDot(OM, outfile=(dotgraph+".dot"))
+    # toSVG(dotgraph+".dot")
     smt2p = Parser_smt2()
     fccode, err = smt2p.toFC(f)
     print(fccode.decode("utf-8"))
-    #with open(dotgraph+".fc", "w") as fcfile:
+    # with open(dotgraph+".fc", "w") as fcfile:
     #    fcfile.write(fccode.decode("utf-8"))
     return cfg
+
 
 if __name__ == "__main__":
     _main()
