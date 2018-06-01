@@ -1,5 +1,5 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
-from genericparser import ParserInterface
+from . import ParserInterface
 
 
 class Parser_fc(ParserInterface):

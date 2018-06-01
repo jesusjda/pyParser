@@ -8,6 +8,11 @@ import os
 import sys
 
 from . import Cfg
+from . import Parser_fc
+from . import Parser_mlc
+from . import Parser_smt2
+from . import Parser_koat
+
 
 __all__ = ['GenericParser', 'Cfg']
 
@@ -25,6 +30,13 @@ class GenericParser:
         :type configfile: str
 
         """
+        self._parserlist = {
+            ".fc": Parser_fc,
+            ".smt2": Parser_smt2,
+            ".mlc": Parser_mlc,
+            ".koat": Parser_koat,
+            }
+        return
         self._current_dir = os.path.dirname(__file__)
         if configfile is None:
             configfile = os.path.join(self._current_dir, 'file-ext.json')
@@ -41,12 +53,13 @@ class GenericParser:
         :raises: ParserError
         """
         _, file_extension = os.path.splitext(filepath)
+        #self._parserlist[file_extension] = "Parser_"+str(file_extension[1:])
         if(file_extension in self._parserlist):
             # import parser
             name = self._parserlist[file_extension]
-            m = getattr(__import__("genericparser." + name), name)
-            P = getattr(m, name)
-            parser = P()
+            #m = getattr(__import__("genericparser." + name), name)
+            #P = getattr(m, name)
+            parser = name()
             cfg = parser.parse(filepath)
 
             return cfg
