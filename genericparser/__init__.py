@@ -8,10 +8,6 @@ import os
 import sys
 
 from . import Cfg
-from . import Parser_fc
-from . import Parser_mlc
-from . import Parser_smt2
-from . import Parser_koat
 
 
 __all__ = ['GenericParser', 'Cfg']
@@ -31,17 +27,11 @@ class GenericParser:
 
         """
         self._parserlist = {
-            ".fc": Parser_fc,
-            ".smt2": Parser_smt2,
-            ".mlc": Parser_mlc,
-            ".koat": Parser_koat,
+            ".fc": Parser_fc.Parser_fc,
+            ".smt2": Parser_smt2.Parser_smt2,
+            ".mlc": Parser_mlc.Parser_mlc,
+            ".koat": Parser_koat.Parser_koat,
             }
-        return
-        self._current_dir = os.path.dirname(__file__)
-        if configfile is None:
-            configfile = os.path.join(self._current_dir, 'file-ext.json')
-        with open(configfile) as data:
-            self._parserlist = json.load(data)
 
     def parse(self, filepath):
         """Parse a file with their corresponding parser
@@ -53,9 +43,7 @@ class GenericParser:
         :raises: ParserError
         """
         _, file_extension = os.path.splitext(filepath)
-        #self._parserlist[file_extension] = "Parser_"+str(file_extension[1:])
         if(file_extension in self._parserlist):
-            # import parser
             name = self._parserlist[file_extension]
             #m = getattr(__import__("genericparser." + name), name)
             #P = getattr(m, name)
@@ -95,3 +83,9 @@ class ParserInterface:
             if not(key in ["transitions", "nodes"]):
                 G.set_info(key, program[key])
         return G
+
+
+from . import Parser_fc
+from . import Parser_mlc
+from . import Parser_smt2
+from . import Parser_koat
