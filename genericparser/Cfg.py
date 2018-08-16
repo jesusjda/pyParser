@@ -230,6 +230,27 @@ class Cfg(MultiDiGraph):
                     path.write("{} :- {}{}.\n".format(source, phi, target))
 
     @open_file(1,"w")
+    def toFc(self, path=None):
+        path.write("{\n")
+        global_vars = self.graph["global_vars"]
+        N = int(len(global_vars)/2)
+        path.write("  vars: [{}],\n".format(",".join(global_vars[:N])))
+        path.write("  pvars: [{}],\n".format(",".join(global_vars[N:])))
+        path.write("  initnode: {},\n".format(self.graph["init_node"]))
+        trs = []
+        for s in self:
+            for t in self[s]:
+                for n in self[s][t]:
+                    id = lambda v: v
+                    cons = [c.toString(id, int, eq_symb="=", leq_symb="=<")
+                            for c in self[s][t][n]["constraints"]]
+                    c = ", ".join(cons)
+                    trs.append("{{\n\tsource: {},\n\ttarget: {},\n\tname: {},\n\tconstraints: [{}]\n    }}".format(s,t,n,c))
+        ts = ",\n    ".join(trs)
+        path.write("  transitions: [\n    {}\n  ]\n".format(ts))
+        path.write("}\n")
+
+    @open_file(1,"w")
     def toKoat(self, path=None, goal_complexity=False, invariants=False):
         if goal_complexity:
             goal = "COMPLEXITY"
