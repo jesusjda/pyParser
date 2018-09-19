@@ -1,3 +1,8 @@
+v0.6 2018/09/19
+- invariants support
+- build_polyhedrons method
+- simplify_polyhedrons
+- cfg summary
 v0.4 2018/03/12
 - koat support
 - kittle support

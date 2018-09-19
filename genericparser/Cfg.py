@@ -64,6 +64,8 @@ class Cfg(MultiDiGraph):
                     if target is None or target == t:
                         for n in self[s][t]:
                             if name is None or name == n:
+                                if key in self[s][t][n]:
+                                    del self[s][t][n][key]
                                 self[s][t][n][key] = value
 
     @open_file(1,"w")
@@ -84,10 +86,12 @@ class Cfg(MultiDiGraph):
         sccs = 0
         avgtrsscc = 0
         maxtrsscc = 0
+        trsscc = []
         for s in self.get_scc():
             trs=len(s.get_edges())
             if trs > 0:
                 sccs+=1
+                trsscc.append(trs)
                 avgtrsscc+=trs
                 if trs > maxtrsscc:
                     maxtrsscc = trs
@@ -95,19 +99,47 @@ class Cfg(MultiDiGraph):
         summary["#sccs"] = sccs
         summary["avg_transitions_sccs"] = avgtrsscc
         summary["max_transitions_sccs"] = maxtrsscc
+        summary["transitions_scc"] = trsscc
         avgcstrs = 0
         maxcstrs = 0
+        cstrs = []
         for t in self.get_edges():
             cs = len(t["constraints"])
             avgcstrs += cs
+            cstrs.append(cs)
             if cs > maxcstrs:
                 maxcstrs = cs
         avgcstrs = float(avgcstrs)/float(ntrs)
         summary["avg_constraints_transitions"] = avgcstrs
         summary["max_constraints_transitions"] = maxcstrs
+        summary["constraints_transition"] = cstrs
         import json
         json.dump(summary, path)
         return summary
+
+    def build_polyhedrons(self):
+        from ppl import Constraint_System
+        from lpi import C_Polyhedron
+        gvars = self.graph["global_vars"]
+        for e in self.get_edges():
+            if "tr_polyhedron" in e:
+                continue
+            all_vars = gvars + e["local_vars"]
+            ppl_cons = [c.transform(all_vars, lib="ppl")
+                        for c in e["constraints"] if c.is_linear()]
+            e["tr_polyhedron"] = C_Polyhedron(Constraint_System(ppl_cons), len(all_vars))
+            e["polyhedron"] = C_Polyhedron(Constraint_System(ppl_cons), len(all_vars))
+            if e["tr_polyhedron"].is_empty():
+                self.remove_edge(e["source"], e["target"], e["name"])
+
+
+    def simplify_constraints(self, simplify=True):
+        if simplify:
+            self.build_polyhedrons()
+            for e in self.get_edges():
+                e["polyhedron"].minimized_constraints()
+                if e["polyhedron"].is_empty():
+                    self.remove_edge(e["source"], e["target"], e["name"])
 
     def neighbors(self, node):
         return nx.all_neighbors(self, node)
@@ -149,18 +181,18 @@ class Cfg(MultiDiGraph):
         """
         return nx.simple_cycles(self)
 
-    def toDot(self, outfile, minimize=False, invariants=False):
+    def toDot(self, outfile, minimize=False, invariant="none"):
         """
         """
-        if invariants:
+        if invariant != "none":
             n_labels = {}
             for n in self.nodes():
                 try:
-                    invariant = self.nodes[n]["invariant"].toString(vars_name=self["global_variables"])
+                    invariants = self.nodes[n]["invariant_"+str(invariant)].toString(vars_name=self["global_variables"])
                 except Exception:
-                    invariant = []
+                    invariants = []
                 n_labels[n] = ("" + str(n) + "\n" +
-                               invariant
+                               invariants
                                + "")
             g = nx.relabel_nodes(self, n_labels)
         else:
@@ -182,7 +214,7 @@ class Cfg(MultiDiGraph):
         write_dot(g, outfile)
 
     @open_file(1,"w")
-    def toProlog(self, path=None, invariants=False):
+    def toProlog(self, path=None, invariant_type="none"):
         def saveName(word):
             import re
             return re.sub('[\'\?\!\^.]', '_P', word)
@@ -206,24 +238,23 @@ class Cfg(MultiDiGraph):
         path.write("% initial point\n")
         for e in epoints:
             path.write("% startpoint :- {}.\n".format(e))
-
         # print transitions
         for s in self: # source node
             path.write("\n% transitions from node {}\n".format(s))
             source = "n_{}{}".format(saveName(s),vs)
             for t in self[s]: # target node
                 target = "n_{}{}".format(saveName(t),pvs)
-                for name in self[s][t]: # concrete edge
+                for tr in self.get_edges(source=s, target=t): # concrete edge
                     renamedvars = lambda v: "Var"+saveName(v)
                     cons = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
-                            for c in self[s][t][name]["constraints"]]
-                    if invariants:
+                            for c in tr["constraints"]]
+                    if invariant_type != "none":
                         try:
                             new_globals = [renamedvars(v) for v in global_vars]
-                            invariant = self.nodes[s]["invariant"].toString(vars_name=new_globals, eq_symb="=")
+                            invariants = self.nodes[s]["invariant_"+str(invariant_type)].toString(vars_name=new_globals, eq_symb="=")
                         except Exception:
-                            invariant = []
-                        cons += invariant
+                            invariants = []
+                        cons += invariants
                     phi = ",".join(cons)
                     if phi != "":
                         phi +=", "
@@ -251,7 +282,7 @@ class Cfg(MultiDiGraph):
         path.write("}\n")
 
     @open_file(1,"w")
-    def toKoat(self, path=None, goal_complexity=False, invariants=False):
+    def toKoat(self, path=None, goal_complexity=False, invariant_type="none"):
         if goal_complexity:
             goal = "COMPLEXITY"
         else:
@@ -259,13 +290,13 @@ class Cfg(MultiDiGraph):
         path.write("(GOAL {})\n".format(goal))
         path.write("(STARTTERM (FUNCTIONSYMBOLS pyRinit))\n")
         try:
-            rules, str_vars = self._toKoat_rules1(invariants)
+            rules, str_vars = self._toKoat_rules1(invariant_type)
         except ValueError:
-            rules, str_vars = self._toKoat_rules2(invariants)
+            rules, str_vars = self._toKoat_rules2(invariant_type)
         path.write("(VAR {})\n".format(str_vars))
         path.write("(RULES {})\n".format(rules))
 
-    def _toKoat_rules1(self, invariants):
+    def _toKoat_rules1(self, invariant_type):
         def isolate(cons, pvars):
             result = cons[:]
             pvar_exps = []
@@ -311,13 +342,13 @@ class Cfg(MultiDiGraph):
                     renamedvars = lambda v: str(v)
                     cons_str = [c.toString(renamedvars, int, eq_symb="=")
                                 for c in cons]
-                    if invariants:
+                    if invariant_type != "none":
                         try:
                             new_globals = [renamedvars(v) for v in global_vars]
-                            invariant = self.nodes[src]["invariant"].toString(vars_name=new_globals, eq_symb="=")
+                            invariants = self.nodes[src]["invariant_"+str(invariant_type)].toString(vars_name=new_globals, eq_symb="=")
                         except Exception:
-                            invariant = []
-                        cons_str += invariant
+                            invariants = []
+                        cons_str += invariants
                     if len(cons_str) > 0:
                         phi = " :|: "+ " && ".join(cons_str)
                     else:
@@ -325,7 +356,7 @@ class Cfg(MultiDiGraph):
                     rules += "  {}({}) -> Com_1({}({})){}\n".format(src,str_vars,trg,pvalues,phi)
         return rules, " ".join(global_vars[:N]+list(localV))
 
-    def _toKoat_rules2(self, invariants):
+    def _toKoat_rules2(self, invariant_type):
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
         str_vars = ",".join(global_vars[:N])
@@ -342,13 +373,13 @@ class Cfg(MultiDiGraph):
                     renamedvars = lambda v: str(v)
                     cons_str = [c.toString(renamedvars, int, eq_symb="=")
                                 for c in cons]
-                    if invariants:
+                    if invariant_type != "none":
                         try:
                             new_globals = [renamedvars(v) for v in global_vars]
-                            invariant = self.nodes[src]["invariant"].toString(vars_name=new_globals, eq_symb="=")
+                            invariants = self.nodes[src]["invariant_"+str(invariant_type)].toString(vars_name=new_globals, eq_symb="=")
                         except Exception:
-                            invariant = []
-                        cons_str += invariant
+                            invariants = []
+                        cons_str += invariants
                     if len(cons_str) > 0:
                         phi = " :|: "+ " && ".join(cons_str)
                     else:
