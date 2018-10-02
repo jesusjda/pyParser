@@ -1,7 +1,31 @@
 from .expressions import ExprTerm
 from .expressions import Expression
 from lark import Transformer
+from . import ParserInterface
 
+class Parser_Constraint(ParserInterface):
+    
+    def parse(self, filepath, debug=False):
+        """Parse constraint
+
+        :param filepath: Full path to file to be parsed.
+        :type filepath: str
+        :param debug: True to show debug information. Defaults to False
+        :type debug: bool
+        :returns: :obj:`pyParser.Cfg.Cfg` ControlFlowGraph.
+        """
+        with open(filepath) as file:
+            fctext = file.read()
+        return self.parse_string(fctext, debug=debug)
+    
+    def parse_string(self, cad, _=None, debug=False):
+        import os
+        grammarfile = os.path.join(os.path.dirname(__file__), "constraint.g")
+        with open(grammarfile, "r") as grammar:
+            g = grammar.read()
+        from lark.lark import Lark
+        l = Lark(g)
+        return ConstraintTreeTransformer().transform(l.parse(cad))
 
 class ConstraintTreeTransformer(Transformer):
     """To use this parser, you must add ConstraintTreeTransformer
@@ -20,6 +44,8 @@ class ConstraintTreeTransformer(Transformer):
 
     constraint: expression CMP expression
     """
+    def start(self, node):
+        return node[0]
 
     def constraint(self, node):
         e1 = node[0]

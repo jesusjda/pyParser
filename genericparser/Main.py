@@ -1,5 +1,5 @@
 import argparse
-from genericparser import GenericParser
+import genericparser
 from genericparser.Parser_smt2 import Parser_smt2
 import glob
 import os
@@ -49,11 +49,10 @@ def _main():
         else:
             full_paths += glob.glob(path + '/*')
     files.sort()
-    P = GenericParser()
     errors = []
     for f in files:
         try:
-            do_file(P, f)
+            do_file(f)
         except Exception:
             errors.append(f)
 
@@ -61,14 +60,14 @@ def _main():
     exit(0)
 
 
-def do_file(P, f):
+def do_file(f):
     fileName, fileExt = os.path.splitext(os.path.basename(f))
     dotgraph = None
     # if args.dot:
     #    dotgraph = ("/home/friker/tmp/cache/" +
     #                fileName + "." + fileExt[1::])
     print("-> {}".format(f))
-    cfg = P.parse(f)
+    cfg = genericparser.parse(f)
     OM.restart(vars_name=cfg.get_info("global_vars"))
     # cfg.toDot(OM, outfile=(dotgraph+".dot"))
     # toSVG(dotgraph+".dot")

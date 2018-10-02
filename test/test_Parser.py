@@ -17,8 +17,7 @@ class TestKey(unittest.TestCase):
         testfile = _os.path.join(p, "../genericparser/examples/example.fc")
         result = _os.path.join(p, "./result_fc.dot")
         original = _os.path.join(p, "../genericparser/graphs/example_fc.dot")
-        prs = genericparser.GenericParser()
-        cfg = prs.parse(testfile, result)
+        cfg = genericparser.parse(testfile, result)
         with open(result, 'r') as f:
             r_list = f.read()
         with open(original, 'r') as f:
@@ -45,8 +44,7 @@ class TestKey(unittest.TestCase):
         result = _os.path.join(p, "./result_mlc.dot")
         original = _os.path.join(p, "../genericparser/graphs/example_mlc.dot")
         print("..")
-        prs = genericparser.GenericParser()
-        cfg = prs.parse(testfile, result)
+        cfg = genericparser.parse(testfile, result)
 
         with open(result, 'r') as f:
             r_list = f.read()

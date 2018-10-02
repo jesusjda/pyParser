@@ -1,57 +1,15 @@
-"""This is the Generic Parser module.
+"""This is the GenericParser module.
 
 This module can parse several languages and convert them
 to a common Control Flow Graph Class.
 """
 import json
 import os
-import sys
 
 from . import Cfg
 
 
-__all__ = ['GenericParser', 'Cfg']
-
-
-class GenericParser:
-    """Common interface for several parsers
-    """
-    _current_dir = "."
-    _parserList = {}
-
-    def __init__(self, configfile=None):
-        """Builds Generic Parser
-
-        :param configfile: Full path to configuration file
-        :type configfile: str
-
-        """
-        self._parserlist = {
-            ".fc": Parser_fc.Parser_fc,
-            ".smt2": Parser_smt2.Parser_smt2,
-            ".mlc": Parser_mlc.Parser_mlc,
-            ".koat": Parser_koat.Parser_koat,
-            }
-
-    def parse(self, filepath):
-        """Parse a file with their corresponding parser
-
-        :param filepath: Full path to the file to be parsed
-        :type filepath: str
-        :returns: :obj:`genericparser.Cfg.Cfg` The Cfg corresponding
-        to the file
-        :raises: ParserError
-        """
-        _, file_extension = os.path.splitext(filepath)
-        if(file_extension in self._parserlist):
-            name = self._parserlist[file_extension]
-            #m = getattr(__import__("genericparser." + name), name)
-            #P = getattr(m, name)
-            parser = name()
-            cfg = parser.parse(filepath)
-
-            return cfg
-        raise Exception("Parser not found (ext: '" + file_extension + "' )")
+__all__ = ['parse', 'parse_constraint', 'Cfg']
 
 
 class ParserInterface:
@@ -89,3 +47,40 @@ from . import Parser_fc
 from . import Parser_mlc
 from . import Parser_smt2
 from . import Parser_koat
+
+_parserlist = {
+    ".fc": Parser_fc.Parser_fc,
+    ".smt2": Parser_smt2.Parser_smt2,
+    ".mlc": Parser_mlc.Parser_mlc,
+    ".koat": Parser_koat.Parser_koat,
+    }
+
+def parse(filepath):
+    """Parse a file with their corresponding parser
+
+    :param filepath: Full path to the file to be parsed
+    :type filepath: str
+    :returns: :obj:`genericparser.Cfg.Cfg` The corresponding Cfg
+    :raises: ParserError
+    """
+    _, file_extension = os.path.splitext(filepath)
+    if(file_extension in _parserlist):
+        name = _parserlist[file_extension]
+        parser = name()
+        cfg = parser.parse(filepath)
+
+        return cfg
+    raise Exception("Parser not found (ext: '" + file_extension + "' )")
+
+def parse_constraint(cons_string):
+    
+    from . import Constraint_parser
+    """Parse a string to a constraint
+    
+    :param cons_string: string to be parsed
+    :type cons_string: str
+    :returns: :obj: `genericparser.expessions.inequality` The corresponding constraint
+    :raises: ParserError
+    """
+    return Constraint_parser.Parser_Constraint().parse_string(cons_string)
+

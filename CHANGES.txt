@@ -1,3 +1,8 @@
+v1.0 2018/10/02
+- GenericParser no longer avaliable, now parse directly from function `parse`.
+- parse contraints independently.
+- toKoat improved: now tries to project prime variables.
+- toFC improve: now shows nodes properties.
 v0.6 2018/09/19
 - invariants support
 - build_polyhedrons method
