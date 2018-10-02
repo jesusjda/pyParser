@@ -281,9 +281,9 @@ class Cfg(MultiDiGraph):
                     path.write("        {},\n".format(p))
                 path.write("      ],\n")
             if "invariant_polyhedra" in data:
-                path.write("      invariant_polyhedra: {},\n".format(", ".join(data["invariant_polyhedra"].toString(vars_name=global_vars))))
+                path.write("      invariant_polyhedra: [{}],\n".format(", ".join(data["invariant_polyhedra"].toString(vars_name=global_vars))))
             if "invariant_interval" in data:
-                path.write("      invariant_interval: {},\n".format(", ".join(data["invariant_interval"].toString(vars_name=global_vars))))
+                path.write("      invariant_interval: [{}],\n".format(", ".join(data["invariant_interval"].toString(vars_name=global_vars))))
             path.write("    },\n")
         path.write("  },\n")    
         trs = []
