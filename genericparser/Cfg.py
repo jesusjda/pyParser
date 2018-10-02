@@ -271,12 +271,12 @@ class Cfg(MultiDiGraph):
         path.write("  vars: [{}],\n".format(",".join(global_vars[:N])))
         path.write("  pvars: [{}],\n".format(",".join(global_vars[N:])))
         path.write("  initnode: {},\n".format(self.graph["init_node"]))
-        path.write("  nodes: {{\n")
+        path.write("  nodes: {\n")
         nodes =  self.get_nodes(data=True)
         for n, data in nodes:
             path.write("    {}: {{\n".format(n))
             if "cfr_properties" in data:
-                path.write("      cfr_properties: [,\n")
+                path.write("      cfr_properties: [\n")
                 for p in data["cfr_properties"]:
                     path.write("        {},\n".format(p))
                 path.write("      ],\n")
