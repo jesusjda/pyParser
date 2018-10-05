@@ -137,12 +137,18 @@ class Cfg(MultiDiGraph):
 
 
     def simplify_constraints(self, simplify=True):
+        from termination.output import Output_Manager as OM
         if simplify:
+            OM.printf("Simplifying constraints")
             self.build_polyhedrons()
             for e in self.get_edges():
+                OM.printf("-> {}".format(e["name"]))
                 e["polyhedron"].minimized_constraints()
                 if e["polyhedron"].is_empty():
+                    OM.printf("-> {} REMOVED".format(e["name"]))
                     self.remove_edge(e["source"], e["target"], e["name"])
+                else:
+                    OM.printf("-> {}".format(e["name"]))
 
     def neighbors(self, node):
         return nx.all_neighbors(self, node)
