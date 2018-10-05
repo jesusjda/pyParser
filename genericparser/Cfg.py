@@ -143,6 +143,9 @@ class Cfg(MultiDiGraph):
                 e["polyhedron"].minimized_constraints()
                 if e["polyhedron"].is_empty():
                     self.remove_edge(e["source"], e["target"], e["name"])
+            isolate_node = list(nx.isolates(self))
+            for n in isolate_node:
+                self.remove_node(n)
 
 
     def neighbors(self, node):
