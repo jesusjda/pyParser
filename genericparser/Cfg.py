@@ -382,37 +382,6 @@ class Cfg(MultiDiGraph):
                     rules += "  {}({}) -> Com_1({}({})){}\n".format(src,str_vars,trg,pvalues,phi)
         return rules, " ".join(global_vars+list(localV))
 
-    def _toKoat_rules2(self, invariant_type):
-        global_vars = self.graph["global_vars"]
-        N = int(len(global_vars)/2)
-        str_vars = ",".join(global_vars[:N])
-        str_pvars = ",".join(global_vars[N:])
-        rules = "\n  pyRinit({}) -> Com_1({}({}))\n".format(str_vars,self.graph["init_node"], str_vars)
-        
-        localV = set()
-        for src in self.get_nodes():
-            for trg in self.get_nodes():
-                for tr in self.get_edges(source=src, target=trg):
-                    cons = tr["constraints"]
-                    local_vars = tr["local_vars"]
-                    localV = localV.union(local_vars)
-                    renamedvars = lambda v: str(v)
-                    cons_str = [c.toString(renamedvars, int, eq_symb="=")
-                                for c in cons]
-                    if invariant_type != "none":
-                        try:
-                            new_globals = [renamedvars(v) for v in global_vars]
-                            invariants = self.nodes[src]["invariant_"+str(invariant_type)].toString(vars_name=new_globals, eq_symb="=")
-                        except Exception:
-                            invariants = []
-                        cons_str += invariants
-                    if len(cons_str) > 0:
-                        phi = " :|: "+ " && ".join(cons_str)
-                    else:
-                        phi = ""
-                    rules += "  {}({}) -> Com_1({}({})){}\n".format(src,str_vars,trg,str_pvars,phi)
-        return rules, " ".join(global_vars+list(localV))
-
     def edge_data_subgraph(self, edges):
         edges_ref = [(e["source"],e["target"],e["name"])
                      for e in edges]
