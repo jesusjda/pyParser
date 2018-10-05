@@ -814,15 +814,14 @@ class inequality(BoolExpression):
         if isinstance(left, number):
             left = expressions(left)
         zero = expressions(number(0))
-        one = expressions(number(1))
         if self._op in ["=", "=="]:
             return (left == zero)
         elif self._op == ">":
-            return (left >= one)
+            return (left >= expressions(number(1)))
         elif self._op in [">=", "=>"]:
             return (left >= zero)
         elif self._op == "<":
-            return (left <= one)
+            return (left <= expressions(number(-1)))
         elif self._op in ["<=", "=<"]:
             return (left <= zero)
 
