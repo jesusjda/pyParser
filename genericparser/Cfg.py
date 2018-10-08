@@ -69,7 +69,6 @@ class Cfg(MultiDiGraph):
 
     def set_nodes_info(self, attrs, label=None):
         nx.set_node_attributes(self, attrs, label)
-        
 
     @open_file(1,"w")
     def toSummary(self, path):
@@ -227,26 +226,36 @@ class Cfg(MultiDiGraph):
         def saveName(word):
             import re
             return re.sub('[\'\?\!\^.]', '_P', word)
+        def generate_pl_names(variables, pl_vars=[], related_vars={}):
+            vs = variables.copy()
+            out_pl_vars = pl_vars.copy()
+            out_related_vars = related_vars.copy()
+            for v in variables:
+                vs.remove(v)
+                i = 1
+                new_v = saveName(v)
+                rnew_v = new_v
+                while rnew_v in vs or rnew_v in out_pl_vars:
+                    rnew_v = new_v+str(i)
+                    i += 1
+                out_related_vars[v] = rnew_v
+                out_pl_vars.append(rnew_v)
+            return out_pl_vars, out_related_vars
+
+
         global_vars = self.graph["global_vars"]
+        pl_global_vars, related_vars = generate_pl_names(global_vars)
+        
         N = int(len(global_vars)/2)
         if N == 0:
             vs = ""
             pvs = ""
         else:
-            vs = ", ".join(["Var"+saveName(v) for v in global_vars[:N]])
-            pvs = ", ".join(["Var"+saveName(v) for v in global_vars[N:]])
+            vs = ", ".join(["Var"+v for v in pl_global_vars[:N]])
+            pvs = ", ".join(["Var"+v for v in pl_global_vars[N:]])
             vs = "("+vs+")"
             pvs = "("+pvs+")"
 
-        # print startpoint
-        if "entry_nodes" in self.graph:
-            entries = self.graph["entry_nodes"]
-        else:
-            entries = [self.graph["init_node"]]
-        epoints = ["n_{}{}".format(saveName(e),vs) for e in entries]
-        path.write("% initial point\n")
-        for e in epoints:
-            path.write("% startpoint :- {}.\n".format(e))
         # print transitions
         for s in self.get_nodes(): # source node
             path.write("\n% transitions from node {}\n".format(s))
@@ -254,14 +263,15 @@ class Cfg(MultiDiGraph):
             for t in self.get_nodes(): # target node
                 target = "n_{}{}".format(saveName(t),pvs)
                 for tr in self.get_edges(source=s, target=t): # concrete edge
-                    renamedvars = lambda v: "Var"+saveName(v)
+                    local_vars = tr["local_vars"]
+                    _, tr_related_vars = generate_pl_names(local_vars, pl_global_vars, related_vars)
+                    renamedvars = lambda v: "Var"+tr_related_vars[v]
                     cons = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
                             for c in tr["constraints"]]
                     if invariant_type != "none":
                         try:
-                            new_globals = [renamedvars(v) for v in global_vars]
-                            invariants = self.nodes[s]["invariant_"+str(invariant_type)].toString(vars_name=new_globals, eq_symb="=")
-                        except Exception as e:
+                            invariants = self.nodes[s]["invariant_"+str(invariant_type)].toString(vars_name=pl_global_vars, eq_symb="=")
+                        except Exception:
                             invariants = []
                         cons += invariants
                     phi = ",".join(cons)
@@ -291,7 +301,7 @@ class Cfg(MultiDiGraph):
             if "invariant_interval" in data:
                 path.write("      invariant_interval: [{}],\n".format(", ".join(data["invariant_interval"].toString(vars_name=global_vars))))
             path.write("    },\n")
-        path.write("  },\n")    
+        path.write("  },\n")
         trs = []
         for tr in self.get_edges():
             cons = [c.toString(lambda v:v, int, eq_symb="=", leq_symb="=<")
