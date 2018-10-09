@@ -764,6 +764,9 @@ class inequality(BoolExpression):
         self._vars = self._exp.get_variables()
         self._degree = self._exp.degree()
 
+    def get_independent_term(self):
+        return self._exp.get_coeff()
+
     def negate(self):
         zero = ExprTerm(0)
         if self._op in ["=", "=="]:
@@ -808,6 +811,7 @@ class inequality(BoolExpression):
     def isequality(self):
         if self._op in ["=", "=="]:
             return True
+        return False
 
     def get(self, variables, number, expressions):
         left = self._exp.get(variables, number, expressions)
