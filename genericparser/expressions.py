@@ -122,7 +122,7 @@ class Expression(object):
     def __repr__(self):
         return self.toString(str, int)
     
-    def get(self, toVar, toNum, toExp):
+    def get(self, toVar, toNum, toExp, ignore_zero=False):
         """
         variables: dictionary which keys are the variables name.
         number: class of numbers (e.g for ppl use Linear_Expression, for z3 use Real
@@ -130,6 +130,9 @@ class Expression(object):
         exp = toExp(0)
         for s in self._summands:
             s_exp = toNum(s[0])
+            if ignore_zero:
+                if s_exp == toNum(0):
+                    continue
             for v in s[1]:
                 s_exp *= toVar(v)
             exp += s_exp
@@ -164,7 +167,7 @@ class Expression(object):
                 else:
                     raise ValueError("{} is not a variable.".format(v))
 
-            return self.get(toVar, Real, nope)
+            return self.get(toVar, Real, nope, ignore_zero=True)
         else:
             raise ValueError("lib ({}) not supported".format(lib))
 
