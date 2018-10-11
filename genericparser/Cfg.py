@@ -234,9 +234,9 @@ class Cfg(MultiDiGraph):
                 vs.remove(v)
                 i = 1
                 new_v = saveName(v)
-                rnew_v = new_v
+                rnew_v = "Var"+new_v
                 while rnew_v in vs or rnew_v in out_pl_vars:
-                    rnew_v = "Var"+new_v+str(i)
+                    rnew_v = new_v+str(i)
                     i += 1
                 out_related_vars[v] = rnew_v
                 out_pl_vars.append(rnew_v)
