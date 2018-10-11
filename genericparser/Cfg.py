@@ -236,7 +236,7 @@ class Cfg(MultiDiGraph):
                 new_v = saveName(v)
                 rnew_v = new_v
                 while rnew_v in vs or rnew_v in out_pl_vars:
-                    rnew_v = new_v+str(i)
+                    rnew_v = "Var"+new_v+str(i)
                     i += 1
                 out_related_vars[v] = rnew_v
                 out_pl_vars.append(rnew_v)
@@ -251,8 +251,8 @@ class Cfg(MultiDiGraph):
             vs = ""
             pvs = ""
         else:
-            vs = ", ".join(["Var"+v for v in pl_global_vars[:N]])
-            pvs = ", ".join(["Var"+v for v in pl_global_vars[N:]])
+            vs = ", ".join([v for v in pl_global_vars[:N]])
+            pvs = ", ".join([v for v in pl_global_vars[N:]])
             vs = "("+vs+")"
             pvs = "("+pvs+")"
 
@@ -265,7 +265,7 @@ class Cfg(MultiDiGraph):
                 for tr in self.get_edges(source=s, target=t): # concrete edge
                     local_vars = tr["local_vars"]
                     _, tr_related_vars = generate_pl_names(local_vars, pl_global_vars, related_vars)
-                    renamedvars = lambda v: "Var"+tr_related_vars[v]
+                    renamedvars = lambda v: tr_related_vars[v]
                     cons = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
                             for c in tr["constraints"]]
                     if invariant_type != "none":
