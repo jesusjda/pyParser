@@ -40,6 +40,26 @@ class ParserInterface:
         for key in program:
             if not(key in ["transitions", "nodes"]):
                 G.set_info(key, program[key])
+
+        if len(G.in_edges(G.get_info("init_node"))) > 0:
+            default_name = "_init_node"
+            init_node = default_name
+            i=1
+            while init_node in G.get_nodes():
+                init_node = default_name + str(i)
+                i+=1
+            default_name = "t"
+            init_tr = default_name +str(0)
+            i=1
+            while init_tr in [t["name"] for t in program["transitions"]]:
+                init_tr = default_name + str(i)
+                i+=1
+            from .expressions import Expression
+            t={"source": init_node, "target": G.get_info("init_node"), "name": init_tr,
+               "linear":True, "local_vars":[], "constraints": []}
+            G.add_edge(**t)
+            G.set_info("init_node", init_node)
+            G.set_info("entry_nodes", [init_node])
         return G
 
 
