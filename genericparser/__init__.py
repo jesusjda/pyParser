@@ -54,12 +54,16 @@ class ParserInterface:
             while init_tr in [t["name"] for t in program["transitions"]]:
                 init_tr = default_name + str(i)
                 i+=1
-            from .expressions import Expression
+            from .expressions import ExprTerm
+            gvs = G.get_info("global_vars")
+            N = int(len(gvs)/2)
+            cons = [ExprTerm(gvs[i])==ExprTerm(gvs[i+N]) for i in range(N)]
             t={"source": init_node, "target": G.get_info("init_node"), "name": init_tr,
-               "linear":True, "local_vars":[], "constraints": []}
+               "linear":True, "local_vars":[], "constraints": cons}
             G.add_edge(**t)
             G.set_info("init_node", init_node)
             G.set_info("entry_nodes", [init_node])
+            
         return G
 
 
