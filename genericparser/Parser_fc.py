@@ -1,5 +1,6 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from . import ParserInterface
+from genericparser.expressions import inequality
 
 
 class Parser_fc(ParserInterface):
@@ -89,6 +90,8 @@ class FcTreeTransformer(ConstraintTreeTransformer):
             linear = True
             l_vars = []
             for c in tr["constraints"]:
+                if not isinstance(c, inequality):
+                    raise ValueError("No-constraint object ({}) found at transition {}.".format(c, tr["name"]))
                 if not c.is_linear():
                     linear = False
                 ll_vars = [x for x in c.get_variables()
