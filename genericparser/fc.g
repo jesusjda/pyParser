@@ -12,26 +12,28 @@ expression:  factor (SUM factor)*
 
 constraint: expression CMP expression
 name: CNAME
-number: SIGNED_NUMBER
 string: ESCAPED_STRING
 bool: "true" | "false"
 null: "null"
 _value: dict
      | list
-     | name
      | string
-     | number
+     | expression
      | constraint
-     | bool | null
+     | bool
+     | null
 
 
 key: CNAME | NUMBER | ESCAPED_STRING
-
+!namekey : "source" | "target"  | "name"  | "initnode"
+!lvarskey : "vars" | "pvars"
 
 list : "[" [_value ("," _value)* ","?]  "]"
-
+lvars : "[" [name ("," name)* ","?] "]"
 dict : "{" [pair ("," pair)* ","?] "}"
 pair : key ":" _value
+     | namekey ":" name
+     | lvarskey ":" lvars
 
 
 COMMENT: /\/\*([^*]*|([^*]*\*+[^*\/]+)*)\*+\//
@@ -39,7 +41,6 @@ COMMENT: /\/\*([^*]*|([^*]*\*+[^*\/]+)*)\*+\//
        | /#[^\n]*/
 
 %import common.ESCAPED_STRING
-%import common.SIGNED_NUMBER
 %import common.NUMBER
 %import common.LETTER
 %import common.WORD

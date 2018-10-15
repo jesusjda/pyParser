@@ -23,18 +23,21 @@ class Parser_fc(ParserInterface):
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
-        l = Lark(g)
+        l = Lark(g, parser='lalr')
         return self.program2cfg(FcTreeTransformer().transform(l.parse(cad)))
 
 
 class FcTreeTransformer(ConstraintTreeTransformer):
     
     list = list
+    lvars = list
     pair = tuple
     null = lambda self, _: None
     true = lambda self, _: True
     false = lambda self, _: False
     key = lambda self, node: str(node[0])
+    namekey = lambda self, node: str(node[0])
+    lvarskey = lambda self, node: str(node[0])
     name = lambda self, node: str(node[0])
 
     def dict(self, node):
