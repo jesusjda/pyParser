@@ -136,16 +136,30 @@ class Cfg(MultiDiGraph):
 
 
     def simplify_constraints(self, simplify=True):
+        removed = []
         if simplify:
             self.build_polyhedrons()
             for e in self.get_edges():
                 e["polyhedron"].minimized_constraints()
                 if e["polyhedron"].is_empty():
                     self.remove_edge(e["source"], e["target"], e["name"])
+                    removed.append(e["name"])
             isolate_node = list(nx.isolates(self))
             for n in isolate_node:
                 self.remove_node(n)
+        return removed
 
+    def remove_unsat_edges(self):
+        removed = []
+        self.build_polyhedrons()
+        for e in self.get_edges():
+            if not e["polyhedron"].is_sat():
+                self.remove_edge(e["source"], e["target"], e["name"])
+                removed.append(e["name"])
+        isolate_node = list(nx.isolates(self))
+        for n in isolate_node:
+            self.remove_node(n)
+        return removed
 
     def neighbors(self, node):
         return nx.all_neighbors(self, node)
