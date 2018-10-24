@@ -206,34 +206,25 @@ class Cfg(MultiDiGraph):
     def toDot(self, outfile, minimize=False, invariant_type="none"):
         """
         """
-        if invariant_type != "none":
-            n_labels = {}
-            for n in self.nodes():
-                try:
-                    invariants = self.nodes[n]["invariant_"+str(invariant_type)].toString(vars_name=self["global_variables"])
-                except Exception:
-                    invariants = []
-                n_labels[n] = ("" + str(n) + "\n" +
-                               invariants
-                               + "")
-            g = nx.relabel_nodes(self, n_labels)
-        else:
-            g = self#.copy()
-        #g.add_edge("", self.graph["init_node"], "")
-        edg = g.edges(keys=True)
+        edg = self.edges(keys=True)
         for (u, v, k) in edg:
             if u == "":
                 continue
-            tr_poly = g[u][v][k]["constraints"]
-            tr_linear = g[u][v][k]["linear"]
-            #if minimize:
-            #    tr_poly.minimized_constraints()
+            tr_poly = self[u][v][k]["constraints"]
+            tr_linear = self[u][v][k]["linear"]
             name = str(k)
             if not tr_linear:
                 name += " no linear"
-            g[u][v][k]["label"] = name + "{{\n{}}}".format(",\n".join([str(c) for c in tr_poly]))
-            g[u][v][k]["tooltip"] = "\"" + name + " "+ str(tr_poly) + "\""
-        write_dot(g, outfile)
+            cons = [str(c) for c in tr_poly]
+            if invariant_type != "none":
+                try:
+                    invariants = self.nodes[u]["invariant_"+str(invariant_type)].toString(vars_name=self["global_variables"])
+                except Exception:
+                    invariants = []
+            cons += invariants
+            self[u][v][k]["label"] = name + "{{\n{}}}".format(",\n".join(cons))
+            self[u][v][k]["tooltip"] = "\"" + name + " "+ str(tr_poly) + "\""
+        write_dot(self, outfile)
 
     @open_file(1,"w")
     def toProlog(self, path=None, invariant_type="none"):
