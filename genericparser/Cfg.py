@@ -221,7 +221,7 @@ class Cfg(MultiDiGraph):
                     invariants = self.nodes[u]["invariant_"+str(invariant_type)].toString(vars_name=self["global_variables"])
                 except Exception:
                     invariants = []
-            cons += invariants
+                cons += invariants
             self[u][v][k]["label"] = name + "{{\n{}}}".format(",\n".join(cons))
             self[u][v][k]["tooltip"] = "\"" + name + " "+ str(tr_poly) + "\""
         write_dot(self, outfile)
