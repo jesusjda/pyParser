@@ -203,14 +203,14 @@ class Cfg(MultiDiGraph):
         """
         return nx.simple_cycles(self)
 
-    def toDot(self, outfile, minimize=False, invariant="none"):
+    def toDot(self, outfile, minimize=False, invariant_type="none"):
         """
         """
-        if invariant != "none":
+        if invariant_type != "none":
             n_labels = {}
             for n in self.nodes():
                 try:
-                    invariants = self.nodes[n]["invariant_"+str(invariant)].toString(vars_name=self["global_variables"])
+                    invariants = self.nodes[n]["invariant_"+str(invariant_type)].toString(vars_name=self["global_variables"])
                 except Exception:
                     invariants = []
                 n_labels[n] = ("" + str(n) + "\n" +
@@ -294,7 +294,7 @@ class Cfg(MultiDiGraph):
                     path.write("{} :- {}{}.\n".format(source, phi, target))
 
     @open_file(1,"w")
-    def toFc(self, path=None):
+    def toFc(self, path=None, invariant_type="none"):
         path.write("{\n")
         global_vars = self.graph["global_vars"]
         N = int(len(global_vars)/2)
@@ -320,6 +320,12 @@ class Cfg(MultiDiGraph):
         for tr in self.get_edges():
             cons = [c.toString(lambda v:v, int, eq_symb="=", leq_symb="=<")
                     for c in tr["constraints"]]
+            if invariant_type != "none":
+                try:
+                    invariants = self.nodes[tr["source"]]["invariant_"+str(invariant_type)].toString(vars_name=global_vars)
+                except Exception:
+                    invariants = []
+                cons += invariants
             c = ", ".join(cons)
             trs.append("{{\n\tsource: {},\n\ttarget: {},\n\tname: {},\n\tconstraints: [{}]\n    }}".format(tr["source"],tr["target"],tr["name"],c))
         ts = ",\n    ".join(trs)
