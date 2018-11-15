@@ -159,12 +159,12 @@ class Expression(object):
             def nope(v):
                 return v
 
-            from z3 import Real
+            from z3 import Int
             def toNum(v):
-                return Real(int(v))
+                return Int(int(v))
             def toVar(v):
                 if v in variables:
-                    return Real(v)
+                    return Int(v)
                 else:
                     raise ValueError("{} is not a variable.".format(v))
 

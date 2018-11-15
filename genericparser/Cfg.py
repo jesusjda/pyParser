@@ -189,6 +189,26 @@ class Cfg(MultiDiGraph):
     def get_scc(self):
         return self.get_strongly_connected_component()
 
+    def get_close_walks(self, max_length=5):
+        def bt_cw(src, m_len, init, trs_cw=[]):
+            trg = init if m_len==1 else None
+            for t in self.get_edges(source=src, target=trg):
+                if t in trs_cw:
+                    continue
+                new_trs_cw = trs_cw+[t]
+                if m_len == 1:
+                    yield new_trs_cw
+                    continue
+                if t["target"] == init:
+                    yield new_trs_cw
+                yield from bt_cw(t["target"], m_len-1, init, new_trs_cw)
+        try:
+            init_node = self.get_edges()[0]["source"]
+        except:
+            return []
+        return bt_cw(init_node,max_length, init_node)
+
+
     def has_cycle(self):
         """Returns if the CFG has cycle or not.
         """
@@ -225,6 +245,62 @@ class Cfg(MultiDiGraph):
             self[u][v][k]["label"] = name + "{{\n{}}}".format(",\n".join(cons))
             self[u][v][k]["tooltip"] = "\"" + name + " "+ str(tr_poly) + "\""
         write_dot(self, outfile)
+
+    @open_file(1,"w")
+    def toEspecialProlog(self, path, number=1, idname="noname", invariant_type="none"):
+        def saveName(word):
+            import re
+            return re.sub('[\'\?\!\^.]', '_P', word)
+        def generate_pl_names(variables, pl_vars=[], related_vars={}):
+            vs = variables.copy()
+            out_pl_vars = pl_vars.copy()
+            out_related_vars = related_vars.copy()
+            for v in variables:
+                vs.remove(v)
+                i = 1
+                new_v = saveName(v)
+                rnew_v = "Var"+new_v
+                while rnew_v in vs or rnew_v in out_pl_vars:
+                    rnew_v = new_v+str(i)
+                    i += 1
+                out_related_vars[v] = rnew_v
+                out_pl_vars.append(rnew_v)
+            return out_pl_vars, out_related_vars
+
+        global_vars = self.graph["global_vars"]
+        pl_global_vars, related_vars = generate_pl_names(global_vars)
+
+        N = int(len(global_vars)/2)
+        if N == 0:
+            vs = ""
+            pvs = ""
+        else:
+            vs = ", ".join([v for v in pl_global_vars[:N]])
+            pvs = ", ".join([v for v in pl_global_vars[N:]])
+            vs = "["+vs+"]"
+            pvs = "["+pvs+"]"
+
+        # print transitions
+        trs = []
+        for s in self.get_nodes(): # source node
+            source = "n_{}".format(saveName(s))
+            for t in self.get_nodes(): # target node
+                target = "n_{}".format(saveName(t))
+                for tr in self.get_edges(source=s, target=t): # concrete edge
+                    local_vars = tr["local_vars"]
+                    _, tr_related_vars = generate_pl_names(local_vars, pl_global_vars, related_vars)
+                    renamedvars = lambda v: tr_related_vars[v]
+                    cons = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
+                            for c in tr["constraints"]]
+                    if invariant_type != "none":
+                        try:
+                            invariants = self.nodes[s]["invariant_"+str(invariant_type)].toString(vars_name=pl_global_vars, eq_symb="=")
+                        except Exception:
+                            invariants = []
+                        cons += invariants
+                    phi = ",".join(cons)
+                    trs.append("\t\ttr({}, {}, {}, [{}])".format(tr["name"], source, target, phi))
+        path.write("\n\ntest({},\n\t'{}',\n\t{},\n\t{},\n\t[\n{}\n\t]).\n".format(number,idname[2:],vs,pvs, ",\n".join(trs)))
 
     @open_file(1,"w")
     def toProlog(self, path=None, invariant_type="none"):
