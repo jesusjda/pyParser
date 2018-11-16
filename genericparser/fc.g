@@ -4,7 +4,7 @@ CMP: "<="|"=>"|"=<"|"=="|">="|">"|"<"|"="
 SUM: "+" | "-"
 MUL: "*" | "/" 
 
-CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!")*
+CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!"|".")*
  
 term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")"
 factor: term (MUL term)*

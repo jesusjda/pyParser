@@ -8,7 +8,7 @@ CMP: "<="|"=>"|"=<"|"=="|">="|">"|"<"|"="
 SUM: "+" | "-"
 MUL: "*" | "/" 
 
-CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!")*
+CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!"|".")*
 name: CNAME
 
 term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")"
