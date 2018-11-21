@@ -77,15 +77,30 @@ class FcTreeTransformer(ConstraintTreeTransformer):
                 raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
 
         _check_key(program, "transitions")
+        program["transitions"] = [tr for tr in program["transitions"] if not _check_key(tr, "ignore", optional=True)]
         set_gvars = set(program["global_vars"])
         max_local_vars = 0
         trs = []
+        trs_name = [t["name"] for t in program["transitions"] if "name" in t]
+        rnd_name_count = 0
+        it_trs=0
         for tr in program["transitions"]:
-            if _check_key(tr, "ignore", optional=True):
-                continue
             _check_key(tr, "source")
             _check_key(tr, "target")
-            _check_key(tr, "name")
+            if not _check_key(tr, "name", optional=True):
+                from termination.output import Output_Manager as OM
+                tr_name = "tr"+str(rnd_name_count)
+                while tr_name in trs_name:
+                    rnd_name_count += 1
+                    tr_name = "tr"+str(rnd_name_count)
+                rnd_name_count += 1
+                tr["name"] = tr_name
+                OM.printif(2, "WARNING: no transition name for a transition from {} to {}. Name given: {}".format(tr["source"],tr["target"],tr["name"]))
+                trs_name.append(tr_name)
+            else:
+                it_trs += 1
+                if tr["name"] in trs_name[it_trs:]:
+                    raise ValueError("Multiple transitions with the same name: {}.".format(tr["name"]))
             _check_key(tr, "constraints")
             linear = True
             l_vars = []
