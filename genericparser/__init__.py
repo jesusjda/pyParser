@@ -29,7 +29,11 @@ class ParserInterface:
 
     def program2cfg(self, program):
         G = Cfg.Cfg()
+        tr_names = []
         for t in program["transitions"]:
+            if t["name"] in tr_names:
+                raise ValueError("Multiple transitions with the same name: {}.".format(t["name"]))
+            tr_names.append(t["name"])
             G.add_edge(**t)
         if "entry_nodes" not in program and "init_node" in program:
             program["entry_nodes"] = [program["init_node"]]
