@@ -201,6 +201,10 @@ class Cfg(MultiDiGraph):
                     continue
                 if t["target"] == init:
                     yield new_trs_cw
+            for t in self.get_edges(source=src, target=trg):
+                if t in trs_cw:
+                    continue
+                new_trs_cw = trs_cw+[t]
                 yield from bt_cw(t["target"], m_len-1, init, new_trs_cw)
         try:
             init_node = self.get_edges()[0]["source"]
