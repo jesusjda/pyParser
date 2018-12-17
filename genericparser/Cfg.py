@@ -182,8 +182,6 @@ class Cfg(MultiDiGraph):
                 if u not in s.nodes() and v not in entries:
                     entries.append(v)
             s.set_info("entry_nodes", entries)
-        #for i, s in enumerate(subgs):
-        #    print("{} - scc: {} nodes({}) \n {} entries({}).".format(i,s.nodes(),len(s.nodes()),s.get_info("entry_nodes"),len(s.get_info("entry_nodes"))))
         return subgs
 
     def get_scc(self):
@@ -426,6 +424,16 @@ class Cfg(MultiDiGraph):
             if "cfr_properties" in data:
                 path.write("      cfr_properties: [\n")
                 for p in data["cfr_properties"]:
+                    path.write("        {},\n".format(p))
+                path.write("      ],\n")
+            if "cfr_cone_properties" in data:
+                path.write("      cfr_cone_properties: [\n")
+                for p in data["cfr_cone_properties"]:
+                    path.write("        {},\n".format(p))
+                path.write("      ],\n")
+            if "cfr_used_properties" in data:
+                path.write("      cfr_used_properties: [\n")
+                for p in data["cfr_used_properties"]:
                     path.write("        {},\n".format(p))
                 path.write("      ],\n")
             if "invariant_polyhedra" in data:
