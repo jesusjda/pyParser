@@ -421,6 +421,11 @@ class Cfg(MultiDiGraph):
         nodes =  self.get_nodes(data=True)
         for n, data in nodes:
             path.write("    {}: {{\n".format(n))
+            if "asserts" in data:
+                path.write("      asserts: [\n")
+                for p in data["asserts"]:
+                    path.write("        {},\n".format(p))
+                path.write("      ],\n")
             if "cfr_properties" in data:
                 path.write("      cfr_properties: [\n")
                 for p in data["cfr_properties"]:
