@@ -430,11 +430,11 @@ class Cfg(MultiDiGraph):
             if cfr_prop:
                 path.write("      cfr_properties: [\n")
                 if "cfr_properties" in data:
-                    path.write("        // User Properties\n".format(p))
+                    path.write("        // User Properties\n")
                     for p in data["cfr_properties"]:
                         path.write("        {},\n".format(p))
                 if "cfr_cone_properties" in data:
-                    path.write("        // Cone Properties\n".format(p))
+                    path.write("        // Cone Properties\n")
                     for p in data["cfr_cone_properties"]:
                         path.write("        {},\n".format(p))
                 if "cfr_auto_properties" in data:
