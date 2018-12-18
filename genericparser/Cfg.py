@@ -426,25 +426,26 @@ class Cfg(MultiDiGraph):
                 for p in data["asserts"]:
                     path.write("        {},\n".format(p))
                 path.write("      ],\n")
-            if "cfr_properties" in data:
+            cfr_prop = "cfr_properties" in data or "cfr_cone_properties" in data or "cfr_auto_properties" in data
+            if cfr_prop:
                 path.write("      cfr_properties: [\n")
-                for p in data["cfr_properties"]:
-                    path.write("        {},\n".format(p))
-                path.write("      ],\n")
-            if "cfr_cone_properties" in data:
-                path.write("      cfr_cone_properties: [\n")
-                for p in data["cfr_cone_properties"]:
-                    path.write("        {},\n".format(p))
-                path.write("      ],\n")
-            if "cfr_used_properties" in data:
-                path.write("      cfr_used_properties: [\n")
-                for p in data["cfr_used_properties"]:
-                    path.write("        {},\n".format(p))
+                if "cfr_properties" in data:
+                    path.write("        // User Properties\n".format(p))
+                    for p in data["cfr_properties"]:
+                        path.write("        {},\n".format(p))
+                if "cfr_cone_properties" in data:
+                    path.write("        // Cone Properties\n".format(p))
+                    for p in data["cfr_cone_properties"]:
+                        path.write("        {},\n".format(p))
+                if "cfr_auto_properties" in data:
+                    path.write("        // Automatic Properties\n")
+                    for p in data["cfr_auto_properties"]:
+                        path.write("        {},\n".format(p))
                 path.write("      ],\n")
             if "invariant_polyhedra" in data:
-                path.write("      invariant_polyhedra: [{}],\n".format(", ".join(data["invariant_polyhedra"].toString(vars_name=global_vars))))
+                path.write("      inv_polyhedra: [{}],\n".format(", ".join(data["invariant_polyhedra"].toString(vars_name=global_vars))))
             if "invariant_interval" in data:
-                path.write("      invariant_interval: [{}],\n".format(", ".join(data["invariant_interval"].toString(vars_name=global_vars))))
+                path.write("      inv_interval: [{}],\n".format(", ".join(data["invariant_interval"].toString(vars_name=global_vars))))
             path.write("    },\n")
         path.write("  },\n")
         trs = []
