@@ -437,9 +437,9 @@ class Cfg(MultiDiGraph):
                     path.write("        // Cone Properties\n")
                     for p in data["cfr_cone_properties"]:
                         path.write("        {},\n".format(p))
-                if "cfr_auto_properties" in data:
-                    path.write("        // Automatic Properties\n")
-                    for p in data["cfr_auto_properties"]:
+                if "cfr_project_properties" in data:
+                    path.write("        // Projection Properties\n")
+                    for p in data["cfr_project_properties"]:
                         path.write("        {},\n".format(p))
                 path.write("      ],\n")
             if "invariant_polyhedra" in data:
