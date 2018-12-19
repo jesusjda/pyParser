@@ -426,7 +426,7 @@ class Cfg(MultiDiGraph):
                 for p in data["asserts"]:
                     path.write("        {},\n".format(p))
                 path.write("      ],\n")
-            cfr_prop = "cfr_properties" in data or "cfr_cone_properties" in data or "cfr_auto_properties" in data
+            cfr_prop = "cfr_properties" in data or "cfr_cone_properties" in data or "cfr_project_properties" in data
             if cfr_prop:
                 path.write("      cfr_properties: [\n")
                 if "cfr_properties" in data:
