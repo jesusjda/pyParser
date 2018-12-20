@@ -58,7 +58,7 @@ class ParserInterface:
             while init_tr in [t["name"] for t in program["transitions"]]:
                 init_tr = default_name + str(i)
                 i+=1
-            from .expressions import ExprTerm
+            from genericparser.Expressions import ExprTerm
             gvs = G.get_info("global_vars")
             N = int(len(gvs)/2)
             cons = [ExprTerm(gvs[i])==ExprTerm(gvs[i+N]) for i in range(N)]

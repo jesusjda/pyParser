@@ -1,3 +1,123 @@
+from enum import Enum
+
+class BoolExpression(object):
+
+    def __init__(self, params): raise NotImplementedError()
+
+    def to_DNF(self): raise NotImplementedError()
+
+    def negate(self): raise NotImplementedError()
+
+    def is_true(self): raise NotImplementedError()
+
+    def is_false(self): raise NotImplementedError()
+
+    def toString(self, toVar, toNum, eq_symb="==", leq_symb="<=", geq_symb=">=", lt_symb="<", gt_symb=">"): raise NotImplementedError()
+
+    def degree(self): raise NotImplementedError()
+
+    def get_variables(self): raise NotImplementedError()
+
+    def is_linear(self):
+        return self.degree() < 2
+    
+    def is_equality(self):
+        return False
+
+    def __repr__(self):
+        return self.toString(str, int, eq_symb="==", leq_symb="<=", geq_symb=">=", lt_symb="<", gt_symb=">")
+
+class opCMP(Enum):
+    LT="<"
+    LEQ="<="
+    GT=">"
+    GEQ=">="
+    EQ="=="
+    NEQ="!="
+    
+    def oposite(self):
+        if self == opCMP.LT:
+            return opCMP.GT
+        if self == opCMP.GT:
+            return opCMP.LT
+        if self == opCMP.LEQ:
+            return opCMP.GEQ
+        if self == opCMP.GEQ:
+            return opCMP.LEQ
+        return self
+    
+    def complement(self):
+        if self == opCMP.LT:
+            return opCMP.GEQ
+        if self == opCMP.GT:
+            return opCMP.LEQ
+        if self == opCMP.LEQ:
+            return opCMP.GT
+        if self == opCMP.GEQ:
+            return opCMP.LT
+        if self == opCMP.EQ:
+            return opCMP.NEQ
+        if self == opCMP.NEQ:
+            return opCMP.EQ
+
+class opExp(Enum):
+    ADD="+"
+    SUB="-"
+    MUL="*"
+    DIV="/"
+
+class Constraint(BoolExpression):
+
+    def __init__(self, left: Expression, op: opCMP, right: Expression = None):
+        if(not isinstance(left, Expression) or
+           (right is not None and not isinstance(right, Expression)) or
+           (not isinstance(op, opCMP))):
+            raise ValueError()
+        exp = left
+        a_op = op
+        if right is not None:
+            exp = exp - right
+        neg = True
+        for c, _ in exp._summands:
+            if c > 0:
+                neg = False
+                break
+        if neg:
+            exp = 0 - exp
+            a_op = a_op.oposite()
+        self._exp = exp
+        self._op = a_op
+        self._vars = self._exp.get_variables()
+        self._degree = self._exp.degree()            
+
+    def to_DNF(self): return Or(And(self))
+
+    def negate(self):
+        zero = ExprTerm(0)
+        if self._op == opCMP.EQ:
+            return Or(Constraint(self._exp, opCMP.GT, zero),
+                      Constraint(self._exp, opCMP.LT, zero))
+        return Constraint(self._exp, self._op.complement(), zero)
+
+    def is_true(self): return False
+
+    def is_false(self): return False
+    
+    def is_equality(self): return self._op == opCMP.EQ    
+    
+    def degree(self): return self._degree
+
+    def get_variables(self): return self._vars
+
+    def get_independent_term(self): return self._exp.get_coeff()
+
+    def toString(self, toVar, toNum, eq_symb="==", leq_symb="<=", geq_symb=">=", lt_symb="<", gt_symb=">"): raise NotImplementedError()
+
+class BoolTerm(Enum, BoolExpression):
+    TRUE="true"
+    FALSE="false"
+    # TODO: add methods of BoolExpression
+
 class Expression(object):
     
     def __init__(self, left, op, right):
@@ -248,7 +368,7 @@ class Expression(object):
             right = ExprTerm(other)
         elif not isinstance(other, (ExprTerm, Expression)):
             raise NotImplementedError()
-        return inequality(self, "<", right)
+        return Constraint(self, "<", right)
 
     def __le__(self, other):
         right = other
@@ -256,7 +376,7 @@ class Expression(object):
             right = ExprTerm(other)
         elif not isinstance(other, (ExprTerm, Expression)):
             raise NotImplementedError()
-        return inequality(self, "<=", right)
+        return Constraint(self, "<=", right)
 
     def __eq__(self, other):
         right = other
@@ -264,7 +384,7 @@ class Expression(object):
             right = ExprTerm(other)
         elif not isinstance(other, (ExprTerm, Expression)):
             raise NotImplementedError()
-        return inequality(self, "==", right)
+        return Constraint(self, "==", right)
 
     def __gt__(self, other):
         right = other
@@ -272,7 +392,7 @@ class Expression(object):
             right = ExprTerm(other)
         elif not isinstance(other, (ExprTerm, Expression)):
             raise NotImplementedError()
-        return inequality(self, ">", right)
+        return Constraint(self, ">", right)
 
     def __ge__(self, other):
         right = other
@@ -280,7 +400,7 @@ class Expression(object):
             right = ExprTerm(other)
         elif not isinstance(other, (ExprTerm, Expression)):
             raise NotImplementedError()
-        return inequality(self, ">=", right)
+        return Constraint(self, ">=", right)
 
 
 class ExprTerm(Expression):
@@ -305,31 +425,11 @@ class ExprTerm(Expression):
                     else:
                         raise ValueError("{} is not a valid Term.".format(v))
         self._summands = [(coeff, vs)]
-        self._update()
+        self._degree = len(vs)
+        self._vars = list(vs)
 
     def __neg__(self):
-        if self.elem == "number":
-            return ExprTerm(-self.value)
-        else:
-            return self * (-1)
-
-
-class BoolExpression(object):
-
-    def __init__(self, params):
-        raise NotImplementedError()
-
-    def toDNF(self):
-        raise NotImplementedError()
-
-    def negate(self):
-        raise NotImplementedError()
-
-    def isTrue(self):
-        raise NotImplementedError()
-
-    def isFalse(self):
-        raise NotImplementedError()
+        return self * (-1)
 
 
 class Not(BoolExpression):
@@ -465,53 +565,9 @@ class Or(BoolExpression):
         return "(" + " v ".join(s) + ")"
 
 
-class inequality(BoolExpression):
+class ConstraintOLD(BoolExpression):
 
-    def __init__(self, left, op, right):
-        oposite = {"<":">", "<=":">=", "=<":">=", "=":"=", "==":"==", ">=":"<=", "=>":"<="}
-        if(not isinstance(left, Expression) or
-           not isinstance(right, Expression) or
-           not(op in ["<", "<=", "=<", "=", "==", "=>", ">=", ">"])):
-            raise ValueError()
-        if False and op in ["<", "<=", "=<"]:
-            a_left = right
-            a_op = oposite[op]
-            a_right = left
-        else:
-            a_left = left
-            a_op = op
-            a_right = right
-        exp = a_left - a_right
-        neg = True
-        for c, _ in exp._summands:
-            if c > 0:
-                neg = False
-                break
-        if neg:
-            exp = 0 - exp
-            a_op = oposite[a_op]
-        self._exp = exp
-        self._op = a_op
-        self._vars = self._exp.get_variables()
-        self._degree = self._exp.degree()
 
-    def get_independent_term(self):
-        return self._exp.get_coeff()
-
-    def negate(self):
-        zero = ExprTerm(0)
-        if self._op in ["=", "=="]:
-            return Or(inequality(self._exp, "<", zero),
-                      inequality(self._exp, ">", zero))
-        elif self._op == ">":
-            op = "<="
-        elif self._op in [">=", "=>"]:
-            op = "<"
-        elif self._op == "<":
-            op = ">="
-        elif self._op in ["<=", "=<"]:
-            op = ">"
-        return inequality(self._exp, op, zero)
 
     def toString(self, toVar, number, eq_symb="==", leq_symb="<=", geq_symb=">=", lt_symb="<", gt_symb=">"):
         act_op = str(self._op)
@@ -527,22 +583,8 @@ class inequality(BoolExpression):
             op = gt_symb
         return "{} {} 0".format(self._exp.toString(toVar, number), op)
 
-    def __repr__(self):
-        return self.toString(str, int, eq_symb="==", leq_symb="<=", geq_symb=">=", lt_symb="<", gt_symb=">")
 
-    def toDNF(self):
-        return [[self]]
 
-    def isFalse(self):
-        return False
-
-    def isTrue(self):
-        return False
-
-    def isequality(self):
-        if self._op in ["=", "=="]:
-            return True
-        return False
 
     def get(self, variables, number, expressions):
         left = self._exp.get(variables, number, expressions)
@@ -579,15 +621,6 @@ class inequality(BoolExpression):
         if variable in exp.get_variables():
             raise ValueError("degree > 1")
         return exp
-    
-    def degree(self):
-        return self._exp.degree()
-    
-    def is_linear(self):
-        return self._exp.degree() < 2
-
-    def get_variables(self):
-        return self._exp.get_variables()
 
     def transform(self, variables, lib="ppl"):
         """
@@ -638,8 +671,8 @@ class boolterm(BoolExpression):
 
     def toDNF(self):
         if self._w == "true":
-            return inequality("0", ">=", "0").toDNF()
-        return inequality("0", ">=", "1").toDNF()
+            return Constraint("0", ">=", "0").toDNF()
+        return Constraint("0", ">=", "1").toDNF()
 
     def __repr__(self):
         return self._w

@@ -1,6 +1,6 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
-from .expressions import ExprTerm
+from genericparser.Expressions import ExprTerm
 
 
 class Parser_koat(ParserInterface):

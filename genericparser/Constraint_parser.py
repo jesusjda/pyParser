@@ -1,5 +1,5 @@
-from .expressions import ExprTerm
-from .expressions import Expression
+from genericparser.Expressions import ExprTerm
+from genericparser.Expressions import Expression
 from lark import Transformer
 from . import ParserInterface
 
