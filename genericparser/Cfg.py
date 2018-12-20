@@ -182,8 +182,6 @@ class Cfg(MultiDiGraph):
                 if u not in s.nodes() and v not in entries:
                     entries.append(v)
             s.set_info("entry_nodes", entries)
-        #for i, s in enumerate(subgs):
-        #    print("{} - scc: {} nodes({}) \n {} entries({}).".format(i,s.nodes(),len(s.nodes()),s.get_info("entry_nodes"),len(s.get_info("entry_nodes"))))
         return subgs
 
     def get_scc(self):
@@ -201,6 +199,10 @@ class Cfg(MultiDiGraph):
                     continue
                 if t["target"] == init:
                     yield new_trs_cw
+            for t in self.get_edges(source=src, target=trg):
+                if t in trs_cw:
+                    continue
+                new_trs_cw = trs_cw+[t]
                 yield from bt_cw(t["target"], m_len-1, init, new_trs_cw)
         try:
             init_node = self.get_edges()[0]["source"]
@@ -208,6 +210,53 @@ class Cfg(MultiDiGraph):
             return []
         return bt_cw(init_node,max_length, init_node)
 
+    def remove_no_important_variables(self):
+        def are_related_vars(vs, vas):
+            if len(vs) != 2:
+                return False
+            N = int(len(vas)/2)
+            try:
+                pos1 = vas.index(vs[0])
+                pos2 = vas.index(vs[1])
+            except:
+                return False
+            return pos1%N == pos2%N
+
+        gvars = self.get_info("global_vars")
+        N = int(len(gvars)/2)
+        nivars = list(gvars[:N])
+        for tr in self.get_edges():
+            for c in tr["constraints"]:
+                if c.isequality():
+                    if c.get_independent_term() == 0 and are_related_vars(c.get_variables(), gvars):
+                        continue
+                for v in c.get_variables():
+                    if v in tr["local_vars"]:
+                        continue
+                    pos = gvars.index(v)
+                    vt = gvars[pos%N]
+                    if vt in nivars:
+                        nivars.remove(vt)
+
+                if len(nivars) == 0:
+                    break
+            if len(nivars) == 0:
+                break
+        count = 0
+        for v in nivars:
+            pos = gvars.index(v)
+            vp = gvars[pos+N]
+            for tr in self.get_edges():
+                for c in list(tr["constraints"]):
+                    vs = c.get_variables()
+                    if v in vs or vp in vs:
+                        count += 1
+                        tr["constraints"].remove(c)
+            pos = gvars.index(v)
+            gvars.pop(pos+N)
+            gvars.pop(pos)
+            N = int(len(gvars)/2)
+        return count, nivars
 
     def has_cycle(self):
         """Returns if the CFG has cycle or not.
@@ -372,15 +421,31 @@ class Cfg(MultiDiGraph):
         nodes =  self.get_nodes(data=True)
         for n, data in nodes:
             path.write("    {}: {{\n".format(n))
-            if "cfr_properties" in data:
-                path.write("      cfr_properties: [\n")
-                for p in data["cfr_properties"]:
+            if "asserts" in data:
+                path.write("      asserts: [\n")
+                for p in data["asserts"]:
                     path.write("        {},\n".format(p))
                 path.write("      ],\n")
+            cfr_prop = "cfr_properties" in data or "cfr_cone_properties" in data or "cfr_project_properties" in data
+            if cfr_prop:
+                path.write("      cfr_properties: [\n")
+                if "cfr_properties" in data:
+                    path.write("        // User Properties\n")
+                    for p in data["cfr_properties"]:
+                        path.write("        {},\n".format(p))
+                if "cfr_cone_properties" in data:
+                    path.write("        // Cone Properties\n")
+                    for p in data["cfr_cone_properties"]:
+                        path.write("        {},\n".format(p))
+                if "cfr_project_properties" in data:
+                    path.write("        // Projection Properties\n")
+                    for p in data["cfr_project_properties"]:
+                        path.write("        {},\n".format(p))
+                path.write("      ],\n")
             if "invariant_polyhedra" in data:
-                path.write("      invariant_polyhedra: [{}],\n".format(", ".join(data["invariant_polyhedra"].toString(vars_name=global_vars))))
+                path.write("      inv_polyhedra: [{}],\n".format(", ".join(data["invariant_polyhedra"].toString(vars_name=global_vars))))
             if "invariant_interval" in data:
-                path.write("      invariant_interval: [{}],\n".format(", ".join(data["invariant_interval"].toString(vars_name=global_vars))))
+                path.write("      inv_interval: [{}],\n".format(", ".join(data["invariant_interval"].toString(vars_name=global_vars))))
             path.write("    },\n")
         path.write("  },\n")
         trs = []
