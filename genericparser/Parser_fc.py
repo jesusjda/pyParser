@@ -1,10 +1,10 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from . import ParserInterface
-from genericparser.expressions import Constraint
+from lpi import Constraint
 
 
 class Parser_fc(ParserInterface):
-    
+
     def parse(self, filepath, debug=False):
         """Parse .fc file
 
@@ -17,19 +17,19 @@ class Parser_fc(ParserInterface):
         with open(filepath) as file:
             fctext = file.read()
         return self.parse_string(fctext, debug=debug)
-    
+
     def parse_string(self, cad, _=None, debug=False):
         import os
         grammarfile = os.path.join(os.path.dirname(__file__), "fc.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
-        l = Lark(g, parser='lalr')
-        return self.program2cfg(FcTreeTransformer().transform(l.parse(cad)))
+        parser = Lark(g, parser='lalr')
+        return self.program2cfg(FcTreeTransformer().transform(parser.parse(cad)))
 
 
 class FcTreeTransformer(ConstraintTreeTransformer):
-    
+
     list = list
     lvars = list
     pair = tuple
@@ -83,7 +83,7 @@ class FcTreeTransformer(ConstraintTreeTransformer):
         trs = []
         trs_name = [t["name"] for t in program["transitions"] if "name" in t]
         rnd_name_count = 0
-        it_trs=0
+        it_trs = 0
         for tr in program["transitions"]:
             _check_key(tr, "source")
             _check_key(tr, "target")
@@ -95,7 +95,8 @@ class FcTreeTransformer(ConstraintTreeTransformer):
                     tr_name = "tr"+str(rnd_name_count)
                 rnd_name_count += 1
                 tr["name"] = tr_name
-                OM.printif(2, "WARNING: no transition name for a transition from {} to {}. Name given: {}".format(tr["source"],tr["target"],tr["name"]))
+                OM.printif(2, "WARNING: no transition name for a transition" +
+                           " from {} to {}. Name given: {}".format(tr["source"], tr["target"], tr["name"]))
                 trs_name.append(tr_name)
             else:
                 it_trs += 1

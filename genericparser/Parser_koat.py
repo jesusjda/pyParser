@@ -1,6 +1,6 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
-from genericparser.Expressions import ExprTerm
+from lpi.Expressions import ExprTerm
 
 
 class Parser_koat(ParserInterface):
@@ -18,14 +18,14 @@ class Parser_koat(ParserInterface):
             fctext = file.read()
         return self.parse_string(fctext, debug=debug)
 
-    def parse_string(self, cad, _=None, debug=False):
+    def parse_string(self, cad, __=None, debug=False):
         import os
         grammarfile = os.path.join(os.path.dirname(__file__), "koat.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
-        l = Lark(g)
-        return self.program2cfg(KoatTreeTransformer().transform(l.parse(cad)))
+        parser = Lark(g)
+        return self.program2cfg(KoatTreeTransformer().transform(parser.parse(cad)))
 
 
 class KoatTreeTransformer(ConstraintTreeTransformer):
@@ -35,7 +35,7 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
     constraints = list
     rules = variables = list
     rule = node = list
-    noentry = lambda self, _: None
+    noentry = lambda self, __: None
 
     def start(self, node):
 
@@ -52,7 +52,6 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
                                 raise ValueError("Node {} with different args name.".format(node))
                     return nodes
                 else:
-                    
                     raise ValueError("Node {} with different num of args. {} != {}".format(node, num, new_num))
             else:
                 nodes[node] = (new_num, vrs)
