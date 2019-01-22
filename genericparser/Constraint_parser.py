@@ -1,5 +1,4 @@
-from lpi.Expressions import ExprTerm
-from lpi.Expressions import Expression
+from lpi import Expression
 from lark import Transformer
 from . import ParserInterface
 
@@ -98,8 +97,8 @@ class ConstraintTreeTransformer(Transformer):
         if isinstance(node[val_pos], Expression):
             val = node[val_pos]
         else:
-            val = ExprTerm(str(node[val_pos]))
+            val = Expression(str(node[val_pos]))
         if len(node) == 2 and str(node[0]) == "-":
-            return ExprTerm(0) - val
+            return Expression(0) - val
         else:
             return val

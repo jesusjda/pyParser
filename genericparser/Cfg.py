@@ -119,39 +119,27 @@ class Cfg(MultiDiGraph):
         return summary
 
     def build_polyhedrons(self):
-        from ppl import Constraint_System
         from lpi import C_Polyhedron
+        from lpi import smtlib
         gvars = self.graph["global_vars"]
         for e in self.get_edges():
-            if "tr_polyhedron" in e:
+            if "polyhedron" in e:
                 continue
             all_vars = gvars + e["local_vars"]
-            ppl_cons = [c.transform(all_vars, lib="ppl")
-                        for c in e["constraints"] if c.is_linear()]
-            e["tr_polyhedron"] = C_Polyhedron(Constraint_System(ppl_cons), len(all_vars))
-            e["polyhedron"] = C_Polyhedron(Constraint_System(ppl_cons), len(all_vars))
-            if e["tr_polyhedron"].is_empty():
+            cons = [c for c in e["constraints"] if c.is_linear()]
+            e["polyhedron"] = C_Polyhedron(constraints=cons, variables=all_vars)
+            if not smtlib.is_sat(e["polyhedron"]):
                 self.remove_edge(e["source"], e["target"], e["name"])
-
-    def simplify_constraints(self, simplify=True):
-        removed = []
-        if simplify:
-            self.build_polyhedrons()
-            for e in self.get_edges():
-                e["polyhedron"].minimized_constraints()
-                if e["polyhedron"].is_empty():
-                    self.remove_edge(e["source"], e["target"], e["name"])
-                    removed.append(e["name"])
-            isolate_node = list(nx.isolates(self))
-            for n in isolate_node:
-                self.remove_node(n)
-        return removed
+        isolate_node = list(nx.isolates(self))
+        for n in isolate_node:
+            self.remove_node(n)
 
     def remove_unsat_edges(self):
         removed = []
         self.build_polyhedrons()
+        from lpi import smtlib
         for e in self.get_edges():
-            if not e["polyhedron"].is_sat():
+            if not smtlib.is_sat(e["polyhedron"]):
                 self.remove_edge(e["source"], e["target"], e["name"])
                 removed.append(e["name"])
         isolate_node = list(nx.isolates(self))
@@ -166,7 +154,7 @@ class Cfg(MultiDiGraph):
         """Generate Strongly connected components as subgraphs.
         Return a list of control flow graphs
         """
-        self.simplify_constraints()
+        self.remove_unsat_edges()
         subgs = [Cfg(self.subgraph(c))
                  for c in nx.strongly_connected_components(self)]
         subgs.sort(key=len)
@@ -224,7 +212,7 @@ class Cfg(MultiDiGraph):
         nivars = list(gvars[:N])
         for tr in self.get_edges():
             for c in tr["constraints"]:
-                if c.isequality():
+                if c.is_equality():
                     if c.get_independent_term() == 0 and are_related_vars(c.get_variables(), gvars):
                         continue
                 for v in c.get_variables():
@@ -234,7 +222,6 @@ class Cfg(MultiDiGraph):
                     vt = gvars[pos % N]
                     if vt in nivars:
                         nivars.remove(vt)
-
                 if len(nivars) == 0:
                     break
             if len(nivars) == 0:
@@ -477,7 +464,7 @@ class Cfg(MultiDiGraph):
 
     def _toKoat_rules(self, invariant_type):
         def isolate(cons, pvars):
-            from lpi import ExprTerm
+            from lpi import Expression
             result = cons[:]
             pvar_exps = []
             lvars = []
@@ -505,10 +492,10 @@ class Cfg(MultiDiGraph):
                     for c in toremove:
                         result.remove(c)
                 except ValueError:
-                    v_exp = ExprTerm(v)
+                    v_exp = Expression(v)
                 if not v_exp:
                     lvars.append("NoDet{}".format(lvars_count))
-                    v_exp = ExprTerm(lvars[lvars_count])
+                    v_exp = Expression(lvars[lvars_count])
                     lvars_count += 1
                 pvar_exps.append(v_exp)
             pvar_str = ", ".join([str(e) for e in pvar_exps])

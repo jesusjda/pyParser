@@ -1,5 +1,5 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
-from . import ParserInterface
+from genericparser import ParserInterface
 from lpi import Constraint
 
 
@@ -18,7 +18,7 @@ class Parser_fc(ParserInterface):
             fctext = file.read()
         return self.parse_string(fctext, debug=debug)
 
-    def parse_string(self, cad, _=None, debug=False):
+    def parse_string(self, cad, __=None, debug=False):
         import os
         grammarfile = os.path.join(os.path.dirname(__file__), "fc.g")
         with open(grammarfile, "r") as grammar:
@@ -33,9 +33,9 @@ class FcTreeTransformer(ConstraintTreeTransformer):
     list = list
     lvars = list
     pair = tuple
-    null = lambda self, _: None
-    true = lambda self, _: True
-    false = lambda self, _: False
+    null = lambda self, __: None
+    true = lambda self, __: True
+    false = lambda self, __: False
     key = lambda self, node: str(node[0])
     namekey = lambda self, node: str(node[0])
     lvarskey = lambda self, node: str(node[0])
@@ -44,7 +44,7 @@ class FcTreeTransformer(ConstraintTreeTransformer):
     def dict(self, node):
         keys = []
         for n in node:
-            k, _ = n
+            k, __ = n
             if k in keys:
                 raise ValueError("Duplicate key: {}".format(k))
             keys.append(k)
@@ -64,8 +64,8 @@ class FcTreeTransformer(ConstraintTreeTransformer):
 
         if _check_key(program, "pvars", optional=True):
             if len(program["vars"]) != len(program["pvars"]):
-                raise ValueError("Different number of variables and"
-                                 + " prime variables.")
+                raise ValueError("Different number of variables and" +
+                                 " prime variables.")
             program["global_vars"] += program["pvars"]
             program.pop("pvars", None)
         else:
@@ -89,10 +89,10 @@ class FcTreeTransformer(ConstraintTreeTransformer):
             _check_key(tr, "target")
             if not _check_key(tr, "name", optional=True):
                 from termination.output import Output_Manager as OM
-                tr_name = "tr"+str(rnd_name_count)
+                tr_name = "tr" + str(rnd_name_count)
                 while tr_name in trs_name:
                     rnd_name_count += 1
-                    tr_name = "tr"+str(rnd_name_count)
+                    tr_name = "tr" + str(rnd_name_count)
                 rnd_name_count += 1
                 tr["name"] = tr_name
                 OM.printif(2, "WARNING: no transition name for a transition" +

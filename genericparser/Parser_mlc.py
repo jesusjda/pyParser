@@ -3,7 +3,7 @@ from genericparser import ParserInterface
 
 
 class Parser_mlc(ParserInterface):
-    
+
     def parse(self, filepath, debug=False):
         """Parse .mlc file
 
@@ -16,19 +16,18 @@ class Parser_mlc(ParserInterface):
         with open(filepath) as file:
             fctext = file.read()
         return self.parse_string(fctext, debug=debug)
-    
-    def parse_string(self, cad, _=None, debug=False):
+
+    def parse_string(self, cad, __=None, debug=False):
         import os
         grammarfile = os.path.join(os.path.dirname(__file__), "mlc.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
-        l = Lark(g)
-        return self.program2cfg(MlcTreeTransformer().transform(l.parse(cad)))
+        parser = Lark(g)
+        return self.program2cfg(MlcTreeTransformer().transform(parser.parse(cad)))
 
 
 class MlcTreeTransformer(ConstraintTreeTransformer):
-    
     name = lambda self, node: str(node[0])
     transition = list
     transitions = list
@@ -36,13 +35,12 @@ class MlcTreeTransformer(ConstraintTreeTransformer):
 
     def start(self, node):
         program = {}
-        
         g_vars = node[0]
         if len(node) == 3:
             pvars = node[1]
             if len(g_vars) != len(pvars):
-                raise ValueError("Different number of variables and"
-                                 + " prime variables.")
+                raise ValueError("Different number of variables and" +
+                                 " prime variables.")
         else:
             pvars = [v + "'" for v in g_vars]
 
@@ -80,5 +78,4 @@ class MlcTreeTransformer(ConstraintTreeTransformer):
         program.update(transitions=trs)
         program["init_node"] = program["transitions"][0]["source"]
         program["max_local_vars"] = max_local_vars
-        print(program)
         return program

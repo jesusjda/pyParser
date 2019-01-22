@@ -1,5 +1,5 @@
-from . import ParserInterface
-from .Parser_fc import Parser_fc
+from genericparser import ParserInterface
+from genericparser.Parser_fc import Parser_fc
 
 
 class Parser_smt2(ParserInterface):
@@ -26,7 +26,7 @@ class Parser_smt2(ParserInterface):
 
     def toT2(self, filepath):
         return self.smtpushdown('T2', filepath)
-    
+
     def toFC(self, filepath):
         return self.smtpushdown('FC', filepath)
 

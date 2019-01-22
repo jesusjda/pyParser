@@ -58,10 +58,10 @@ class ParserInterface:
             while init_tr in [t["name"] for t in program["transitions"]]:
                 init_tr = default_name + str(i)
                 i += 1
-            from genericparser.Expressions import ExprTerm
+            from lpi import Expression
             gvs = G.get_info("global_vars")
             N = int(len(gvs) / 2)
-            cons = [ExprTerm(gvs[i]) == ExprTerm(gvs[i + N]) for i in range(N)]
+            cons = [Expression(gvs[i]) == Expression(gvs[i + N]) for i in range(N)]
             t = {"source": init_node, "target": G.get_info("init_node"), "name": init_tr,
                  "linear": True, "local_vars": [], "constraints": cons}
             G.add_edge(**t)
@@ -106,7 +106,7 @@ def parse_constraint(cons_string):
     """Parse a string to a constraint
     :param cons_string: string to be parsed
     :type cons_string: str
-    :returns: :obj: `genericparser.expessions.inequality` The corresponding constraint
+    :returns: :obj: `lpi.Constraint` The corresponding constraint
     :raises: ParserError
     """
     return Constraint_parser.Parser_Constraint().parse_string(cons_string)

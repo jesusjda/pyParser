@@ -1,10 +1,10 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
-from genericparser.Expressions import ExprTerm
+from lpi import Expression
 
 
 class Parser_kittle(ParserInterface):
-    
+
     def parse(self, filepath, debug=False):
         """Parse .kittle file
 
@@ -17,19 +17,18 @@ class Parser_kittle(ParserInterface):
         with open(filepath) as file:
             text = file.read()
         return self.parse_string(text, debug=debug)
-    
-    def parse_string(self, cad, _=None, debug=False):
+
+    def parse_string(self, cad, __=None, debug=False):
         import os
         grammarfile = os.path.join(os.path.dirname(__file__), "kittle.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
-        l = Lark(g)
-        return self.program2cfg(KittleTreeTransformer().transform(l.parse(cad)))
+        parser = Lark(g)
+        return self.program2cfg(KittleTreeTransformer().transform(parser.parse(cad)))
 
 
 class KittleTreeTransformer(ConstraintTreeTransformer):
-    
     name = lambda self, node: str(node[0])
     entry = lambda self, node: node[0]
     constraints = list
@@ -73,10 +72,10 @@ class KittleTreeTransformer(ConstraintTreeTransformer):
             for idx in range(len(left)):
                 if str(left[idx]) == g_vars[idx]:
                     continue
-                cons.append(left[idx] == ExprTerm(g_vars[idx]))
+                cons.append(left[idx] == Expression(g_vars[idx]))
             # add post constraints
             for idx in range(len(right)):
-                cons.append(right[idx] == ExprTerm(g_vars[N + idx]))
+                cons.append(right[idx] == Expression(g_vars[N + idx]))
             tr["constraints"] = cons
             linear = True
             l_vars = []
