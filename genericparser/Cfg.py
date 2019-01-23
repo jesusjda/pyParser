@@ -256,7 +256,7 @@ class Cfg(MultiDiGraph):
         """
         return nx.simple_cycles(self)
 
-    def toDot(self, outfile, minimize=False, invariant_type="none"):
+    def toDot(self, outfile, invariant_type="none"):
         """
         """
         edg = self.edges(keys=True)
@@ -268,15 +268,16 @@ class Cfg(MultiDiGraph):
             name = str(k)
             if not tr_linear:
                 name += " no linear"
-            cons = [str(c) for c in tr_poly]
+            cons = tr_poly
             if invariant_type != "none":
                 try:
-                    invariants = self.nodes[u]["invariant_" + str(invariant_type)].toString(vars_name=self["global_variables"])
-                except Exception:
-                    invariants = []
-                cons += invariants
-            self[u][v][k]["label"] = name + "{{\n{}}}".format(",\n".join(cons))
-            self[u][v][k]["tooltip"] = "\"" + name + " " + str(tr_poly) + "\""
+                    invariants = self.nodes[u]["invariant_" + str(invariant_type)].get_constraints()
+                    cons += invariants
+                except KeyError:
+                    pass
+            str_cs = [str(c) for c in cons]
+            self[u][v][k]["label"] = name + "{{\n{}}}".format(",\n".join(str_cs))
+            self[u][v][k]["tooltip"] = "\"" + name + " " + str(str_cs) + "\""
         write_dot(self, outfile)
 
     @open_file(1, "w")
@@ -324,15 +325,16 @@ class Cfg(MultiDiGraph):
                     local_vars = tr["local_vars"]
                     __, tr_related_vars = generate_pl_names(local_vars, pl_global_vars, related_vars)
                     renamedvars = lambda v: tr_related_vars[v]
-                    cons = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
-                            for c in tr["constraints"]]
+                    cons = tr["constraints"]
                     if invariant_type != "none":
                         try:
-                            invariants = self.nodes[s]["invariant_" + str(invariant_type)].toString(vars_name=pl_global_vars, eq_symb="=")
-                        except Exception:
-                            invariants = []
-                        cons += invariants
-                    phi = ",".join(cons)
+                            invariants = self.nodes[s]["invariant_" + str(invariant_type)].get_constraints()
+                            cons += invariants
+                        except KeyError:
+                            pass
+                    str_cs = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
+                              for c in cons]
+                    phi = ",".join(str_cs)
                     trs.append("\t\ttr({}, {}, {}, [{}])".format(tr["name"], source, target, phi))
         path.write("\n\ntest({},\n\t'{}',\n\t{},\n\t{},\n\t[\n{}\n\t]).\n".format(number, idname[2:], vs, pvs, ",\n".join(trs)))
 
@@ -378,18 +380,19 @@ class Cfg(MultiDiGraph):
             for t in self.get_nodes():  # target node
                 target = "n_{}{}".format(saveName(t), pvs)
                 for tr in self.get_edges(source=s, target=t):  # concrete edge
+                    cons = tr["constraints"]
+                    if invariant_type != "none":
+                        try:
+                            invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
+                            cons += invariants
+                        except KeyError:
+                            pass
                     local_vars = tr["local_vars"]
                     __, tr_related_vars = generate_pl_names(local_vars, pl_global_vars, related_vars)
                     renamedvars = lambda v: tr_related_vars[v]
-                    cons = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
-                            for c in tr["constraints"]]
-                    if invariant_type != "none":
-                        try:
-                            invariants = self.nodes[s]["invariant_" + str(invariant_type)].toString(vars_name=pl_global_vars, eq_symb="=")
-                        except Exception:
-                            invariants = []
-                        cons += invariants
-                    phi = ",".join(cons)
+                    str_cs = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
+                              for c in cons]
+                    phi = ",".join(str_cs)
                     if phi != "":
                         phi += ", "
                     path.write("{} :- {}{}.\n".format(source, phi, target))
@@ -428,22 +431,23 @@ class Cfg(MultiDiGraph):
                         path.write("        {},\n".format(p))
                 path.write("      ],\n")
             if "invariant_polyhedra" in data:
-                path.write("      inv_polyhedra: [{}],\n".format(", ".join(data["invariant_polyhedra"].toString(vars_name=global_vars))))
+                path.write("      inv_polyhedra: [{}],\n".format(data["invariant_polyhedra"]))
             if "invariant_interval" in data:
-                path.write("      inv_interval: [{}],\n".format(", ".join(data["invariant_interval"].toString(vars_name=global_vars))))
+                path.write("      inv_interval: [{}],\n".format(data["invariant_interval"]))
             path.write("    },\n")
         path.write("  },\n")
         trs = []
         for tr in self.get_edges():
-            cons = [c.toString(lambda v:v, int, eq_symb="=", leq_symb="=<")
-                    for c in tr["constraints"]]
+            cons = tr["constraints"]
             if invariant_type != "none":
                 try:
-                    invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].toString(vars_name=global_vars)
-                except Exception:
-                    invariants = []
-                cons += invariants
-            c = ", ".join(cons)
+                    invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
+                    cons += invariants
+                except KeyError:
+                    pass
+            str_cs = [c.toString(lambda v:v, int, eq_symb="=", leq_symb="=<")
+                      for c in cons]
+            c = ", ".join(str_cs)
             trs.append("{{\n\tsource: {},\n\ttarget: {},".format(tr["source"], tr["target"]) +
                        "\n\tname: {},\n\tconstraints: [{}]\n    }}".format(tr["name"], c))
         ts = ",\n    ".join(trs)
@@ -515,15 +519,15 @@ class Cfg(MultiDiGraph):
                     cons, pvalues, local_vars = isolate(cons, global_vars[N:])
                     localV = localV.union(local_vars)
                     renamedvars = lambda v: str(v)
-                    cons_str = [c.toString(renamedvars, int, eq_symb="=")
-                                for c in cons]
                     if invariant_type != "none":
                         try:
-                            new_globals = [renamedvars(v) for v in global_vars]
-                            invariants = self.nodes[src]["invariant_" + str(invariant_type)].toString(vars_name=new_globals, eq_symb="=")
-                        except Exception:
-                            invariants = []
-                        cons_str += invariants
+                            invariants = self.nodes[src]["invariant_" + str(invariant_type)].get_constraints()
+                            cons += invariants
+                        except KeyError:
+                            pass
+
+                    cons_str = [c.toString(renamedvars, int, eq_symb="=")
+                                for c in cons]
                     if len(cons_str) > 0:
                         phi = " :|: " + " && ".join(cons_str)
                     else:
