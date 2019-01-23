@@ -277,7 +277,7 @@ class Cfg(MultiDiGraph):
                     pass
             str_cs = [str(c) for c in cons]
             self[u][v][k]["label"] = name + "{{\n{}}}".format(",\n".join(str_cs))
-            self[u][v][k]["tooltip"] = "\"" + name + " " + str(str_cs) + "\""
+            self[u][v][k]["tooltip"] = "\"" + name + " " + ",\n".join(str_cs) + "\""
         write_dot(self, outfile)
 
     @open_file(1, "w")
