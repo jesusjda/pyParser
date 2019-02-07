@@ -67,6 +67,7 @@ class ParserInterface:
             G.add_edge(**t)
             G.set_info("init_node", init_node)
             G.set_info("entry_nodes", [init_node])
+        G.build_polyhedrons()
         return G
 
 
@@ -95,9 +96,7 @@ def parse(filepath):
     if(file_extension in _parserlist):
         name = _parserlist[file_extension]
         parser = name()
-        cfg = parser.parse(filepath)
-
-        return cfg
+        return parser.parse(filepath)
     raise Exception("Parser not found (ext: '" + file_extension + "' )")
 
 

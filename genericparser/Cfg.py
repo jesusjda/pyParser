@@ -120,7 +120,6 @@ class Cfg(MultiDiGraph):
 
     def build_polyhedrons(self):
         from lpi import C_Polyhedron
-        from lpi import smtlib
         gvars = self.graph["global_vars"]
         for e in self.get_edges():
             if "polyhedron" in e:
@@ -128,18 +127,15 @@ class Cfg(MultiDiGraph):
             all_vars = gvars + e["local_vars"]
             cons = [c for c in e["constraints"] if c.is_linear()]
             e["polyhedron"] = C_Polyhedron(constraints=cons, variables=all_vars)
-            if not smtlib.is_sat(e["polyhedron"]):
-                self.remove_edge(e["source"], e["target"], e["name"])
-        isolate_node = list(nx.isolates(self))
-        for n in isolate_node:
-            self.remove_node(n)
+        self.remove_unsat_edges()
 
     def remove_unsat_edges(self):
         removed = []
-        self.build_polyhedrons()
-        from lpi import smtlib
+        from lpi import Solver
         for e in self.get_edges():
-            if not smtlib.is_sat(e["polyhedron"]):
+            s = Solver()
+            s.add(e["polyhedron"])
+            if not s.is_sat():
                 self.remove_edge(e["source"], e["target"], e["name"])
                 removed.append(e["name"])
         isolate_node = list(nx.isolates(self))
