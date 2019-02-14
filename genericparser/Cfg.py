@@ -163,6 +163,7 @@ class Cfg(MultiDiGraph):
                 if u not in s.nodes() and v not in entries:
                     entries.append(v)
             s.set_info("entry_nodes", entries)
+            s.set_info("global_vars", list(self.get_info("global_vars")))
         return subgs
 
     def get_scc(self):
@@ -202,7 +203,6 @@ class Cfg(MultiDiGraph):
             except Exception:
                 return False
             return pos1 % N == pos2 % N
-
         gvars = self.get_info("global_vars")
         N = int(len(gvars) / 2)
         nivars = list(gvars[:N])
