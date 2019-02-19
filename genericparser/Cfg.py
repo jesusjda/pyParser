@@ -134,7 +134,7 @@ class Cfg(MultiDiGraph):
         from lpi import Solver
         for e in self.get_edges():
             s = Solver()
-            s.add(e["polyhedron"])
+            s.add(e["polyhedron"].get_constraints())
             if not s.is_sat():
                 self.remove_edge(e["source"], e["target"], e["name"])
                 removed.append(e["name"])
