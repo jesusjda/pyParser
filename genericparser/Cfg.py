@@ -326,7 +326,7 @@ class Cfg(MultiDiGraph):
                     local_vars = tr["local_vars"]
                     __, tr_related_vars = generate_pl_names(local_vars, pl_global_vars, related_vars)
                     renamedvars = lambda v: tr_related_vars[v]
-                    cons = tr["constraints"]
+                    cons = [c for c in tr["constraints"] if c.is_linear()]
                     if invariant_type != "none":
                         try:
                             invariants = self.nodes[s]["invariant_" + str(invariant_type)].get_constraints()
@@ -381,7 +381,7 @@ class Cfg(MultiDiGraph):
             for t in self.get_nodes():  # target node
                 target = "n_{}{}".format(saveName(t), pvs)
                 for tr in self.get_edges(source=s, target=t):  # concrete edge
-                    cons = tr["constraints"]
+                    cons = [c for c in tr["constraints"] if c.is_linear()]
                     if invariant_type != "none":
                         try:
                             invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
