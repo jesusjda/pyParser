@@ -118,12 +118,15 @@ class Cfg(MultiDiGraph):
         json.dump(summary, path)
         return summary
 
-    def build_polyhedrons(self):
+    def build_polyhedrons(self, update=False):
         from lpi import C_Polyhedron
         gvars = self.graph["global_vars"]
         for e in self.get_edges():
             if "polyhedron" in e:
-                continue
+                if update:
+                    del e["polyhedron"]
+                else:
+                    continue
             all_vars = gvars + e["local_vars"]
             cons = [c for c in e["constraints"] if c.is_linear()]
             e["polyhedron"] = C_Polyhedron(constraints=cons, variables=all_vars)
@@ -236,6 +239,8 @@ class Cfg(MultiDiGraph):
             gvars.pop(pos + N)
             gvars.pop(pos)
             N = int(len(gvars) / 2)
+        if count > 0:
+            self.build_polyhedrons(update=True)
         return count, nivars
 
     def has_cycle(self):
