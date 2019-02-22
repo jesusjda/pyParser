@@ -67,7 +67,6 @@ class ParserInterface:
             G.add_edge(**t)
             G.set_info("init_node", init_node)
             G.set_info("entry_nodes", [init_node])
-        G.build_polyhedrons()
         return G
 
 
