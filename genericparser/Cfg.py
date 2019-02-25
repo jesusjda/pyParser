@@ -153,7 +153,6 @@ class Cfg(MultiDiGraph):
         """Generate Strongly connected components as subgraphs.
         Return a list of control flow graphs
         """
-        self.remove_unsat_edges()
         subgs = [Cfg(self.subgraph(c))
                  for c in nx.strongly_connected_components(self)]
         subgs.sort(key=len)
@@ -162,10 +161,13 @@ class Cfg(MultiDiGraph):
             subg_nodes = list(s.nodes())
             entries = [n for n in self.get_info("entry_nodes")
                        if n in subg_nodes]
-            for u, v in self.in_edges(nbunch=s.nodes()):
-                if u not in s.nodes() and v not in entries:
+            for u, v in self.in_edges(nbunch=subg_nodes):
+                if u not in subg_nodes and v not in entries:
                     entries.append(v)
+            if len(entries) == 0:
+                raise Exception("The scc has not got entry points.")
             s.set_info("entry_nodes", entries)
+            s.set_info("init_node", entries[0])
             s.set_info("global_vars", list(self.get_info("global_vars")))
         return subgs
 
@@ -544,6 +546,18 @@ class Cfg(MultiDiGraph):
             for key in e:
                 subg.set_edge_info(key, e[key],
                                    e["source"], e["target"], e["name"])
+
+        subg_nodes = list(subg.nodes())
+        entries = [n for n in self.get_info("entry_nodes")
+                   if n in subg_nodes]
+        for u, v in self.in_edges(nbunch=subg_nodes):
+            if u not in subg_nodes and v not in entries:
+                entries.append(v)
+        if len(entries) == 0:
+            raise Exception("The subgraph has not got entry points.")
+        subg.set_info("entry_nodes", entries)
+        subg.set_info("init_node", entries[0])
+        subg.set_info("global_vars", list(self.get_info("global_vars")))
         return subg
 
     def get_minimum_node_cut(self, s):
