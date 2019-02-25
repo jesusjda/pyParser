@@ -157,6 +157,7 @@ class Cfg(MultiDiGraph):
                  for c in nx.strongly_connected_components(self)]
         subgs.sort(key=len)
         # update entry_points
+        final_subgs = []
         for s in subgs:
             subg_nodes = list(s.nodes())
             entries = [n for n in self.get_info("entry_nodes")
@@ -165,11 +166,13 @@ class Cfg(MultiDiGraph):
                 if u not in subg_nodes and v not in entries:
                     entries.append(v)
             if len(entries) == 0:
+                continue
                 raise Exception("The scc has not got entry points.")
             s.set_info("entry_nodes", entries)
             s.set_info("init_node", entries[0])
             s.set_info("global_vars", list(self.get_info("global_vars")))
-        return subgs
+            final_subgs.append(s)
+        return final_subgs
 
     def get_scc(self):
         return self.get_strongly_connected_component()
