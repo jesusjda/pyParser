@@ -171,6 +171,7 @@ class Cfg(MultiDiGraph):
             s.set_info("init_node", entries[0])
             s.set_info("global_vars", list(self.get_info("global_vars")))
             final_subgs.append(s)
+        final_subgs.sort(key=len)
         return final_subgs
 
     def get_scc(self):
@@ -433,6 +434,10 @@ class Cfg(MultiDiGraph):
                 if "cfr_project_properties" in data:
                     path.write("        // Projection Properties\n")
                     for p in data["cfr_project_properties"]:
+                        path.write("        {},\n".format(p))
+                if "cfr_auto_properties" in data:
+                    path.write("        // John Properties\n")
+                    for p in data["cfr_auto_properties"]:
                         path.write("        {},\n".format(p))
                 path.write("      ],\n")
             if "invariant_polyhedra" in data:
