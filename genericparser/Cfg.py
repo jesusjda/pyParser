@@ -155,7 +155,6 @@ class Cfg(MultiDiGraph):
         """
         subgs = [Cfg(self.subgraph(c))
                  for c in nx.strongly_connected_components(self)]
-        subgs.sort(key=len)
         # update entry_points
         final_subgs = []
         for s in subgs:
@@ -565,6 +564,19 @@ class Cfg(MultiDiGraph):
 
     def get_minimum_node_cut(self, s):
         return nx.minimum_node_cut(self, s)
+
+    def get_all_nodes_between(self, source, target):
+        tr_key = "not valid"
+        self.add_edge(target, source, tr_key)
+        sccs = nx.strongly_connected_components(self)
+        way_nodes = []
+        for scc in sccs:
+            nodes = list(scc)
+            if source in nodes and target in nodes:
+                way_nodes = nodes
+                break
+        self.remove_edge(target, source, tr_key)
+        return way_nodes
 
     def __lt__(self, other):
         return self.number_of_edges() < other.number_of_edges()
