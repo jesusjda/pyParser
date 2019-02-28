@@ -547,13 +547,9 @@ class Cfg(MultiDiGraph):
         return rules, " ".join(global_vars + list(localV))
 
     def edge_data_subgraph(self, edges):
-        edges_ref = [(e["source"], e["target"], e["name"])
-                     for e in edges]
-        subg = Cfg(nx.edge_subgraph(self, edges_ref))
+        subg = Cfg()
         for e in edges:
-            for key in e:
-                subg.set_edge_info(key, e[key],
-                                   e["source"], e["target"], e["name"])
+            subg.add_edge(**e)
 
         subg_nodes = list(subg.nodes())
         entries = [n for n in self.get_info("entry_nodes")
