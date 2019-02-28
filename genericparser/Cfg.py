@@ -442,9 +442,9 @@ class Cfg(MultiDiGraph):
                         path.write("        {},\n".format(p))
                 path.write("      ],\n")
             if "invariant_polyhedra" in data:
-                path.write("      inv_polyhedra: [{}],\n".format(data["invariant_polyhedra"]))
+                path.write("      inv_polyhedra: {},\n".format(data["invariant_polyhedra"].get_constraints()))
             if "invariant_interval" in data:
-                path.write("      inv_interval: [{}],\n".format(data["invariant_interval"]))
+                path.write("      inv_interval: {},\n".format(data["invariant_interval"].get_constraints()))
             path.write("    },\n")
         path.write("  },\n")
         trs = []
