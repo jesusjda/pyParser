@@ -547,13 +547,42 @@ class Cfg(MultiDiGraph):
         return rules, " ".join(global_vars + list(localV))
 
     def edge_data_subgraph(self, edges):
-        subg = Cfg()
+        edges_ref = [(e["source"], e["target"], e["name"])
+                     for e in edges]
+        subg = Cfg(nx.edge_subgraph(self, edges_ref))
         for e in edges:
-            subg.add_edge(**e)
+            for key in e:
+                subg.set_edge_info(key, e[key],
+                                   e["source"], e["target"], e["name"])
+        subg_nodes = list(subg.nodes())
+        original_entries = self.get_info("entry_nodes")
+        entries = [n for n in original_entries
+                   if n in subg_nodes]
+
+        for u, v, k in self.in_edges(nbunch=subg_nodes, keys=True):
+            if u not in subg_nodes and v not in entries:
+                entries.append(v)
+            elif (u, v, k) not in edges_ref:
+                if u in original_entries and v not in entries:
+                    entries.append(v)
+        if len(entries) == 0:
+            raise Exception("The subgraph has not got entry points.")
+        subg.set_info("entry_nodes", entries)
+        subg.set_info("init_node", entries[0])
+        subg.set_info("global_vars", list(self.get_info("global_vars")))
+        return subg
+
+    def node_data_subgraph(self, nodes):
+        org_nodes = self.get_nodes()
+        del_nodes = [n for n in org_nodes if n not in nodes]
+        subg = Cfg(self)
+        subg.remove_nodes_from(del_nodes)
 
         subg_nodes = list(subg.nodes())
-        entries = [n for n in self.get_info("entry_nodes")
+        original_entries = self.get_info("entry_nodes")
+        entries = [n for n in original_entries
                    if n in subg_nodes]
+
         for u, v in self.in_edges(nbunch=subg_nodes):
             if u not in subg_nodes and v not in entries:
                 entries.append(v)
