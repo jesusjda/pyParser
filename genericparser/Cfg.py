@@ -558,12 +558,11 @@ class Cfg(MultiDiGraph):
         original_entries = self.get_info("entry_nodes")
         entries = [n for n in original_entries
                    if n in subg_nodes]
-
         for u, v, k in self.in_edges(nbunch=subg_nodes, keys=True):
             if u not in subg_nodes and v not in entries:
                 entries.append(v)
             elif (u, v, k) not in edges_ref:
-                if u in original_entries and v not in entries:
+                if v not in entries:
                     entries.append(v)
         if len(entries) == 0:
             raise Exception("The subgraph has not got entry points.")
