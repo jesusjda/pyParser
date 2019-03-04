@@ -608,6 +608,25 @@ class Cfg(MultiDiGraph):
         self.remove_edge(target, source, tr_key)
         return way_nodes
 
+    def cycle_cut_nodes(self):
+        visited = {n: False for n in self.get_nodes()}
+        cc_nodes = []
+        stack = [n for n in [self.get_info("init_node")]]
+        def aux_ccn(node, path):
+            visited[node] = True
+            for e in self.get_edges(source=node):
+                trg = e["target"]
+                if trg == node:
+                    cc_nodes.append(node)
+                    continue
+                if not visited[trg]:
+                    aux_ccn(trg, path + [node])
+                elif trg in path:
+                    cc_nodes.append(trg)
+        while stack:
+            aux_ccn(stack.pop(),[])
+        return list(set(cc_nodes))
+
     def __lt__(self, other):
         return self.number_of_edges() < other.number_of_edges()
 
