@@ -621,11 +621,11 @@ class Cfg(MultiDiGraph):
                     continue
                 if not visited[trg]:
                     aux_ccn(trg, path + [node])
-                elif trg in path:
+                elif trg in path and trg not in cc_nodes:
                     cc_nodes.append(trg)
         while stack:
             aux_ccn(stack.pop(),[])
-        return list(set(cc_nodes))
+        return cc_nodes
 
     def __lt__(self, other):
         return self.number_of_edges() < other.number_of_edges()
