@@ -609,22 +609,23 @@ class Cfg(MultiDiGraph):
         return way_nodes
 
     def cycle_cut_nodes(self):
-        visited = {n: False for n in self.get_nodes()}
         cc_nodes = []
-        stack = [n for n in [self.get_info("init_node")]]
+
         def aux_ccn(node, path):
-            visited[node] = True
+            visited.append(node)
             for e in self.get_edges(source=node):
                 trg = e["target"]
                 if trg == node:
                     cc_nodes.append(node)
                     continue
-                if not visited[trg]:
+                if trg in visited:
                     aux_ccn(trg, path + [node])
                 elif trg in path and trg not in cc_nodes:
                     cc_nodes.append(trg)
-        while stack:
-            aux_ccn(stack.pop(),[])
+
+        for n in self.get_info("entry_nodes"):
+            visited = []
+            aux_ccn(n, [])
         return cc_nodes
 
     def __lt__(self, other):
