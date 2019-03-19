@@ -421,7 +421,8 @@ class Cfg(MultiDiGraph):
                     path.write("        {},\n".format(p))
                 path.write("      ],\n")
             cfr_prop = ("cfr_properties" in data or "cfr_cone_properties" in data or
-                        "cfr_project_properties" in data or "cfr_auto_properties" in data)
+                        "cfr_project_properties" in data or "cfr_auto_properties" in data or
+                        "cfr_rfs_properties" in data)
             if cfr_prop:
                 path.write("      cfr_properties: [\n")
                 if "cfr_properties" in data:
@@ -439,6 +440,10 @@ class Cfg(MultiDiGraph):
                 if "cfr_auto_properties" in data:
                     path.write("        // John Properties\n")
                     for p in data["cfr_auto_properties"]:
+                        path.write("        {},\n".format(p))
+                if "cfr_rfs_properties" in data:
+                    path.write("        // RFs Properties\n")
+                    for p in data["cfr_rfs_properties"]:
                         path.write("        {},\n".format(p))
                 path.write("      ],\n")
             if "invariant_polyhedra" in data:
