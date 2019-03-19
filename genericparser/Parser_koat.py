@@ -61,66 +61,72 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
         program["goal"] = node[0]
         entry = node[1]
         transitions = node[3]
-        defined_vars = [str(v) for v in node[2]]
-        N = len(transitions[0][0][1:])
-        vs = defined_vars[:N]
-        pvs = [v + "'" for v in vs]
-        program["global_vars"] = vs + pvs
-        g_vars = program["global_vars"]
-        for i in range(len(program["global_vars"]) - 1):
-            if program["global_vars"][i] in program["global_vars"][i + 1:]:
-                raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
-
-        set_gvars = set(program["global_vars"])
+        # defined_vars = [str(v) for v in node[2]]
         max_local_vars = 0
         tmp_trs = []
         trs = []
         count = 0
         nodes = {}
-        for t in transitions:
-            tr = {}
-            if len(t) == 3:
-                left, right, cons = t
-            else:
-                left, right = t
-                cons = []
-            tr["source"] = left.pop(0)
-            nodes = check_node(tr["source"], (len(left), left), nodes)
-            trg = right.pop(0)
-            tr["target"] = trg
-            nodes = check_node(tr["target"], (len(right), []), nodes)
-            tr["name"] = "t" + str(count)
-            tr["tmp_cons"] = cons
-            tr["tmp_right"] = right
-            count += 1
-            tmp_trs.append(tr)
-        for tr in tmp_trs:
-            cons = tr["tmp_cons"]
-            del tr["tmp_cons"]
-            right = tr["tmp_right"]
-            del tr["tmp_right"]
-            target = tr["target"]
-            trg_num, trg_args = nodes[target]
-            # add post constraints
-            if len(trg_args) == trg_num:
-                for idx in range(trg_num):
-                    vindex = g_vars.index(str(trg_args[idx]))
-                    cons.append(right[idx] == Expression(g_vars[N + vindex]))
-            tr["constraints"] = cons
-            linear = True
-            l_vars = []
-            for c in tr["constraints"]:
-                if not c.is_linear():
-                    linear = False
-                ll_vars = [x for x in c.get_variables()
-                           if x not in set_gvars]
-                l_vars.extend(x for x in ll_vars
-                              if x not in l_vars)
-            if len(l_vars) > max_local_vars:
-                max_local_vars = len(l_vars)
-            tr["linear"] = linear
-            tr["local_vars"] = l_vars
-            trs.append(tr)
+        if len(transitions) > 0:
+            N = len(transitions[0][0][1:])
+            for t in transitions:
+                if len(t[0]) != N + 1 or len(t[1]) != N + 1:
+                    raise ValueError("There are nodes with different number of variables")
+            vs = [str(v) for v in transitions[0][0][1:]]  # defined_vars[:N]
+            pvs = [v + "'" for v in vs]
+            program["global_vars"] = vs + pvs
+            g_vars = program["global_vars"]
+            for i in range(len(program["global_vars"]) - 1):
+                if program["global_vars"][i] in program["global_vars"][i + 1:]:
+                    raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
+
+            set_gvars = set(program["global_vars"])
+
+            for t in transitions:
+                tr = {}
+                if len(t) == 3:
+                    left, right, cons = t
+                else:
+                    left, right = t
+                    cons = []
+                tr["source"] = left.pop(0)
+                nodes = check_node(tr["source"], (len(left), left), nodes)
+                trg = right.pop(0)
+                tr["target"] = trg
+                nodes = check_node(tr["target"], (len(right), []), nodes)
+                tr["name"] = "t" + str(count)
+                tr["tmp_cons"] = cons
+                tr["tmp_right"] = right
+                count += 1
+                tmp_trs.append(tr)
+
+            for tr in tmp_trs:
+                cons = tr["tmp_cons"]
+                del tr["tmp_cons"]
+                right = tr["tmp_right"]
+                del tr["tmp_right"]
+                target = tr["target"]
+                trg_num, trg_args = nodes[target]
+                # add post constraints
+                if len(trg_args) == trg_num:
+                    for idx in range(trg_num):
+                        vindex = g_vars.index(str(trg_args[idx]))
+                        cons.append(right[idx] == Expression(g_vars[N + vindex]))
+                tr["constraints"] = cons
+                linear = True
+                l_vars = []
+                for c in tr["constraints"]:
+                    if not c.is_linear():
+                        linear = False
+                    ll_vars = [x for x in c.get_variables()
+                               if x not in set_gvars]
+                    l_vars.extend(x for x in ll_vars
+                                  if x not in l_vars)
+                if len(l_vars) > max_local_vars:
+                    max_local_vars = len(l_vars)
+                tr["linear"] = linear
+                tr["local_vars"] = l_vars
+                trs.append(tr)
 
         program["transitions"] = trs
         if entry:
