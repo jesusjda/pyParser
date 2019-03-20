@@ -1,6 +1,7 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
 from lpi import Constraint
+from genericparser import constants
 
 
 class Parser_fc(ParserInterface):
@@ -60,25 +61,25 @@ class FcTreeTransformer(ConstraintTreeTransformer):
 
         program = node[0]
         _check_key(program, "vars")
-        program["global_vars"] = program["vars"]
+        program[constants.variables] = program["vars"]
 
         if _check_key(program, "pvars", optional=True):
             if len(program["vars"]) != len(program["pvars"]):
                 raise ValueError("Different number of variables and" +
                                  " prime variables.")
-            program["global_vars"] += program["pvars"]
+            program[constants.variables] += program["pvars"]
             program.pop("pvars", None)
         else:
-            program["global_vars"] += [v + "'" for v in program["vars"]]
+            program[constants.variables] += [v + "'" for v in program["vars"]]
         program.pop("vars", None)
 
-        for i in range(len(program["global_vars"]) - 1):
-            if program["global_vars"][i] in program["global_vars"][i + 1:]:
-                raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
+        for i in range(len(program[constants.variables]) - 1):
+            if program[constants.variables][i] in program[constants.variables][i + 1:]:
+                raise ValueError("Multiple definition of variable: {}".format(program[constants.variables][i]))
 
         _check_key(program, "transitions")
         program["transitions"] = [tr for tr in program["transitions"] if not _check_key(tr, "ignore", optional=True)]
-        set_gvars = set(program["global_vars"])
+        set_gvars = set(program[constants.variables])
         max_local_vars = 0
         trs = []
         trs_name = [t["name"] for t in program["transitions"] if "name" in t]
@@ -102,10 +103,10 @@ class FcTreeTransformer(ConstraintTreeTransformer):
                 it_trs += 1
                 if tr["name"] in trs_name[it_trs:]:
                     raise ValueError("Multiple transitions with the same name: {}.".format(tr["name"]))
-            _check_key(tr, "constraints")
+            _check_key(tr, constants.transition.constraints)
             linear = True
             l_vars = []
-            for c in tr["constraints"]:
+            for c in tr[constants.transition.constraints]:
                 if not isinstance(c, Constraint):
                     raise ValueError("No-constraint object ({}) found at transition {}.".format(c, tr["name"]))
                 if not c.is_linear():
@@ -116,14 +117,14 @@ class FcTreeTransformer(ConstraintTreeTransformer):
                               if x not in l_vars)
             if len(l_vars) > max_local_vars:
                 max_local_vars = len(l_vars)
-            tr["linear"] = linear
-            tr["local_vars"] = l_vars
+            tr[constants.transition.islinear] = linear
+            tr[constants.transition.localvariables] = l_vars
             trs.append(tr)
         program.update(transitions=trs)
         if _check_key(program, "initnode", optional=True):
-            program["init_node"] = program["initnode"]
+            program[constants.initnode] = program["initnode"]
             program.pop("initnode", None)
-        elif not _check_key(program, "init_node", optional=True):
-            program["init_node"] = program["transitions"][0]["source"]
+        elif not _check_key(program, constants.initnode, optional=True):
+            program[constants.initnode] = program["transitions"][0]["source"]
         program["max_local_vars"] = max_local_vars
         return program

@@ -1,6 +1,7 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
 from lpi import Expression
+from genericparser import constants
 
 
 class Parser_kittle(ParserInterface):
@@ -47,13 +48,13 @@ class KittleTreeTransformer(ConstraintTreeTransformer):
         g_vars = [str(v) for v in g_vars]
         N -= 1
         transitions = node
-        program["global_vars"] = g_vars + [v + "'" for v in g_vars]
-        g_vars = program["global_vars"]
-        for i in range(len(program["global_vars"]) - 1):
-            if program["global_vars"][i] in program["global_vars"][i + 1:]:
-                raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
+        program[constants.variables] = g_vars + [v + "'" for v in g_vars]
+        g_vars = program[constants.variables]
+        for i in range(len(program[constants.variables]) - 1):
+            if program[constants.variables][i] in program[constants.variables][i + 1:]:
+                raise ValueError("Multiple definition of variable: {}".format(program[constants.variables][i]))
 
-        set_gvars = set(program["global_vars"])
+        set_gvars = set(program[constants.variables])
         max_local_vars = 0
         trs = []
         count = 0
@@ -76,10 +77,10 @@ class KittleTreeTransformer(ConstraintTreeTransformer):
             # add post constraints
             for idx in range(len(right)):
                 cons.append(right[idx] == Expression(g_vars[N + idx]))
-            tr["constraints"] = cons
+            tr[constants.transition.constraints] = cons
             linear = True
             l_vars = []
-            for c in tr["constraints"]:
+            for c in tr[constants.transition.constraints]:
                 if not c.is_linear():
                     linear = False
                 ll_vars = [x for x in c.get_variables()
@@ -88,10 +89,10 @@ class KittleTreeTransformer(ConstraintTreeTransformer):
                               if x not in l_vars)
             if len(l_vars) > max_local_vars:
                 max_local_vars = len(l_vars)
-            tr["linear"] = linear
-            tr["local_vars"] = l_vars
+            tr[constants.transition.islinear] = linear
+            tr[constants.transition.localvariables] = l_vars
             trs.append(tr)
         program["transitions"] = trs
-        program["init_node"] = entry
+        program[constants.initnode] = entry
         program["max_local_vars"] = max_local_vars
         return program

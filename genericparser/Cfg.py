@@ -2,6 +2,7 @@ import networkx as nx
 from networkx.utils import open_file
 from networkx.classes.multidigraph import MultiDiGraph
 from networkx.drawing.nx_pydot import write_dot
+import genericparser.constants as constants
 
 
 class Cfg(MultiDiGraph):
@@ -105,7 +106,7 @@ class Cfg(MultiDiGraph):
         maxcstrs = 0
         cstrs = []
         for t in self.get_edges():
-            cs = len(t["constraints"])
+            cs = len(t[constants.transition.constraints])
             avgcstrs += cs
             cstrs.append(cs)
             if cs > maxcstrs:
@@ -120,16 +121,16 @@ class Cfg(MultiDiGraph):
 
     def build_polyhedrons(self, update=False):
         from lpi import C_Polyhedron
-        gvars = self.graph["global_vars"]
+        gvars = self.graph[constants.variables]
         for e in self.get_edges():
-            if "polyhedron" in e:
+            if constants.transition.polyhedron in e:
                 if update:
-                    del e["polyhedron"]
+                    del e[constants.transition.polyhedron]
                 else:
                     continue
-            all_vars = gvars + e["local_vars"]
-            cons = [c for c in e["constraints"] if c.is_linear()]
-            e["polyhedron"] = C_Polyhedron(constraints=cons, variables=all_vars)
+            all_vars = gvars + e[constants.transition.localvariables]
+            cons = [c for c in e[constants.transition.constraints] if c.is_linear()]
+            e[constants.transition.polyhedron] = C_Polyhedron(constraints=cons, variables=all_vars)
         self.remove_unsat_edges()
 
     def remove_unsat_edges(self):
@@ -137,7 +138,7 @@ class Cfg(MultiDiGraph):
         from lpi import Solver
         for e in self.get_edges():
             s = Solver()
-            s.add(e["polyhedron"].get_constraints())
+            s.add(e[constants.transition.polyhedron].get_constraints())
             if not s.is_sat():
                 self.remove_edge(e["source"], e["target"], e["name"])
                 removed.append(e["name"])
@@ -159,7 +160,7 @@ class Cfg(MultiDiGraph):
         final_subgs = []
         for s in subgs:
             subg_nodes = list(s.nodes())
-            entries = [n for n in self.get_info("entry_nodes")
+            entries = [n for n in self.get_info(constants.entries)
                        if n in subg_nodes]
             for u, v in self.in_edges(nbunch=subg_nodes):
                 if u not in subg_nodes and v not in entries:
@@ -167,9 +168,9 @@ class Cfg(MultiDiGraph):
             if len(entries) == 0:
                 continue
                 raise Exception("The scc has not got entry points.")
-            s.set_info("entry_nodes", entries)
-            s.set_info("init_node", entries[0])
-            s.set_info("global_vars", list(self.get_info("global_vars")))
+            s.set_info(constants.entries, entries)
+            s.set_info(constants.initnode, entries[0])
+            s.set_info(constants.variables, list(self.get_info(constants.variables)))
             final_subgs.append(s)
         final_subgs.sort(key=len)
         return final_subgs
@@ -211,16 +212,16 @@ class Cfg(MultiDiGraph):
             except Exception:
                 return False
             return pos1 % N == pos2 % N
-        gvars = self.get_info("global_vars")
+        gvars = self.get_info(constants.variables)
         N = int(len(gvars) / 2)
         nivars = list(gvars[:N])
         for tr in self.get_edges():
-            for c in tr["constraints"]:
+            for c in tr[constants.transition.constraints]:
                 if c.is_equality():
                     if c.get_independent_term() == 0 and are_related_vars(c.get_variables(), gvars):
                         continue
                 for v in c.get_variables():
-                    if v in tr["local_vars"]:
+                    if v in tr[constants.transition.localvariables]:
                         continue
                     pos = gvars.index(v)
                     vt = gvars[pos % N]
@@ -235,11 +236,11 @@ class Cfg(MultiDiGraph):
             pos = gvars.index(v)
             vp = gvars[pos + N]
             for tr in self.get_edges():
-                for c in list(tr["constraints"]):
+                for c in list(tr[constants.transition.constraints]):
                     vs = c.get_variables()
                     if v in vs or vp in vs:
                         count += 1
-                        tr["constraints"].remove(c)
+                        tr[constants.transition.constraints].remove(c)
             pos = gvars.index(v)
             gvars.pop(pos + N)
             gvars.pop(pos)
@@ -269,8 +270,8 @@ class Cfg(MultiDiGraph):
         for (u, v, k) in edg:
             if u == "":
                 continue
-            tr_poly = self[u][v][k]["constraints"]
-            tr_linear = self[u][v][k]["linear"]
+            tr_poly = self[u][v][k][constants.transition.constraints]
+            tr_linear = self[u][v][k][constants.transition.islinear]
             name = str(k)
             if not tr_linear:
                 name += " no linear"
@@ -308,7 +309,7 @@ class Cfg(MultiDiGraph):
                 out_pl_vars.append(rnew_v)
             return out_pl_vars, out_related_vars
 
-        global_vars = self.graph["global_vars"]
+        global_vars = self.graph[constants.variables]
         pl_global_vars, related_vars = generate_pl_names(global_vars)
 
         N = int(len(global_vars) / 2)
@@ -328,10 +329,10 @@ class Cfg(MultiDiGraph):
             for t in self.get_nodes():  # target node
                 target = "n_{}".format(saveName(t))
                 for tr in self.get_edges(source=s, target=t):  # concrete edge
-                    local_vars = tr["local_vars"]
+                    local_vars = tr[constants.transition.localvariables]
                     __, tr_related_vars = generate_pl_names(local_vars, pl_global_vars, related_vars)
                     renamedvars = lambda v: tr_related_vars[v]
-                    cons = [c for c in tr["constraints"] if c.is_linear()]
+                    cons = [c for c in tr[constants.transition.constraints] if c.is_linear()]
                     if invariant_type != "none":
                         try:
                             invariants = self.nodes[s]["invariant_" + str(invariant_type)].get_constraints()
@@ -366,7 +367,7 @@ class Cfg(MultiDiGraph):
                 out_pl_vars.append(rnew_v)
             return out_pl_vars, out_related_vars
 
-        global_vars = self.graph["global_vars"]
+        global_vars = self.graph[constants.variables]
         pl_global_vars, related_vars = generate_pl_names(global_vars)
 
         N = int(len(global_vars) / 2)
@@ -386,14 +387,14 @@ class Cfg(MultiDiGraph):
             for t in self.get_nodes():  # target node
                 target = "n_{}{}".format(saveName(t), pvs)
                 for tr in self.get_edges(source=s, target=t):  # concrete edge
-                    cons = [c for c in tr["constraints"] if c.is_linear()]
+                    cons = [c for c in tr[constants.transition.constraints] if c.is_linear()]
                     if invariant_type != "none":
                         try:
                             invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
                             cons += invariants
                         except KeyError:
                             pass
-                    local_vars = tr["local_vars"]
+                    local_vars = tr[constants.transition.localvariables]
                     __, tr_related_vars = generate_pl_names(local_vars, pl_global_vars, related_vars)
                     renamedvars = lambda v: tr_related_vars[v]
                     str_cs = [c.toString(renamedvars, int, eq_symb="=", leq_symb="=<")
@@ -406,11 +407,11 @@ class Cfg(MultiDiGraph):
     @open_file(1, "w")
     def toFc(self, path=None, invariant_type="none"):
         path.write("{\n")
-        global_vars = self.graph["global_vars"]
+        global_vars = self.graph[constants.variables]
         N = int(len(global_vars) / 2)
         path.write("  vars: [{}],\n".format(",".join(global_vars[:N])))
         path.write("  pvars: [{}],\n".format(",".join(global_vars[N:])))
-        path.write("  initnode: {},\n".format(self.graph["init_node"]))
+        path.write("  initnode: {},\n".format(self.graph[constants.initnode]))
         path.write("  nodes: {\n")
         nodes = self.get_nodes(data=True)
         for n, data in nodes:
@@ -454,7 +455,7 @@ class Cfg(MultiDiGraph):
         path.write("  },\n")
         trs = []
         for tr in self.get_edges():
-            cons = tr["constraints"]
+            cons = tr[constants.transition.constraints]
             if invariant_type != "none":
                 try:
                     invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
@@ -520,17 +521,17 @@ class Cfg(MultiDiGraph):
                 pvar_exps.append(v_exp)
             pvar_str = ", ".join([str(e) for e in pvar_exps])
             return result, pvar_str, lvars
-        global_vars = self.graph["global_vars"]
+        global_vars = self.graph[constants.variables]
         N = int(len(global_vars) / 2)
         str_vars = ",".join(global_vars[:N])
-        rules = "\n  pyRinit({}) -> Com_1({}({}))\n".format(str_vars, self.graph["init_node"], str_vars)
+        rules = "\n  pyRinit({}) -> Com_1({}({}))\n".format(str_vars, self.graph[constants.initnode], str_vars)
         # lpvars = ",".join(global_vars[N:])
         localV = set()
         for src in self.get_nodes():
             for trg in self.get_nodes():
                 for tr in self.get_edges(source=src, target=trg):
-                    cons = tr["constraints"]
-                    local_vars = tr["local_vars"]
+                    cons = tr[constants.transition.constraints]
+                    local_vars = tr[constants.transition.localvariables]
                     localV = localV.union(local_vars)
                     cons, pvalues, local_vars = isolate(cons, global_vars[N:])
                     localV = localV.union(local_vars)
@@ -560,7 +561,7 @@ class Cfg(MultiDiGraph):
                 subg.set_edge_info(key, e[key],
                                    e["source"], e["target"], e["name"])
         subg_nodes = list(subg.nodes())
-        original_entries = self.get_info("entry_nodes")
+        original_entries = self.get_info(constants.entries)
         entries = [n for n in original_entries
                    if n in subg_nodes]
         for u, v, k in self.in_edges(nbunch=subg_nodes, keys=True):
@@ -571,9 +572,9 @@ class Cfg(MultiDiGraph):
                     entries.append(v)
         if len(entries) == 0:
             raise Exception("The subgraph has not got entry points.")
-        subg.set_info("entry_nodes", entries)
-        subg.set_info("init_node", entries[0])
-        subg.set_info("global_vars", list(self.get_info("global_vars")))
+        subg.set_info(constants.entries, entries)
+        subg.set_info(constants.initnode, entries[0])
+        subg.set_info(constants.variables, list(self.get_info(constants.variables)))
         return subg
 
     def node_data_subgraph(self, nodes):
@@ -583,7 +584,7 @@ class Cfg(MultiDiGraph):
         subg.remove_nodes_from(del_nodes)
 
         subg_nodes = list(subg.nodes())
-        original_entries = self.get_info("entry_nodes")
+        original_entries = self.get_info(constants.entries)
         entries = [n for n in original_entries
                    if n in subg_nodes]
 
@@ -592,9 +593,9 @@ class Cfg(MultiDiGraph):
                 entries.append(v)
         if len(entries) == 0:
             raise Exception("The subgraph has not got entry points.")
-        subg.set_info("entry_nodes", entries)
-        subg.set_info("init_node", entries[0])
-        subg.set_info("global_vars", list(self.get_info("global_vars")))
+        subg.set_info(constants.entries, entries)
+        subg.set_info(constants.initnode, entries[0])
+        subg.set_info(constants.variables, list(self.get_info(constants.variables)))
         return subg
 
     def get_minimum_node_cut(self, s):
@@ -628,7 +629,7 @@ class Cfg(MultiDiGraph):
                 elif trg in path:
                     cc_nodes.add(trg)
 
-        for n in self.get_info("entry_nodes"):
+        for n in self.get_info(constants.entries):
             visited = []
             aux_ccn(n, [])
         return list(cc_nodes)

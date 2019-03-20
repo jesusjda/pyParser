@@ -1,5 +1,6 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
 from genericparser import ParserInterface
+from genericparser import constants
 
 
 class Parser_mlc(ParserInterface):
@@ -44,14 +45,14 @@ class MlcTreeTransformer(ConstraintTreeTransformer):
         else:
             pvars = [v + "'" for v in g_vars]
 
-        program["global_vars"] = g_vars + pvars
-        for i in range(len(program["global_vars"]) - 1):
-            if program["global_vars"][i] in program["global_vars"][i + 1:]:
-                raise ValueError("Multiple definition of variable: {}".format(program["global_vars"][i]))
+        program[constants.variables] = g_vars + pvars
+        for i in range(len(program[constants.variables]) - 1):
+            if program[constants.variables][i] in program[constants.variables][i + 1:]:
+                raise ValueError("Multiple definition of variable: {}".format(program[constants.variables][i]))
 
         program["transitions"] = node[-1]
 
-        set_gvars = set(program["global_vars"])
+        set_gvars = set(program[constants.variables])
         max_local_vars = 0
         trs = []
         count = 0
@@ -62,7 +63,7 @@ class MlcTreeTransformer(ConstraintTreeTransformer):
             count += 1
             linear = True
             l_vars = []
-            tr["constraints"] = t
+            tr[constants.transition.constraints] = t
             for c in t:
                 if not c.is_linear():
                     linear = False
@@ -72,10 +73,10 @@ class MlcTreeTransformer(ConstraintTreeTransformer):
                               if x not in l_vars)
             if len(l_vars) > max_local_vars:
                 max_local_vars = len(l_vars)
-            tr["linear"] = linear
-            tr["local_vars"] = l_vars
+            tr[constants.transition.islinear] = linear
+            tr[constants.transition.localvariables] = l_vars
             trs.append(tr)
         program.update(transitions=trs)
-        program["init_node"] = program["transitions"][0]["source"]
+        program[constants.initnode] = program["transitions"][0]["source"]
         program["max_local_vars"] = max_local_vars
         return program

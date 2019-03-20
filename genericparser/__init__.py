@@ -7,9 +7,10 @@ import json
 import os
 
 from . import Cfg
+from . import constants
 
 
-__all__ = ['parse', 'parse_constraint', 'Cfg']
+__all__ = ['parse', 'parse_constraint', 'Cfg', "constants"]
 
 
 class ParserInterface:
@@ -35,8 +36,8 @@ class ParserInterface:
                 raise ValueError("Multiple transitions with the same name: {}.".format(t["name"]))
             tr_names.append(t["name"])
             G.add_edge(**t)
-        if "entry_nodes" not in program and "init_node" in program:
-            program["entry_nodes"] = [program["init_node"]]
+        if constants.entries not in program and constants.initnode in program:
+            program[constants.entries] = [program[constants.initnode]]
         if "nodes" in program:
             for n in program["nodes"]:
                 for k in program["nodes"][n]:
@@ -45,7 +46,7 @@ class ParserInterface:
             if not(key in ["transitions", "nodes"]):
                 G.set_info(key, program[key])
 
-        if len(G.in_edges(G.get_info("init_node"))) > 0:
+        if len(G.in_edges(G.get_info(constants.initnode))) > 0:
             default_name = "_init_node"
             init_node = default_name
             i = 1
@@ -59,14 +60,14 @@ class ParserInterface:
                 init_tr = default_name + str(i)
                 i += 1
             from lpi import Expression
-            gvs = G.get_info("global_vars")
+            gvs = G.get_info(constants.variables)
             N = int(len(gvs) / 2)
             cons = [Expression(gvs[i]) == Expression(gvs[i + N]) for i in range(N)]
-            t = {"source": init_node, "target": G.get_info("init_node"), "name": init_tr,
-                 "linear": True, "local_vars": [], "constraints": cons}
+            t = {"source": init_node, "target": G.get_info(constants.initnode), "name": init_tr,
+                 constants.transition.islinear: True, constants.transition.localvariables: [], constants.transition.constraints: cons}
             G.add_edge(**t)
-            G.set_info("init_node", init_node)
-            G.set_info("entry_nodes", [init_node])
+            G.set_info(constants.initnode, init_node)
+            G.set_info(constants.entries, [init_node])
         return G
 
 
