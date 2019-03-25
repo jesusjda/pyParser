@@ -283,8 +283,13 @@ class Cfg(MultiDiGraph):
                 except KeyError:
                     pass
             str_cs = [str(c) for c in cons]
-            self[u][v][k]["label"] = name  # + "{{\n{}}}".format(",\n".join(str_cs))
-            self[u][v][k]["tooltip"] = "\"" + name + " " + ",\n".join(str_cs) + "\""
+            self[u][v][k]["label"] = " " + name  # + "{{\n{}}}".format(",\n".join(str_cs))
+            endl = '&#13;&#10;'
+            tab = '&#09;'
+            tooltip = "\"" + name + " {" + endl + tab + ("," + endl + tab).join(str_cs) + endl + "}\""
+            self[u][v][k]["tooltip"] = tooltip
+            self[u][v][k]["labeltooltip"] = tooltip
+            self[u][v][k]["title"] = tooltip
         write_dot(self, outfile)
 
     @open_file(1, "w")
