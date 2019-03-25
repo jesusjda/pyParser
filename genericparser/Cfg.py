@@ -289,6 +289,7 @@ class Cfg(MultiDiGraph):
             tooltip = "\"" + name + " {" + endl + tab + ("," + endl + tab).join(str_cs) + endl + "}\""
             self[u][v][k]["tooltip"] = tooltip
             self[u][v][k]["labeltooltip"] = tooltip
+            self[u][v][k]["edgetooltip"] = tooltip
             self[u][v][k]["title"] = tooltip
         write_dot(self, outfile)
 
