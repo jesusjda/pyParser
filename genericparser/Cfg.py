@@ -27,11 +27,11 @@ class Cfg(MultiDiGraph):
 
         if not("label" in kwargs):
             label = name
-            if "constraints" in kwargs:
-                label += " {\n"
-                for c in kwargs["constraints"]:
-                    label += str(c) + "\n"
-                label += "}"
+            # if "constraints" in kwargs:
+            #     label += " {\n"
+            #     for c in kwargs["constraints"]:
+            #         label += str(c) + "\n"
+            #     label += "}"
             kwargs["label"] = label
 
         kwargs["source"] = source
@@ -283,7 +283,7 @@ class Cfg(MultiDiGraph):
                 except KeyError:
                     pass
             str_cs = [str(c) for c in cons]
-            self[u][v][k]["label"] = name + "{{\n{}}}".format(",\n".join(str_cs))
+            self[u][v][k]["label"] = name  # + "{{\n{}}}".format(",\n".join(str_cs))
             self[u][v][k]["tooltip"] = "\"" + name + " " + ",\n".join(str_cs) + "\""
         write_dot(self, outfile)
 
