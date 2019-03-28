@@ -3,7 +3,6 @@
 This module can parse several languages and convert them
 to a common Control Flow Graph Class.
 """
-import json
 import os
 
 from . import Cfg
