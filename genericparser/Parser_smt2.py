@@ -1,5 +1,4 @@
 from genericparser import ParserInterface
-from genericparser.Parser_fc import Parser_fc
 
 
 class Parser_smt2(ParserInterface):
@@ -21,6 +20,7 @@ class Parser_smt2(ParserInterface):
         if err is not None and err:
             raise Exception(err)
         # Fc to cfg
+        from genericparser.Parser_fc import Parser_fc
         pfc = Parser_fc()
         return pfc.parse_string(fcprogram, debug)
 

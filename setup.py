@@ -24,7 +24,7 @@ setup(
     platforms=['any'],
     packages=[pkg_name],
     package_dir={pkg_name: pkg_dir},
-    package_data={pkg_name: ['*.py', 'smtpushdown2', '*.g']},
+    package_data={pkg_name: ['*.py', 'smtpushdown2', '*.g', 'c2koat', 'llvm2kittel']},
     install_requires=requires,
     dependency_links=[],
     classifiers=[

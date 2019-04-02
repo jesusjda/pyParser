@@ -74,12 +74,14 @@ from . import Parser_fc
 from . import Parser_mlc
 from . import Parser_smt2
 from . import Parser_koat
+from . import Parser_c
 
 _parserlist = {
     ".fc": Parser_fc.Parser_fc,
     ".smt2": Parser_smt2.Parser_smt2,
     ".mlc": Parser_mlc.Parser_mlc,
     ".koat": Parser_koat.Parser_koat,
+    ".c": Parser_c.Parser_c
 }
 
 
