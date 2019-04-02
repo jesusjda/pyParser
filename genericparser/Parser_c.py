@@ -29,10 +29,10 @@ class Parser_c(ParserInterface):
         from subprocess import PIPE
         from subprocess import Popen
         import tempfile
+        tmpdirname = tempfile.mkdtemp()
         binpath = os.path.dirname(os.path.realpath(__file__))
         c2koatpath = os.path.join(binpath, 'c2koat')
         llvm2kittelpath = os.path.join(binpath, 'llvm2kittel')
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            pipe = Popen([c2koatpath, llvm2kittelpath, tmpdirname, filepath],
-                         stdout=PIPE, stderr=PIPE)
+        pipe = Popen([c2koatpath, llvm2kittelpath, tmpdirname, filepath],
+                     stdout=PIPE, stderr=PIPE)
         return pipe.communicate()
