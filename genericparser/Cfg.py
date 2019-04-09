@@ -291,6 +291,19 @@ class Cfg(MultiDiGraph):
             self[u][v][k]["labeltooltip"] = tooltip
             self[u][v][k]["edgetooltip"] = tooltip
             self[u][v][k]["title"] = tooltip
+        entries = self.get_info(constants.entries)
+        for n in self.get_nodes():
+            if n in entries:
+                self.nodes[n]["fillcolor"] = "darkolivegreen1"
+                self.nodes[n]["style"] = "filled"
+            else:
+                self.nodes[n]["fillcolor"] = "transparent"
+                self.nodes[n]["style"] = ""
+            if invariant_type != "none":
+                try:
+                    self.nodes[n]["tooltip"] = str(self.nodes[u]["invariant_" + str(invariant_type)].get_constraints())
+                except KeyError:
+                    pass
         write_dot(self, outfile)
 
     @open_file(1, "w")
