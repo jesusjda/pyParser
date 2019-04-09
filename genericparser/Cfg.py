@@ -195,11 +195,9 @@ class Cfg(MultiDiGraph):
                     continue
                 new_trs_cw = trs_cw + [t]
                 yield from bt_cw(t["target"], m_len - 1, init, new_trs_cw)
-        try:
-            init_node = self.get_edges()[0]["source"]
-        except Exception:
-            return []
-        return bt_cw(init_node, max_length, init_node)
+        entries = self.get_info(constants.entries)
+        for init in entries:
+            yield from bt_cw(init, max_length, init)
 
     def remove_no_important_variables(self):
         def are_related_vars(vs, vas):
