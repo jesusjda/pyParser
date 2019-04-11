@@ -7,37 +7,15 @@ import genericparser.constants as constants
 
 class Cfg(MultiDiGraph):
     def get_info(self, key=None):
-        if key:
-            return self.graph[key]
-        return self.graph
+        return self.graph[key] if key is not None else self.graph
 
     def set_info(self, key, value):
         self.graph[key] = value
 
     def add_edge(self, source, target, name, **kwargs):
-        color = ["#3366CC", "#3B3EAC", "#DC3912", "#FF9900", "#109618",
-                 "#990099", "#3B8EAC", "#0099C6", "#DD4477", "#66AA00",
-                 "#B82E2E", "#316395", "#994499", "#22AA99", "#AAAA11",
-                 "#6633CC", "#E67300", "#8B0707", "#329262", "#5574A6"]
-
-        if not("color" in kwargs):
-            c = color[self.number_of_edges() % len(color)]
-            kwargs["color"] = c
-            kwargs["fontcolor"] = c
-
-        if not("label" in kwargs):
-            label = name
-            # if "constraints" in kwargs:
-            #     label += " {\n"
-            #     for c in kwargs["constraints"]:
-            #         label += str(c) + "\n"
-            #     label += "}"
-            kwargs["label"] = label
-
         kwargs["source"] = source
         kwargs["target"] = target
         kwargs["name"] = name
-
         return MultiDiGraph.add_edge(self, source, target, key=name, **kwargs)
 
     def get_nodes(self, data=False):
@@ -178,11 +156,11 @@ class Cfg(MultiDiGraph):
     def get_scc(self):
         return self.get_strongly_connected_component()
 
-    def get_close_walks(self, max_length=5):
-        def bt_cw(src, m_len, init, trs_cw=[]):
+    def get_close_walks(self, max_length=5, max_appears=2):
+        def bt_cw(src, m_len, init, trs_cw=[], trs_count={}):
             trg = init if m_len == 1 else None
             for t in self.get_edges(source=src, target=trg):
-                if t in trs_cw:
+                if trs_count.get(t["name"], 0) >= max_appears:
                     continue
                 new_trs_cw = trs_cw + [t]
                 if m_len == 1:
@@ -190,11 +168,14 @@ class Cfg(MultiDiGraph):
                     continue
                 if t["target"] == init:
                     yield new_trs_cw
-            for t in self.get_edges(source=src, target=trg):
-                if t in trs_cw:
-                    continue
-                new_trs_cw = trs_cw + [t]
-                yield from bt_cw(t["target"], m_len - 1, init, new_trs_cw)
+            if m_len > 1:
+                for t in self.get_edges(source=src, target=trg):
+                    if trs_count.get(t["name"], 0) >= max_appears:
+                        continue
+                    new_trs_cw = trs_cw + [t]
+                    trs_count[t["name"]] = trs_count.get(t["name"], 0) + 1
+                    yield from bt_cw(t["target"], m_len - 1, init, new_trs_cw, trs_count)
+                    trs_count[t["name"]] -= 1
         entries = self.get_info(constants.entries)
         for init in entries:
             yield from bt_cw(init, max_length, init)
@@ -264,7 +245,13 @@ class Cfg(MultiDiGraph):
     def toDot(self, outfile, invariant_type="none"):
         """
         """
+        color = ["#3366CC", "#3B3EAC", "#DC3912", "#FF9900", "#109618",
+                 "#990099", "#3B8EAC", "#0099C6", "#DD4477", "#66AA00",
+                 "#B82E2E", "#316395", "#994499", "#22AA99", "#AAAA11",
+                 "#6633CC", "#E67300", "#8B0707", "#329262", "#5574A6"]
+
         edg = self.edges(keys=True)
+        count = 0
         for (u, v, k) in edg:
             if u == "":
                 continue
@@ -281,7 +268,7 @@ class Cfg(MultiDiGraph):
                 except KeyError:
                     pass
             str_cs = [str(c) for c in cons]
-            self[u][v][k]["label"] = " " + name  # + "{{\n{}}}".format(",\n".join(str_cs))
+            self[u][v][k]["label"] = name  # + "{{\n{}}}".format(",\n".join(str_cs))
             endl = '&#13;&#10;'
             tab = '&#09;'
             tooltip = "\"" + name + " {" + endl + tab + ("," + endl + tab).join(str_cs) + endl + "}\""
@@ -289,6 +276,10 @@ class Cfg(MultiDiGraph):
             self[u][v][k]["labeltooltip"] = tooltip
             self[u][v][k]["edgetooltip"] = tooltip
             self[u][v][k]["title"] = tooltip
+            self[u][v][k]["color"] = color[count % len(color)]
+            self[u][v][k]["fontcolor"] = color[count % len(color)]
+            count += 1
+
         entries = self.get_info(constants.entries)
         for n in self.get_nodes():
             if n in entries:
