@@ -486,8 +486,21 @@ class Cfg(MultiDiGraph):
         else:
             goal = "TERMINATION"
         path.write("(GOAL {})\n".format(goal))
-        path.write("(STARTTERM (FUNCTIONSYMBOLS pyRinit))\n")
+        initnode = self.graph[constants.initnode]
         rules, str_vars = self._toKoat_rules(invariant_type)
+        if len(self.get_edges(target=initnode)) > 0:
+            initnode = "pyRinit"
+            it = 1
+            while initnode in self.get_nodes():
+                initnode = "pyRinit_" + str(it)
+                it += 1
+            global_vars = self.graph[constants.variables]
+            N = int(len(global_vars) / 2)
+            str_vars = ",".join(global_vars[:N])
+            rules = "\n  {}({}) -> Com_1({}({}))\n".format(initnode, str_vars, self.graph[constants.initnode], str_vars) + rules
+        else:
+            rules = "\n" + rules
+        path.write("(STARTTERM (FUNCTIONSYMBOLS {}))\n".format(initnode))
         path.write("(VAR {})\n".format(str_vars))
         path.write("(RULES {})\n".format(rules))
 
@@ -532,7 +545,7 @@ class Cfg(MultiDiGraph):
         global_vars = self.graph[constants.variables]
         N = int(len(global_vars) / 2)
         str_vars = ",".join(global_vars[:N])
-        rules = "\n  pyRinit({}) -> Com_1({}({}))\n".format(str_vars, self.graph[constants.initnode], str_vars)
+        rules = ""
         # lpvars = ",".join(global_vars[N:])
         localV = set()
         for src in self.get_nodes():

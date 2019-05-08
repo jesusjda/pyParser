@@ -46,7 +46,7 @@ class ParserInterface:
                 G.set_info(key, program[key])
 
         if len(G.in_edges(G.get_info(constants.initnode))) > 0:
-            default_name = "_init_node"
+            default_name = "_init"
             init_node = default_name
             i = 1
             while init_node in G.get_nodes():
