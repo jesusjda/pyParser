@@ -29,11 +29,11 @@ _and: "&&" | "/\\"
 constraints: ("[" constraint ( _and constraint)* "]")
            | (":|:" constraint ( _and constraint)*)
 
-_right_hand: node
-          | ("Com_1" "(" node ")")
+right_hand: node
+          | ("Com_" number "(" (node ("," node)*)? ")")
 
 
-rule: node "->" _right_hand constraints?
+rule: node "->" right_hand constraints?
 
 rules: "(" "RULES" rule* ")" 
 

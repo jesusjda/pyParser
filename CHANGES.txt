@@ -1,3 +1,4 @@
+- Remove No Important Variables method.
 v1.0 2018/10/02
 - GenericParser no longer avaliable, now parse directly from function `parse`.
 - parse contraints independently.

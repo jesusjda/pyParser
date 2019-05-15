@@ -1,10 +1,10 @@
-from .expressions import ExprTerm
-from .expressions import Expression
+from lpi import Expression
 from lark import Transformer
 from . import ParserInterface
 
+
 class Parser_Constraint(ParserInterface):
-    
+
     def parse(self, filepath, debug=False):
         """Parse constraint
 
@@ -17,15 +17,16 @@ class Parser_Constraint(ParserInterface):
         with open(filepath) as file:
             fctext = file.read()
         return self.parse_string(fctext, debug=debug)
-    
-    def parse_string(self, cad, _=None, debug=False):
+
+    def parse_string(self, cad, __=None, debug=False):
         import os
         grammarfile = os.path.join(os.path.dirname(__file__), "constraint.g")
         with open(grammarfile, "r") as grammar:
             g = grammar.read()
         from lark.lark import Lark
-        l = Lark(g)
-        return ConstraintTreeTransformer().transform(l.parse(cad))
+        parser = Lark(g)
+        return ConstraintTreeTransformer().transform(parser.parse(cad))
+
 
 class ConstraintTreeTransformer(Transformer):
     """To use this parser, you must add ConstraintTreeTransformer
@@ -96,8 +97,8 @@ class ConstraintTreeTransformer(Transformer):
         if isinstance(node[val_pos], Expression):
             val = node[val_pos]
         else:
-            val = ExprTerm(str(node[val_pos]))
+            val = Expression(str(node[val_pos]))
         if len(node) == 2 and str(node[0]) == "-":
-            return ExprTerm(0) - val
+            return Expression(0) - val
         else:
             return val

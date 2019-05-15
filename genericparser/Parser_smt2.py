@@ -1,5 +1,4 @@
-from . import ParserInterface
-from .Parser_fc import Parser_fc
+from genericparser import ParserInterface
 
 
 class Parser_smt2(ParserInterface):
@@ -21,12 +20,13 @@ class Parser_smt2(ParserInterface):
         if err is not None and err:
             raise Exception(err)
         # Fc to cfg
+        from genericparser.Parser_fc import Parser_fc
         pfc = Parser_fc()
         return pfc.parse_string(fcprogram, debug)
 
     def toT2(self, filepath):
         return self.smtpushdown('T2', filepath)
-    
+
     def toFC(self, filepath):
         return self.smtpushdown('FC', filepath)
 

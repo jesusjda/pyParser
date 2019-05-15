@@ -24,7 +24,7 @@ setup(
     platforms=['any'],
     packages=[pkg_name],
     package_dir={pkg_name: pkg_dir},
-    package_data={pkg_name: ['*.py', 'file-ext.json', 'smtpushdown2', '*.g']},
+    package_data={pkg_name: ['*.py', 'smtpushdown2', '*.g', 'c2koat', 'llvm2kittel']},
     install_requires=requires,
     dependency_links=[],
     classifiers=[
@@ -33,9 +33,6 @@ setup(
         "Development Status :: 3 - Alpha",
         "Operating System :: Unix",
         "Intended Audience :: Science/Research",
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',

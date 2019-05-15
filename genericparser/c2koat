@@ -1,0 +1,14 @@
+#!/bin/bash -e
+
+LLVM2KITTEL=$1
+shift
+TMPDIR=$1
+shift
+FILE=$1
+shift
+
+NAME=`basename $FILE`
+
+clang -c $FILE -emit-llvm -o $TMPDIR/$NAME.bc
+
+$LLVM2KITTEL $TMPDIR/$NAME.bc -uniform-complexity-tuples
