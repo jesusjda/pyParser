@@ -246,11 +246,14 @@ class Cfg(MultiDiGraph):
             gvars = self.get_info(constants.variables)
             N = int(len(gvars) / 2)
             _vars, _pvars = gvars[:N], gvars[N:]
+            pending = _pvars[:]
             for c in tr[constants.transition.constraints]:
                 pv = False
                 vs = c.get_variables()
                 for v in vs:
                     if v in _pvars:
+                        if v in pending:
+                            pending.remove(v)
                         if pv:
                             return True
                         pv = True
@@ -259,6 +262,8 @@ class Cfg(MultiDiGraph):
                             return True
                     elif v not in _vars:
                         return True
+            if len(pending)>0:
+                return True
             return False
         const_det = constants.transition.isdeterministic
         if const_det not in tr or tr[const_det] is None:
