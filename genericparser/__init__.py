@@ -67,6 +67,7 @@ class ParserInterface:
             G.add_edge(**t)
             G.set_info(constants.initnode, init_node)
             G.set_info(constants.entries, [init_node])
+        G.set_info("domain", program.get("domain", "Z"))
         return G
 
 

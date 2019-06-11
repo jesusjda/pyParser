@@ -237,39 +237,6 @@ class Cfg(MultiDiGraph):
         except nx.exception.NetworkXNoCycle:
             return False
 
-    def is_deterministic(self, name):
-        trs = self.get_edges(name=name)
-        if len(trs) != 1:
-            return None
-        tr = trs[0]
-        def is_notdeterministic():
-            gvars = self.get_info(constants.variables)
-            N = int(len(gvars) / 2)
-            _vars, _pvars = gvars[:N], gvars[N:]
-            pending = _pvars[:]
-            for c in tr[constants.transition.constraints]:
-                pv = False
-                vs = c.get_variables()
-                for v in vs:
-                    if v in _pvars:
-                        if v in pending:
-                            pending.remove(v)
-                        if pv:
-                            return True
-                        pv = True
-                        cf = c.get_coefficient(v)
-                        if cf != 1 and cf != -1:
-                            return True
-                    elif v not in _vars:
-                        return True
-            if len(pending)>0:
-                return True
-            return False
-        const_det = constants.transition.isdeterministic
-        if const_det not in tr or tr[const_det] is None:
-            tr[const_det] = not is_notdeterministic()
-        return tr[const_det]
-
     def simple_cycles(self):
         """Returns a list of cycles which form a basis for cycles of G.
         """
