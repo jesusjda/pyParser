@@ -300,6 +300,46 @@ class Cfg(MultiDiGraph):
         write_dot(self, outfile)
 
     @open_file(1, "w")
+    def toSMT2(self, path=None, invariant_type="none"):
+        path.write("(declare-sort Loc 0)")
+        # declare nodes
+        for n in self.get_nodes():
+            path.write("(declare-const {} Loc)".format(n))
+        path.write("(assert (distinct {})".format(" ".join(self.get_nodes())))
+        # define how a transition works
+        path.write("(define-fun cfg_init ( (pc Loc) (src Loc) (rel Bool) ) Bool (and (= pc src) rel))")
+        path.write("(define-fun cfg_trans2 ( (pc Loc) (src Loc) (pc1 Loc) (dst Loc) (rel Bool) ) Bool")
+        path.write("                       (and (= pc src) (= pc1 dst) rel))")
+        path.write("(define-fun cfg_trans3 ( (pc Loc) (exit Loc) (pc1 Loc) (call Loc) (pc2 Loc) (return Loc)")
+        path.write("                         (rel Bool) ) Bool (and (= pc exit) (= pc1 call) (= pc2 return) rel))")
+        global_vars = self.graph[constants.variables]
+        N = int(len(global_vars) / 2)
+        vs_str = " ".join(["({} Int)".format(v) for v in global_vars[:N]])
+        pvs_str = " ".join(["({} Int)".format(v) for v in global_vars[N:]])
+        # define init node with the global variables
+        path.write("(define-fun init_main ( (pc Loc) {} ) Bool (cfg_init pc {} true))".format(vs_str, self.graph[constants.initnode]))
+        # define transitions with the global variables
+        path.write("(define-fun next_main ( (pc Loc) {} (pc1 Loc) {}) Bool (or".format(vs_str, pvs_str))
+        def toprefixformat(c):
+            return c.toString()
+        for t in self.get_edges():
+            cons = t[constants.transition.constraints]
+            if invariant_type != "none":
+                try:
+                    invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
+                    cons += invariants
+                except KeyError:
+                    pass
+            if len(cons) == 0:
+                prefix_cons = "true"
+            else:
+                prefix_cons = toprefixformat(cons[0])
+                for c in cons[1:]:
+                    prefix_cons = "(and {} {})".format(prefix_cons, toprefixformat(c))
+            path.write("    (cfg_trans2 pc {} pc1 {} {})".format(t["source"], t["target"], prefix_cons))
+        path.write(")")
+
+    @open_file(1, "w")
     def toEspecialProlog(self, path, number=1, idname="noname", invariant_type="none"):
         def saveName(word):
             import re
