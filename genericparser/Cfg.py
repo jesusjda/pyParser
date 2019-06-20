@@ -156,10 +156,12 @@ class Cfg(MultiDiGraph):
     def get_scc(self):
         return self.get_strongly_connected_component()
 
-    def get_close_walks(self, max_length=5, max_appears=2):
+    def get_close_walks(self, max_length=5, max_appears=2, linear=False):
         def bt_cw(src, m_len, init, trs_cw=[], trs_count={}):
             trg = init if m_len == 1 else None
             for t in self.get_edges(source=src, target=trg):
+                if linear and not t["linear"]:
+                    continue
                 if trs_count.get(t["name"], 0) >= max_appears:
                     continue
                 new_trs_cw = trs_cw + [t]
@@ -170,6 +172,8 @@ class Cfg(MultiDiGraph):
                     yield new_trs_cw
             if m_len > 1:
                 for t in self.get_edges(source=src, target=trg):
+                    if linear and not t["linear"]:
+                        continue
                     if trs_count.get(t["name"], 0) >= max_appears:
                         continue
                     new_trs_cw = trs_cw + [t]
