@@ -25,7 +25,7 @@ _value: dict
 
 
 key: CNAME | NUMBER | ESCAPED_STRING
-!namekey : "source" | "target"  | "name"  | "initnode"
+!namekey : "source" | "target"  | "name"  | "initnode" | "domain"
 !lvarskey : "vars" | "pvars"
 
 list : "[" [_value ("," _value)* ","?]  "]"

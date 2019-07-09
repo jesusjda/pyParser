@@ -13,6 +13,7 @@ class transition:
     cfr_polyhedron = "cfr_polyhedron"
     localvariables = "local_vars"
     islinear = "linear"
+    isdeterministic = "deterministic"
 
 
 class node:

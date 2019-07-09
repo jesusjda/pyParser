@@ -67,6 +67,10 @@ class ParserInterface:
             G.add_edge(**t)
             G.set_info(constants.initnode, init_node)
             G.set_info(constants.entries, [init_node])
+        domain = program.get("domain", "Z")
+        if domain not in ["Z", "Q"]:
+            raise ValueError("Invalid Domain: {}".format(domain))
+        G.set_info("domain", domain)
         return G
 
 
