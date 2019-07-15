@@ -38,11 +38,12 @@ class KoatTreeTransformer(ConstraintTreeTransformer):
     variables = list
     noentry = lambda self, __: None
 
-    trs_count = 0
-    variable_list = None
-    pvars = None
-    node_data = {}
-    max_local_vars = 0
+    def __init__(self):
+        self.trs_count = 0
+        self.variable_list = None
+        self.pvars = None
+        self.node_data = {}
+        self.max_local_vars = 0
 
     def rules(self, node):
         trs = []
