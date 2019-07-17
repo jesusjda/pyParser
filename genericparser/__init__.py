@@ -9,7 +9,7 @@ from . import Cfg
 from . import constants
 
 
-__all__ = ['parse', 'parse_constraint', 'Cfg', "constants"]
+__all__ = ['parse', 'parse_constraint', 'parse_node_props', 'Cfg', "constants"]
 
 
 class ParserInterface:
@@ -114,3 +114,24 @@ def parse_constraint(cons_string):
     :raises: ParserError
     """
     return Constraint_parser.Parser_Constraint().parse_string(cons_string)
+
+
+def parse_node_props(filepath, nodes):
+    """Parse a file
+
+    :param filepath: Full path to the file to be parsed
+    :type filepath: str
+    :returns: :obj: dictionary
+    :raises: ParserError
+    """
+    from .Properties_parser import Parser_Properties
+    props = {}
+    node_props = Parser_Properties().parse(filepath)
+    for n in node_props:
+        if n not in nodes:
+            raise ValueError("Properties defined for a node that doesn't exists")
+        for k in node_props[n]:
+            if k not in props:
+                props[k] = {}
+            props[k][n] = node_props[n][k]
+    return props
