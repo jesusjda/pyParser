@@ -323,8 +323,13 @@ class Cfg(MultiDiGraph):
 
         def toprefixformat(c):
             return c.toString(str, int, eq_symb="=", opformat="prefix")
+        self.build_polyhedrons()
         for tr in self.get_edges():
-            cons = tr[constants.transition.constraints]
+            if len(tr[constants.transition.localvariables]) > 0:
+                p = tr[constants.transition.polyhedron].project(global_vars)
+                cons = p.get_constraints()
+            else:
+                cons = tr[constants.transition.constraints]
             if invariant_type != "none":
                 try:
                     invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
