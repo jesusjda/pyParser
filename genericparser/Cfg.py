@@ -3,7 +3,8 @@ from networkx.utils import open_file
 from networkx.classes.multidigraph import MultiDiGraph
 from networkx.drawing.nx_pydot import write_dot
 import genericparser.constants as constants
-
+from genericparser.utils import used_vars
+from genericparser.utils import is_notdeterministic
 
 class Cfg(MultiDiGraph):
     def get_info(self, key=None):
@@ -156,10 +157,23 @@ class Cfg(MultiDiGraph):
     def get_scc(self):
         return self.get_strongly_connected_component()
 
-    def get_close_walks(self, max_length=5, max_appears=2, linear=False):
+    def compute_deterministic_trs(self, mode=1):
+        gvars = self.get_info(constants.variables)
+        trs = self.get_edges()
+        usedvs = used_vars(trs, gvars) if mode == 1 else {}
+        const_det = constants.transition.isdeterministic
+        for t in trs:
+            if const_det not in t or t[const_det] is None:
+                self[t["source"]][t["target"]][t["name"]][const_det] = is_notdeterministic(t[constants.transition.constraints], gvars, usedvs)
+
+        
+    
+    def get_close_walks(self, max_length=5, max_appears=2, linear=False, deterministic=False):
         def bt_cw(src, m_len, init, trs_cw=[], trs_count={}):
             trg = init if m_len == 1 else None
             for t in self.get_edges(source=src, target=trg):
+                if deterministic and not t[constants.transition.isdeterministic]:
+                    continue
                 if linear and not t["linear"]:
                     continue
                 if trs_count.get(t["name"], 0) >= max_appears:
@@ -180,6 +194,8 @@ class Cfg(MultiDiGraph):
                     trs_count[t["name"]] = trs_count.get(t["name"], 0) + 1
                     yield from bt_cw(t["target"], m_len - 1, init, new_trs_cw, trs_count)
                     trs_count[t["name"]] -= 1
+        if deterministic:
+            self.compute_deterministic_trs()
         entries = self.get_info(constants.entries)
         for init in entries:
             yield from bt_cw(init, max_length, init)
