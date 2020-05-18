@@ -9,6 +9,6 @@ shift
 
 NAME=`basename $FILE`
 
-clang -c $FILE -emit-llvm -o $TMPDIR/$NAME.bc
+clang -Wall -Wextra -c -emit-llvm -O0 $FILE -o $TMPDIR/$NAME.bc
 
-$LLVM2KITTEL $TMPDIR/$NAME.bc -uniform-complexity-tuples
+$TOOLS_HOME/llvm2kittel/build/llvm2kittel --dump-ll --no-slicing --eager-inline $TMPDIR/$NAME.bc -uniform-complexity-tuples 
