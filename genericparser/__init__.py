@@ -55,7 +55,8 @@ class ParserInterface:
             default_name = "t"
             init_tr = default_name + str(0)
             i = 1
-            while init_tr in [t["name"] for t in program["transitions"]]:
+            trs_name = [t["name"] for t in program["transitions"]]
+            while init_tr in trs_name:
                 init_tr = default_name + str(i)
                 i += 1
             from lpi import Expression

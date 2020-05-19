@@ -198,23 +198,46 @@ class Cfg(MultiDiGraph):
         gvars = self.get_info(constants.variables)
         N = int(len(gvars) / 2)
         nivars = list(gvars[:N])
+        count = 0
         for tr in self.get_edges():
+            lvars = tr[constants.transition.localvariables]
+            dependencies = { v: [] for v in gvars}
+            needed = {v: True for v in gvars}
+            for v in lvars:
+                dependencies[v] = []
+                needed[v] = False
             for c in tr[constants.transition.constraints]:
                 if c.is_equality():
                     if c.get_independent_term() == 0 and are_related_vars(c.get_variables(), gvars):
                         continue
-                for v in c.get_variables():
-                    if v in tr[constants.transition.localvariables]:
+                c_vars = c.get_variables()
+                for v in c_vars:
+                    dependencies[v] = dependencies[v] + c_vars
+                    if v in lvars:
                         continue
                     pos = gvars.index(v)
                     vt = gvars[pos % N]
                     if vt in nivars:
                         nivars.remove(vt)
-                if len(nivars) == 0:
-                    break
-            if len(nivars) == 0:
-                break
-        count = 0
+                # if len(nivars) == 0:
+                #     break
+            q = list(gvars):
+            while len(q) > 0:
+                v = q.pop()
+                for vi in dependencies[v]:
+                    if needed[vi]:
+                        continue
+                    needed[vi] = True
+                    q.append(vi)
+            # if len(nivars) == 0:
+            #    break
+            for v in lvars:
+                if needed[v]:
+                    continue
+                for c in tr[constants.transition.constraints]:
+                    if v in c.get_variables():
+                        count += 1
+                        tr[constants.transition.constraints].remove(c)
         for v in nivars:
             pos = gvars.index(v)
             vp = gvars[pos + N]
