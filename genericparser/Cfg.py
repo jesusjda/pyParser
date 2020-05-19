@@ -221,7 +221,7 @@ class Cfg(MultiDiGraph):
                         nivars.remove(vt)
                 # if len(nivars) == 0:
                 #     break
-            q = list(gvars):
+            q = list(gvars)
             while len(q) > 0:
                 v = q.pop()
                 for vi in dependencies[v]:
