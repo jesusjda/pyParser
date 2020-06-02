@@ -64,9 +64,9 @@ class Parser_fc(ParserInterface):
         | lvarskey ":" lvars
         
         
-        COMMENT: /\/\*([^*]*|([^*]*\*+[^*\/]+)*)\*+\//
-        | "//" /[^\n]*/
-        | /#[^\n]*/
+        COMMENT: /\\/\\*([^*]*|([^*]*\\*+[^*\\/]+)*)\\*+\\//
+        | "//" /[^\\n]*/
+        | /#[^\\n]*/
         
         %import common.ESCAPED_STRING
         %import common.NUMBER
