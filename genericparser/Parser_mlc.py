@@ -29,7 +29,7 @@ class Parser_mlc(ParserInterface):
         
         start: _program
         
-        _endls: "\n"+
+        _endls: "\\n"+
         
         CMP: "<="|"=>"|"=<"|"=="|">="|">"|"<"|"="
         SUM: "+" | "-"
@@ -53,17 +53,17 @@ class Parser_mlc(ParserInterface):
 
         _program: _endls? "!vars" _endls vars _endls ("!pvars" _endls pvars _endls)? transitions
 
-        COMMENT: /\/\*([^*]*|([^*]*\*+[^*\/]+)*)\*+\//
-        | "//" /[^\n]*/
-        | /#[^\n]*/
+        COMMENT: /\\/\\*([^*]*|([^*]*\\*+[^*\\/]+)*)\\*+\\//
+        | "//" /[^\\n]*/
+        | /#[^\\n]*/
 
         %import common.NUMBER
         %import common.LETTER
         %import common.WORD
         %import common.DIGIT
         %ignore " "
-        %ignore "\t"
-        %ignore "\r"
+        %ignore "\\t"
+        %ignore "\\r"
         %ignore COMMENT
         """
 

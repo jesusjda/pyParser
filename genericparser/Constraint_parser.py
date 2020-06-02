@@ -19,14 +19,32 @@ class Parser_Constraint(ParserInterface):
         return self.parse_string(fctext, debug=debug)
 
     def parse_string(self, cad, __=None, debug=False):
-        import os
-        grammarfile = os.path.join(os.path.dirname(__file__), "constraint.g")
-        with open(grammarfile, "r") as grammar:
-            g = grammar.read()
         from lark.lark import Lark
-        parser = Lark(g)
+        parser = Lark(self.get_grammar())
         return ConstraintTreeTransformer().transform(parser.parse(cad))
 
+    def get_grammar(self):
+        return """
+        start:constraint
+        CMP: "<="|"=>"|"=<"|"=="|">="|">"|"<"|"="
+        SUM: "+" | "-"
+        MUL: "*" | "/"
+        
+        CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!"|".")*
+        
+        term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")"
+        factor: term (MUL term)*
+        expression:  factor (SUM factor)*
+        
+        constraint: expression CMP expression
+        
+        %import common.NUMBER
+        %import common.LETTER
+        %import common.DIGIT
+        %import common.WS
+        %ignore WS
+        """
+    
 
 class ConstraintTreeTransformer(Transformer):
     """To use this parser, you must add ConstraintTreeTransformer

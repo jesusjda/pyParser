@@ -1,7 +1,7 @@
 from genericparser.Constraint_parser import ConstraintTreeTransformer
+from genericparser.Parser_fc import Parser_fc
 
-
-class Parser_Properties:
+class Parser_Properties(Parser_fc):
 
     def parse(self, filepath, debug=False):
         with open(filepath) as file:
@@ -9,12 +9,8 @@ class Parser_Properties:
         return self.parse_string(fctext, debug=debug)
 
     def parse_string(self, cad, __=None, debug=False):
-        import os
-        grammarfile = os.path.join(os.path.dirname(__file__), "fc.g")
-        with open(grammarfile, "r") as grammar:
-            g = grammar.read()
         from lark.lark import Lark
-        parser = Lark(g, parser='lalr')
+        parser = Lark(self.get_grammar(), parser='lalr')
         return PropsTreeTransformer().transform(parser.parse(cad))
 
 
