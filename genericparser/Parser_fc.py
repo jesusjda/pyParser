@@ -20,12 +20,8 @@ class Parser_fc(ParserInterface):
         return self.parse_string(fctext, debug=debug)
 
     def parse_string(self, cad, __=None, debug=False):
-        import os
-        grammarfile = os.path.join(os.path.dirname(__file__), "fc.g")
-        with open(grammarfile, "r") as grammar:
-            g = grammar.read()
         from lark.lark import Lark
-        parser = Lark(g, parser='lalr')
+        parser = Lark(self.get_grammar(), parser='lalr')
         return self.program2cfg(FcTreeTransformer().transform(parser.parse(cad)))
 
     def get_grammar(self):
