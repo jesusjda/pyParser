@@ -31,11 +31,8 @@ class Parser_smt2(ParserInterface):
         return self.smtpushdown('FC', filepath)
 
     def smtpushdown(self, convertto, filepath):
-        import os
         from subprocess import PIPE
         from subprocess import Popen
-        smtpushdown2path = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'smtpushdown2')
-        pipe = Popen([smtpushdown2path, '-convertto', convertto, filepath],
+        pipe = Popen([self.smtpushdown2path, '-convertto', convertto, filepath],
                      stdout=PIPE, stderr=PIPE)
         return pipe.communicate()

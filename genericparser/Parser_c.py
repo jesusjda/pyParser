@@ -25,13 +25,10 @@ class Parser_c(ParserInterface):
         return pkoat.parse_string(koatprogram, debug)
 
     def c2koat(self, filepath):
-        import os
         from subprocess import PIPE
         from subprocess import Popen
         import tempfile
         tmpdirname = tempfile.mkdtemp()
-        binpath = os.path.dirname(os.path.realpath(__file__))
-        c2koatpath = os.path.join(binpath, 'c2koat')
-        pipe = Popen([c2koatpath, binpath, tmpdirname, filepath],
+        pipe = Popen([self.c2koatpath, self.binpath, tmpdirname, filepath],
                      stdout=PIPE, stderr=PIPE)
         return pipe.communicate()
