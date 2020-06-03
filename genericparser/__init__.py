@@ -16,10 +16,9 @@ class ParserInterface:
     """Interface for parsers
     """
 
-    def __init__(self):
-        self.binpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "bin")
-        self.c2koatpath = os.path.join(self.binpath, "c2koat")
-        self.smt2smtpushdown2path = os.path.join(self.binpath, "smtpushdown2")
+    binpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "bin")
+    c2koatpath = os.path.join(binpath, "c2koat")
+    smtpushdown2path = os.path.join(binpath, "smtpushdown2")
     
     def parse(self, filepath, debug=False):
         """Parse .EXTENSION file
