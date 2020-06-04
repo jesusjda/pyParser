@@ -1,3 +1,17 @@
+v1.2 2020/06/04
+- fixing some bugs
+- parser for extra file configuration
+- toSMT2: localvariables are projected
+- C: fixing some dependencies
+- LLVM: using better flags
+- moved grammar files of lark into python scripts
+- binaries moved to bin folder
+v1.1 2019/07/09
+- check determinism
+- cycle cut nodes
+- FC: parse cfr properties
+- koat accepts "COM_N"
+- toSMT2
 - Remove No Important Variables method.
 v1.0 2018/10/02
 - GenericParser no longer avaliable, now parse directly from function `parse`.
