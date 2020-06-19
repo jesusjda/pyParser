@@ -427,7 +427,8 @@ class Cfg(MultiDiGraph):
         path.write("\n\ntest({},\n\t'{}',\n\t{},\n\t{},\n\t[\n{}\n\t]).\n".format(number, idname[2:], vs, pvs, ",\n".join(trs)))
 
     @open_file(1, "w")
-    def toProlog(self, path=None, invariant_type="none"):
+    def toProlog(self, path=None, invariant_type="none", with_cost=False):
+        from lpi import Expression
         def saveName(word):
             import re
             return re.sub('[\'\?\!\^.]', '_P', word)
@@ -448,10 +449,21 @@ class Cfg(MultiDiGraph):
                 out_pl_vars.append(rnew_v)
             return out_pl_vars, out_related_vars
 
+        
         global_vars = self.graph[constants.variables]
-        pl_global_vars, related_vars = generate_pl_names(global_vars)
-
         N = int(len(global_vars) / 2)
+        cost_var, cost_pvar = (None, None)
+        if with_cost:
+            cost_var = "_COST_"
+            idx = 0
+            while cost_var+str(idx) in global_vars or cost_var+str(idx+1) in global_vars:
+                idx = idx + 2
+            cost_var = cost_var+str(idx)
+            cost_pvar = cost_var+str(idx+1)
+            global_vars = global_vars[:N] +[cost_var]+ global_vars[N:]+[cost_pvar]
+            N= N + 1
+
+        pl_global_vars, related_vars = generate_pl_names(global_vars)
         if N == 0:
             vs = ""
             pvs = ""
@@ -469,6 +481,9 @@ class Cfg(MultiDiGraph):
                 target = "n_{}{}".format(saveName(t), pvs)
                 for tr in self.get_edges(source=s, target=t):  # concrete edge
                     cons = [c for c in tr[constants.transition.constraints] if c.is_linear()]
+                    if with_cost:
+                        c = tr.get("cost", 1)
+                        cons.append(Expression(cost_pvar) == Expression(cost_var)+c)
                     if invariant_type != "none":
                         try:
                             invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
@@ -484,6 +499,7 @@ class Cfg(MultiDiGraph):
                     if phi != "":
                         phi += ", "
                     path.write("{} :- {}{}.\n".format(source, phi, target))
+        return cost_var, cost_pvar
 
     @open_file(1, "w")
     def toFc(self, path=None, invariant_type="none"):
@@ -553,14 +569,14 @@ class Cfg(MultiDiGraph):
         path.write("}\n")
 
     @open_file(1, "w")
-    def toKoat(self, path=None, goal_complexity=False, invariant_type="none"):
+    def toKoat(self, path=None, goal_complexity=False, invariant_type="none", with_cost=False):
         if goal_complexity:
             goal = "COMPLEXITY"
         else:
             goal = "TERMINATION"
         path.write("(GOAL {})\n".format(goal))
         initnode = self.graph[constants.initnode]
-        rules, str_vars = self._toKoat_rules(invariant_type)
+        rules, str_vars = self._toKoat_rules(invariant_type, with_cost)
         if len(self.get_edges(target=initnode)) > 0:
             initnode = "pyRinit"
             it = 1
@@ -577,7 +593,7 @@ class Cfg(MultiDiGraph):
         path.write("(VAR {})\n".format(str_vars))
         path.write("(RULES {})\n".format(rules))
 
-    def _toKoat_rules(self, invariant_type):
+    def _toKoat_rules(self, invariant_type, with_cost=False):
         def isolate(cons, pvars):
             from lpi import Expression
             result = cons[:]
@@ -643,7 +659,13 @@ class Cfg(MultiDiGraph):
                         phi = " :|: " + " && ".join(cons_str)
                     else:
                         phi = ""
-                    rules += "  {}({}) -> Com_1({}({})){}\n".format(src, str_vars, trg, pvalues, phi)
+                    cost = 1
+                    if with_cost:
+                        cost = tr.get("cost", 1)
+                    if cost == 1:
+                        rules += "  {}({}) -> Com_1({}({})){}\n".format(src, str_vars, trg, pvalues, phi)
+                    else:
+                        rules += "  {}({}) -{{}}> Com_1({}({})){}\n".format(src, str_vars, cost, trg, pvalues, phi)
         return rules, " ".join(global_vars + list(localV))
 
     def edge_data_subgraph(self, edges):
