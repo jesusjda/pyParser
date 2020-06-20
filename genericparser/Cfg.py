@@ -665,7 +665,7 @@ class Cfg(MultiDiGraph):
                     if cost == 1:
                         rules += "  {}({}) -> Com_1({}({})){}\n".format(src, str_vars, trg, pvalues, phi)
                     else:
-                        rules += "  {}({}) -{{}}> Com_1({}({})){}\n".format(src, str_vars, cost, trg, pvalues, phi)
+                        rules += "  {}({}) -{{{}}}> Com_1({}({})){}\n".format(src, str_vars, int(cost), trg, pvalues, phi)
         return rules, " ".join(global_vars + list(localV))
 
     def edge_data_subgraph(self, edges):
