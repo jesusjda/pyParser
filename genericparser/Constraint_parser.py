@@ -111,8 +111,8 @@ class ConstraintTreeTransformer(Transformer):
         if len(node) > 2:
             base = self.term(node[:-2])
             try:
-                pw = int(node[-1])
-            finally:
+                pw = int(str(node[-1]))
+            except ValueError:
                 pw = -1
             if pw < 0:
                 raise ValueError("Exponent must be positive.")
