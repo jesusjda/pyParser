@@ -31,11 +31,12 @@ class Parser_koat(ParserInterface):
         
         CMP: "<="|"=>"|"=<"|"=="|">="|">"|"<"|"="
         SUM: "+" | "-"
-        MUL: "*" | "/" 
+        MUL: "*" | "/"
+        POW: "^"
         
-        CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!"|".")*
+        CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"!"|".")*
         
-        term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")"
+        term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")" | [SUM] CNAME POW NUMBER
         factor: term (MUL term)*
         expression:  factor (SUM factor)*
         

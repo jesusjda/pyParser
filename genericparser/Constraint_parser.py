@@ -32,7 +32,7 @@ class Parser_Constraint(ParserInterface):
         
         CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!"|".")*
         
-        term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")"
+        term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")" | [SUM] CNAME POW NUMBER
         factor: term (MUL term)*
         expression:  factor (SUM factor)*
         
@@ -57,7 +57,7 @@ class ConstraintTreeTransformer(Transformer):
 
     CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!")*
 
-    term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")"
+    term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")" | [SUM] CNAME POW NUMBER
     factor: term (MUL term)*
     expression:  factor (SUM factor)*
 
@@ -108,6 +108,21 @@ class ConstraintTreeTransformer(Transformer):
         return exp
 
     def term(self, node):
+        if len(node) > 2:
+            base = self.term(node[:-2])
+            try:
+                pw = int(str(node[-1]))
+            except ValueError:
+                pw = -1
+            if pw < 0:
+                raise ValueError("Exponent must be positive.")
+            elif pw == 0:
+                return Expression(1)
+            else:
+                exp = base
+                for i in range(1,pw):
+                    exp = exp * base
+                return exp
         if len(node) == 2:
             val_pos = 1
         else:
