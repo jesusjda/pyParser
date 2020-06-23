@@ -29,8 +29,9 @@ class Parser_Constraint(ParserInterface):
         CMP: "<="|"=>"|"=<"|"=="|">="|">"|"<"|"="
         SUM: "+" | "-"
         MUL: "*" | "/"
+        POW: "^"
         
-        CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!"|".")*
+        CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"!"|".")*
         
         term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")" | [SUM] CNAME POW NUMBER
         factor: term (MUL term)*
@@ -54,8 +55,9 @@ class ConstraintTreeTransformer(Transformer):
     CMP: "<="|"=>"|"=<"|"=="|">="|">"|"<"|"="
     SUM: "+" | "-"
     MUL: "*" | "/"
+    POW: "^"
 
-    CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"^"|"!")*
+    CNAME: ("_"|LETTER) ("_"|LETTER|DIGIT|"'"|"!")*
 
     term: [SUM] NUMBER | [SUM] CNAME | "(" expression ")" | [SUM] CNAME POW NUMBER
     factor: term (MUL term)*
