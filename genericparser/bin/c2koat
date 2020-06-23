@@ -9,6 +9,6 @@ shift
 
 NAME=`basename $FILE`
 
-LD_LIBRARY_PATH="$BASE:$LD_LIBRARY_PATH" $BASE/clang -Wall -Wextra -c -emit-llvm -O0 $FILE -o $TMPDIR/$NAME.bc
+LD_LIBRARY_PATH="$BASE:$LD_LIBRARY_PATH" $BASE/clang -Wall -Wextra -c -emit-llvm -O0 $FILE -o $TMPDIR/$NAME.bc 2> $TMPDIR/error
 
 LD_LIBRARY_PATH="$BASE:$LD_LIBRARY_PATH" $BASE/llvm2kittel --dump-ll --no-slicing --eager-inline $TMPDIR/$NAME.bc -uniform-complexity-tuples 
