@@ -348,11 +348,7 @@ class Cfg(MultiDiGraph):
             return c.toString(str, int, eq_symb="=", opformat="prefix")
         self.build_polyhedrons()
         for tr in self.get_edges():
-            if len(tr[constants.transition.localvariables]) > 0:
-                p = tr[constants.transition.polyhedron].project(global_vars)
-                cons = p.get_constraints()
-            else:
-                cons = tr[constants.transition.constraints]
+            cons = tr[constants.transition.constraints]
             if invariant_type != "none":
                 try:
                     invariants = self.nodes[tr["source"]]["invariant_" + str(invariant_type)].get_constraints()
@@ -365,6 +361,9 @@ class Cfg(MultiDiGraph):
                 prefix_cons = toprefixformat(cons[0])
                 for c in cons[1:]:
                     prefix_cons = "(and {} {})".format(prefix_cons, toprefixformat(c))
+            if len(tr[constants.transition.localvariables]) > 0:
+                prefix_cons = "(exists ({}) {})".format(" ".join(["({} Int)".format(v) for v in tr[constants.transition.localvariables]]), prefix_cons)
+
             path.write("    (cfg_trans2 pc {} pc1 {} {})\n".format(tr["source"], tr["target"], prefix_cons))
         path.write("  )\n)\n")
 

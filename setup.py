@@ -9,7 +9,7 @@ VERSION = open(os.path.join(base, 'version.txt')).read()[:-1]
 pkg_dir = os.path.join(base, 'genericparser')
 pkg_name = 'genericparser'
 
-requires = ['networkx', 'pydotplus', 'pydot', 'lark-parser==0.5.6']
+requires = ['networkx==2.4', 'pydotplus', 'pydot', 'lark-parser==0.5.6']
 
 setup(
     name='genericparser',
